@@ -1,9 +1,9 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Outlet } from "react-router-dom";
 import STECHADLogo from "@/components/STECHADLogo";
 
-const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PublicLayout: React.FC = () => {
   const location = useLocation();
 
   return (
@@ -21,7 +21,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         </div>
       </header>
       <main className="flex-grow">
-        {children}
+        <Outlet />
       </main>
       <footer className="w-full bg-muted py-7 text-center text-sm text-text-muted mt-12">
         <span>© 2025 STECHAD | <a href="mailto:contact@stechad.com" className="text-primary underline hover:text-primary-faint">Contact</a></span>
