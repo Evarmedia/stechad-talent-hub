@@ -1,10 +1,10 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 
 const COUNTRIES = ["France", "Germany", "Spain", "Italy", "Netherlands", "Poland", "Portugal"];
 const SKILLS = ["React", "Node.js", "Python", "Java", "AWS", "Docker", "C#", "SQL", "TypeScript", "Kubernetes"];
@@ -23,7 +23,6 @@ const Onboarding = () => {
     availability: "",
   });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -49,7 +48,6 @@ const Onboarding = () => {
     setTimeout(() => {
       setLoading(false);
       toast({ title: "Onboarding Complete!", description: "Welcome aboard. Your profile has been submitted!" });
-      navigate("/dashboard/engineer");
     }, 1200);
   }
 
