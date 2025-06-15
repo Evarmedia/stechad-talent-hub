@@ -3,6 +3,15 @@ import React, { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const JOB_LIST = [
   {
@@ -10,24 +19,61 @@ const JOB_LIST = [
     location: "Paris, France",
     skills: ["React", "TypeScript", "Node.js"],
     remote: true,
+    description:
+      "As a React Developer, you will be responsible for building modern web applications using React and related technologies. You'll work with a collaborative team, participate in design decisions, and help shape the direction of our frontend.",
+    responsibilities: [
+      "Develop and maintain user interfaces using React.",
+      "Collaborate with backend and design teams.",
+      "Write clean, scalable, and well-tested code.",
+    ],
+    requirements: [
+      "2+ years of experience with React.",
+      "Familiarity with TypeScript.",
+      "Experience with REST APIs.",
+    ],
   },
   {
     title: "DevOps Engineer",
     location: "Berlin, Germany",
     skills: ["AWS", "Docker", "Kubernetes"],
     remote: false,
+    description:
+      "Seeking a DevOps Engineer to maintain and improve our CI/CD pipelines, manage infrastructure, and collaborate with developers to ensure smooth deployments.",
+    responsibilities: [
+      "Implement and manage CI/CD pipelines.",
+      "Manage cloud infrastructure and containers.",
+      "Monitor system health and performance.",
+    ],
+    requirements: [
+      "3+ years of DevOps experience.",
+      "Hands-on with AWS and Kubernetes.",
+      "Strong scripting skills (Bash, Python, etc.).",
+    ],
   },
   {
     title: "Java Backend Engineer",
     location: "Remote",
     skills: ["Java", "Spring", "SQL"],
     remote: true,
+    description:
+      "We're looking for a Java Backend Engineer to build robust APIs and scalable backend services. You will work closely with our product and frontend teams.",
+    responsibilities: [
+      "Design and build RESTful APIs with Spring.",
+      "Optimize database queries and structures.",
+      "Ensure backend scalability and security.",
+    ],
+    requirements: [
+      "Solid Java and Spring background.",
+      "SQL database experience.",
+      "Good understanding of API security.",
+    ],
   },
 ];
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
+  const [openJD, setOpenJD] = useState<number | null>(null);
 
   const filtered = JOB_LIST.filter(
     (job) =>
@@ -48,7 +94,7 @@ const EngineerJobs = () => {
             <input
               type="checkbox"
               checked={remoteOnly}
-              onChange={() => setRemoteOnly(v => !v)}
+              onChange={() => setRemoteOnly((v) => !v)}
               className="mr-1"
             />
             Remote only
@@ -60,25 +106,82 @@ const EngineerJobs = () => {
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         {filtered.map((job, idx) => (
-          <Card key={idx} className="mb-4">
-            <CardHeader>
-              <CardTitle className="flex justify-between">
-                {job.title}
-                {job.remote && <span className="text-green-600 text-xs">Remote</span>}
-              </CardTitle>
-              <div className="text-sm text-text-muted">{job.location}</div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {job.skills.map(skill => (
-                  <span key={skill} className="bg-primary-light text-primary rounded px-2 py-1 text-xs">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-              <Button size="sm">Apply</Button>
-            </CardContent>
-          </Card>
+          <React.Fragment key={idx}>
+            <Card className="mb-4">
+              <CardHeader>
+                <CardTitle className="flex justify-between">
+                  {job.title}
+                  {job.remote && (
+                    <span className="text-green-600 text-xs">Remote</span>
+                  )}
+                </CardTitle>
+                <div className="text-sm text-text-muted">{job.location}</div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {job.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-primary-light text-primary rounded px-2 py-1 text-xs"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm">Apply</Button>
+                  <Dialog open={openJD === idx} onOpenChange={open => setOpenJD(open ? idx : null)}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        View JD
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{job.title} - Job Details</DialogTitle>
+                        <DialogDescription>
+                          <span className="text-xs text-muted-foreground">
+                            {job.location} {job.remote && "｜Remote"}
+                          </span>
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="mb-3">
+                        <strong className="block text-primary mb-1">
+                          Description
+                        </strong>
+                        <div>{job.description}</div>
+                      </div>
+                      <div className="mb-3">
+                        <strong className="block text-primary mb-1">
+                          Responsibilities
+                        </strong>
+                        <ul className="list-disc ml-6 text-sm">
+                          {job.responsibilities.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <strong className="block text-primary mb-1">
+                          Requirements
+                        </strong>
+                        <ul className="list-disc ml-6 text-sm">
+                          {job.requirements.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={() => setOpenJD(null)} variant="secondary">
+                          Close
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+          </React.Fragment>
         ))}
         {filtered.length === 0 && <div>No jobs found.</div>}
       </div>
@@ -87,3 +190,4 @@ const EngineerJobs = () => {
 };
 
 export default EngineerJobs;
+
