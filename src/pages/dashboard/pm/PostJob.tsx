@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,11 +22,18 @@ const PostJob = () => {
   const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value, type, checked } = e.target;
-    setForm(f => ({
-      ...f,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value, type } = e.target;
+    if (type === "checkbox" && e.target instanceof HTMLInputElement) {
+      setForm(f => ({
+        ...f,
+        [name]: e.target.checked,
+      }));
+    } else {
+      setForm(f => ({
+        ...f,
+        [name]: value,
+      }));
+    }
   }
   function handleSkillToggle(skill: string) {
     setForm(f => ({
