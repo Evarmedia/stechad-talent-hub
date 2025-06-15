@@ -1,10 +1,17 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PublicLayout from "./layouts/PublicLayout";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import EngineerSignup from "./pages/EngineerSignup";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+// Dashboard pages to be added in next iteration
 
 const queryClient = new QueryClient();
 
@@ -16,7 +23,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route
+            element={<PublicLayout />}
+          >
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/engineer-signup" element={<EngineerSignup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+          </Route>
+          {/* DASHBOARD/ADMIN ROUTES: To be added */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

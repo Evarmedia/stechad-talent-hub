@@ -1,0 +1,33 @@
+
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import STECHADLogo from "@/components/STECHADLogo";
+
+const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <header className="w-full shadow-sm bg-white">
+        <div className="container flex items-center justify-between py-3 px-2 md:px-8">
+          <Link to="/" className="flex items-center gap-2">
+            <STECHADLogo size={36} />
+            <span className="font-inter font-bold text-2xl text-primary ml-2 tracking-wide">STECHAD</span>
+          </Link>
+          <nav className="hidden md:flex gap-6">
+            <Link to="/engineer-signup" className="font-medium hover:underline text-primary">Engineer Signup</Link>
+            <Link to="/login" className="font-medium hover:underline text-text-main">Login</Link>
+          </nav>
+        </div>
+      </header>
+      <main className="flex-grow">
+        {children}
+      </main>
+      <footer className="w-full bg-muted py-7 text-center text-sm text-text-muted mt-12">
+        <span>© 2025 STECHAD | <a href="mailto:contact@stechad.com" className="text-primary underline hover:text-primary-faint">Contact</a></span>
+      </footer>
+    </div>
+  );
+};
+
+export default PublicLayout;
