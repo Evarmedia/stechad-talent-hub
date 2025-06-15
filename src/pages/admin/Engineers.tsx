@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { subMonths, isWithinInterval } from "date-fns";
 import EngineerFilter from "./EngineerFilter";
 import EngineerTable from "./EngineerTable";
 import { exportToCSV } from "./exportUtils";
+import { Search } from "lucide-react";
 
 const ENGINEERS = [
   {
@@ -94,16 +96,37 @@ const filterEngineers = (engineers: typeof ENGINEERS, filter: string) => {
   }
 };
 
+const searchEngineers = (engineers: typeof ENGINEERS, search: string) => {
+  if (!search.trim()) return engineers;
+  const lowered = search.toLowerCase();
+  return engineers.filter((e) =>
+    [
+      e.name,
+      e.country,
+      String(e.exp),
+      e.status,
+      e.email,
+      e.phone,
+      e.onboardedAt ? new Date(e.onboardedAt).toLocaleDateString() : "",
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(lowered)
+  );
+};
+
 const Engineers = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, []);
 
-  const filteredEngineers = filterEngineers(ENGINEERS, filter);
+  const filtered = filterEngineers(ENGINEERS, filter);
+  const searchedAndFiltered = searchEngineers(filtered, search);
 
   return (
     <div className="p-8">
@@ -114,13 +137,24 @@ const Engineers = () => {
         <CardContent>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
             <EngineerFilter filter={filter} setFilter={setFilter} filterOptions={filterOptions} />
+            <div className="relative w-full sm:w-64">
+              <Input
+                type="text"
+                placeholder="Search engineers..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+                disabled={loading}
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={18} />
+            </div>
           </div>
-          <EngineerTable engineers={filteredEngineers} loading={loading} />
+          <EngineerTable engineers={searchedAndFiltered} loading={loading} />
           <Button
             className="mt-4"
             variant="outline"
-            onClick={() => exportToCSV(filteredEngineers)}
-            disabled={loading || filteredEngineers.length === 0}
+            onClick={() => exportToCSV(searchedAndFiltered)}
+            disabled={loading || searchedAndFiltered.length === 0}
           >
             Export List (CSV)
           </Button>
