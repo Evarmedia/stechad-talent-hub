@@ -151,13 +151,16 @@ const Engineers = () => {
                 onValueChange={(v) => setFilter(v)}
                 defaultValue="all"
               >
-                {/* Updated SelectTrigger with white bg and z-[40] */}
                 <SelectTrigger className="w-full bg-white z-[40]">
                   <SelectValue placeholder="Filter engineers..." />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {filterOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="hover:bg-primary-light"
+                    >
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -173,7 +176,6 @@ const Engineers = () => {
                   <th className="p-2 text-sm text-text-muted">Country</th>
                   <th className="p-2 text-sm text-text-muted">Experience</th>
                   <th className="p-2 text-sm text-text-muted">Status</th>
-                  {/* Added new column for Date Onboarded */}
                   <th className="p-2 text-sm text-text-muted">Date Onboarded</th>
                   <th className="p-2 text-sm"></th>
                 </tr>
@@ -196,7 +198,6 @@ const Engineers = () => {
                         <td className="p-2">
                           <Skeleton className="h-6 w-20" />
                         </td>
-                        {/* Skeleton for new date column */}
                         <td className="p-2">
                           <Skeleton className="h-6 w-24" />
                         </td>
@@ -226,7 +227,6 @@ const Engineers = () => {
                           {eng.status}
                         </span>
                       </td>
-                      {/* Show formatted onboarded date */}
                       <td className="p-2">
                         {eng.onboardedAt
                           ? new Date(eng.onboardedAt).toLocaleDateString()
