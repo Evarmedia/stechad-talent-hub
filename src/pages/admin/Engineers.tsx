@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -152,7 +151,8 @@ const Engineers = () => {
                 onValueChange={(v) => setFilter(v)}
                 defaultValue="all"
               >
-                <SelectTrigger className="w-full">
+                {/* Updated SelectTrigger with white bg and z-[40] */}
+                <SelectTrigger className="w-full bg-white z-[40]">
                   <SelectValue placeholder="Filter engineers..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,13 +166,15 @@ const Engineers = () => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="text-left">
                   <th className="p-2 text-sm text-text-muted">Name</th>
                   <th className="p-2 text-sm text-text-muted">Country</th>
                   <th className="p-2 text-sm text-text-muted">Experience</th>
                   <th className="p-2 text-sm text-text-muted">Status</th>
+                  {/* Added new column for Date Onboarded */}
+                  <th className="p-2 text-sm text-text-muted">Date Onboarded</th>
                   <th className="p-2 text-sm"></th>
                 </tr>
               </thead>
@@ -194,6 +196,10 @@ const Engineers = () => {
                         <td className="p-2">
                           <Skeleton className="h-6 w-20" />
                         </td>
+                        {/* Skeleton for new date column */}
+                        <td className="p-2">
+                          <Skeleton className="h-6 w-24" />
+                        </td>
                         <td className="p-2">
                           <Skeleton className="h-8 w-24" />
                         </td>
@@ -201,7 +207,7 @@ const Engineers = () => {
                     ))
                 ) : filteredEngineers.length === 0 ? (
                   <tr>
-                    <td className="p-4 text-center text-muted-foreground" colSpan={5}>
+                    <td className="p-4 text-center text-muted-foreground" colSpan={6}>
                       No engineers found for this filter.
                     </td>
                   </tr>
@@ -219,6 +225,12 @@ const Engineers = () => {
                         >
                           {eng.status}
                         </span>
+                      </td>
+                      {/* Show formatted onboarded date */}
+                      <td className="p-2">
+                        {eng.onboardedAt
+                          ? new Date(eng.onboardedAt).toLocaleDateString()
+                          : "n/a"}
                       </td>
                       <td className="p-2">
                         <Dialog>
