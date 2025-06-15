@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +10,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ENGINEERS = [
   { name: "Jane Doe", country: "France", exp: 5, status: "Active", email: "jane.doe@email.com", phone: "+33 123 456 789" },
@@ -29,7 +29,11 @@ const statusColor = (status: string) => {
 
 const Engineers = () => {
   const [selectedEngineer, setSelectedEngineer] = useState<null | typeof ENGINEERS[0]>(null);
-
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <div className="p-8">
       <Card>
@@ -49,53 +53,65 @@ const Engineers = () => {
                 </tr>
               </thead>
               <tbody>
-                {ENGINEERS.map((eng, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="p-2">{eng.name}</td>
-                    <td className="p-2">{eng.country}</td>
-                    <td className="p-2">{eng.exp} yrs</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded ${statusColor(eng.status)} text-xs`}>{eng.status}</span></td>
-                    <td className="p-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedEngineer(eng)}
-                          >
-                            View Profile
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>
-                              {selectedEngineer?.name}'s Profile
-                            </DialogTitle>
-                            <DialogDescription>
-                              Engineer profile details.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-2">
-                            <div><strong>Name:</strong> {selectedEngineer?.name}</div>
-                            <div><strong>Country:</strong> {selectedEngineer?.country}</div>
-                            <div><strong>Email:</strong> {selectedEngineer?.email}</div>
-                            <div><strong>Phone:</strong> {selectedEngineer?.phone}</div>
-                            <div><strong>Experience:</strong> {selectedEngineer?.exp} yrs</div>
-                            <div>
-                              <strong>Status:</strong>
-                              <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedEngineer?.status!)} text-xs`}>
-                                {selectedEngineer?.status}
-                              </span>
+                {loading ? (
+                  Array(3).fill(0).map((_,i)=>(
+                    <tr key={i} className="border-b">
+                      <td className="p-2"><Skeleton className="h-6 w-36" /></td>
+                      <td className="p-2"><Skeleton className="h-6 w-20" /></td>
+                      <td className="p-2"><Skeleton className="h-6 w-16" /></td>
+                      <td className="p-2"><Skeleton className="h-6 w-20" /></td>
+                      <td className="p-2"><Skeleton className="h-8 w-24" /></td>
+                    </tr>
+                  ))
+                ) : (
+                  ENGINEERS.map((eng, i) => (
+                    <tr key={i} className="border-b">
+                      <td className="p-2">{eng.name}</td>
+                      <td className="p-2">{eng.country}</td>
+                      <td className="p-2">{eng.exp} yrs</td>
+                      <td className="p-2"><span className={`px-2 py-1 rounded ${statusColor(eng.status)} text-xs`}>{eng.status}</span></td>
+                      <td className="p-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedEngineer(eng)}
+                            >
+                              View Profile
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                {selectedEngineer?.name}'s Profile
+                              </DialogTitle>
+                              <DialogDescription>
+                                Engineer profile details.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2">
+                              <div><strong>Name:</strong> {selectedEngineer?.name}</div>
+                              <div><strong>Country:</strong> {selectedEngineer?.country}</div>
+                              <div><strong>Email:</strong> {selectedEngineer?.email}</div>
+                              <div><strong>Phone:</strong> {selectedEngineer?.phone}</div>
+                              <div><strong>Experience:</strong> {selectedEngineer?.exp} yrs</div>
+                              <div>
+                                <strong>Status:</strong>
+                                <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedEngineer?.status!)} text-xs`}>
+                                  {selectedEngineer?.status}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          <DialogClose asChild>
-                            <Button variant="outline" className="mt-4">Close</Button>
-                          </DialogClose>
-                        </DialogContent>
-                      </Dialog>
-                    </td>
-                  </tr>
-                ))}
+                            <DialogClose asChild>
+                              <Button variant="outline" className="mt-4">Close</Button>
+                            </DialogClose>
+                          </DialogContent>
+                        </Dialog>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

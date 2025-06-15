@@ -1,7 +1,7 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const APPLICATIONS = [
   { engineer: "Jane Doe", job: "React Developer", status: "Pending", date: "2025-06-02" },
@@ -21,6 +21,12 @@ const statusColor = (status: string) => {
 
 const AdminApplications = () => {
   const [filter, setFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 900);
+    return () => clearTimeout(t);
+  }, []);
 
   const filtered = filter === "All"
     ? APPLICATIONS
@@ -55,14 +61,23 @@ const AdminApplications = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((a, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="p-2">{a.engineer}</td>
-                    <td className="p-2">{a.job}</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span></td>
-                    <td className="p-2">{a.date}</td>
-                  </tr>
-                ))}
+                {loading
+                  ? Array(3).fill(0).map((_,i)=>(
+                    <tr key={i} className="border-b">
+                      <td className="p-2"><Skeleton className="h-5 w-40" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-44" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-28" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-20" /></td>
+                    </tr>
+                  ))
+                  : filtered.map((a, i) => (
+                    <tr key={i} className="border-b">
+                      <td className="p-2">{a.engineer}</td>
+                      <td className="p-2">{a.job}</td>
+                      <td className="p-2"><span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span></td>
+                      <td className="p-2">{a.date}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

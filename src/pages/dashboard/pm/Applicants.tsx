@@ -1,8 +1,8 @@
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const APPLICANTS = [
   {
@@ -40,7 +40,11 @@ const statusColor = (status: string) => {
 
 const Applicants = () => {
   const { jobId } = useParams();
-
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 950);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <div className="p-8">
       <Card>
@@ -61,32 +65,43 @@ const Applicants = () => {
                 </tr>
               </thead>
               <tbody>
-                {APPLICANTS.map((a, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="p-2">{a.name}</td>
-                    <td className="p-2">{a.experience} yrs</td>
-                    <td className="p-2">
-                      <div className="flex gap-1 flex-wrap">
-                        {a.skills.map(s => (
-                          <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="p-2">
-                      <a href="#" className="underline text-primary">{a.resume}</a>
-                    </td>
-                    <td className="p-2">
-                      <span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline">Shortlist</Button>
-                        <Button size="sm" variant="outline">Reject</Button>
-                        <Button size="sm" variant="outline">Mark Hired</Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {loading
+                  ? Array(3).fill(0).map((_,i)=>(
+                    <tr key={i} className="border-b">
+                      <td className="p-2"><Skeleton className="h-5 w-32" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-36" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-20" /></td>
+                      <td className="p-2"><Skeleton className="h-8 w-36" /></td>
+                    </tr>
+                  ))
+                  : APPLICANTS.map((a, i) => (
+                    <tr key={i} className="border-b">
+                      <td className="p-2">{a.name}</td>
+                      <td className="p-2">{a.experience} yrs</td>
+                      <td className="p-2">
+                        <div className="flex gap-1 flex-wrap">
+                          {a.skills.map(s => (
+                            <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <a href="#" className="underline text-primary">{a.resume}</a>
+                      </td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline">Shortlist</Button>
+                          <Button size="sm" variant="outline">Reject</Button>
+                          <Button size="sm" variant="outline">Mark Hired</Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
