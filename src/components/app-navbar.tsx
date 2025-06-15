@@ -10,10 +10,20 @@ const navRoles = [
   { name: "Admin", path: "/admin" },
 ];
 
+// Helper function to get the route for the profile based on role and current route
+function getProfileRoute(pathname: string) {
+  if (pathname.startsWith("/dashboard/engineer")) return "/dashboard/engineer/profile";
+  if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm";
+  if (pathname.startsWith("/admin")) return "/admin";
+  return "/dashboard/engineer/profile"; // default fallback
+}
+
 export function AppNavbar() {
   const { pathname } = useLocation();
   const currentRole =
     navRoles.find((r) => pathname.startsWith(r.path))?.name || "Dashboard";
+  const profileRoute = getProfileRoute(pathname);
+
   return (
     <header className="w-full shadow-sm sticky top-0 z-40 bg-white flex items-center justify-between h-[56px] px-4 md:px-8">
       <div className="flex items-center gap-2">
@@ -25,7 +35,9 @@ export function AppNavbar() {
         <span className="ml-4 text-muted-foreground font-medium text-base hidden md:inline">| {currentRole}</span>
       </div>
       <nav className="flex gap-4 items-center text-sm">
-        <Link to="/dashboard/engineer/profile" className="text-primary font-medium hover:underline">My Account</Link>
+        <Link to={profileRoute} className="text-primary font-medium hover:underline">
+          My Account
+        </Link>
         <Link to="/login" className="hover:underline text-muted-foreground">Logout</Link>
       </nav>
     </header>
