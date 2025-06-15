@@ -1,4 +1,3 @@
-
 import React from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
@@ -13,8 +12,8 @@ const navRoles = [
 // Helper function to get the route for the profile based on role and current route
 function getProfileRoute(pathname: string) {
   if (pathname.startsWith("/dashboard/engineer")) return "/dashboard/engineer/profile";
-  if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm";
-  if (pathname.startsWith("/admin")) return "/admin";
+  if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm/profile";
+  if (pathname.startsWith("/admin")) return "/admin/profile";
   return "/dashboard/engineer/profile"; // default fallback
 }
 

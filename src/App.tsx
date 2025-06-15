@@ -25,6 +25,8 @@ import AdminEngineers from "./pages/admin/Engineers";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminApplications from "./pages/admin/Applications";
 import AdminSettings from "./pages/admin/Settings";
+import PMProfile from "./pages/dashboard/pm/Profile";
+import AdminProfile from "./pages/admin/Profile";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,7 @@ const App = () => (
             <Route path="/dashboard/pm/post-job" element={<PMPostJob />} />
             <Route path="/dashboard/pm/manage-jobs" element={<PMManageJobs />} />
             <Route path="/dashboard/pm/applicants/:jobId" element={<PMApplicants />} />
+            <Route path="/dashboard/pm/profile" element={<PMProfile />} />
 
             {/* Admin Dashboard routes */}
             <Route path="/admin" element={<AdminIndex />} />
@@ -64,6 +67,7 @@ const App = () => (
             <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/admin/applications" element={<AdminApplications />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
           </Route>
 
           {/* 404 fallback */}
