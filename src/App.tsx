@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PublicLayout from "./layouts/PublicLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import EngineerSignup from "./pages/EngineerSignup";
@@ -43,24 +44,27 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
           </Route>
 
-          {/* Engineer Dashboard routes */}
-          <Route path="/dashboard/engineer" element={<EngineerIndex />} />
-          <Route path="/dashboard/engineer/jobs" element={<EngineerJobs />} />
-          <Route path="/dashboard/engineer/applications" element={<EngineerApplications />} />
-          <Route path="/dashboard/engineer/profile" element={<EngineerProfile />} />
+          {/* Dashboard Layout for all roles */}
+          <Route element={<DashboardLayout />}>
+            {/* Engineer Dashboard routes */}
+            <Route path="/dashboard/engineer" element={<EngineerIndex />} />
+            <Route path="/dashboard/engineer/jobs" element={<EngineerJobs />} />
+            <Route path="/dashboard/engineer/applications" element={<EngineerApplications />} />
+            <Route path="/dashboard/engineer/profile" element={<EngineerProfile />} />
 
-          {/* Project Manager Dashboard routes */}
-          <Route path="/dashboard/pm" element={<PMIndex />} />
-          <Route path="/dashboard/pm/post-job" element={<PMPostJob />} />
-          <Route path="/dashboard/pm/manage-jobs" element={<PMManageJobs />} />
-          <Route path="/dashboard/pm/applicants/:jobId" element={<PMApplicants />} />
+            {/* Project Manager Dashboard routes */}
+            <Route path="/dashboard/pm" element={<PMIndex />} />
+            <Route path="/dashboard/pm/post-job" element={<PMPostJob />} />
+            <Route path="/dashboard/pm/manage-jobs" element={<PMManageJobs />} />
+            <Route path="/dashboard/pm/applicants/:jobId" element={<PMApplicants />} />
 
-          {/* Admin Dashboard routes */}
-          <Route path="/admin" element={<AdminIndex />} />
-          <Route path="/admin/engineers" element={<AdminEngineers />} />
-          <Route path="/admin/jobs" element={<AdminJobs />} />
-          <Route path="/admin/applications" element={<AdminApplications />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+            {/* Admin Dashboard routes */}
+            <Route path="/admin" element={<AdminIndex />} />
+            <Route path="/admin/engineers" element={<AdminEngineers />} />
+            <Route path="/admin/jobs" element={<AdminJobs />} />
+            <Route path="/admin/applications" element={<AdminApplications />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+          </Route>
 
           {/* 404 fallback */}
           <Route path="*" element={<NotFound />} />
