@@ -22,11 +22,13 @@ const PostJob = () => {
   const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value, type } = e.target;
-    if (type === "checkbox" && e.target instanceof HTMLInputElement) {
+    const target = e.target;
+    const { name, type, value } = target;
+
+    if (type === "checkbox" && target instanceof HTMLInputElement) {
       setForm(f => ({
         ...f,
-        [name]: e.target.checked,
+        [name]: target.checked,
       }));
     } else {
       setForm(f => ({
@@ -35,6 +37,7 @@ const PostJob = () => {
       }));
     }
   }
+
   function handleSkillToggle(skill: string) {
     setForm(f => ({
       ...f,
@@ -43,6 +46,7 @@ const PostJob = () => {
         : [...f.skills, skill],
     }));
   }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
