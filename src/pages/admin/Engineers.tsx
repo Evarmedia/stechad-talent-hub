@@ -155,7 +155,7 @@ const Engineers = () => {
                 <SelectTrigger className="w-full bg-white z-[40]">
                   <SelectValue placeholder="Filter engineers..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {filterOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
