@@ -124,7 +124,7 @@ const filterEngineers = (engineers: typeof ENGINEERS, filter: string) => {
   }
 };
 
-const exportToCSV = (data: typeof ENGINEERS, filename = "engineers.csv") => {
+const exportToCSV = (data: typeof ENGINEERS) => {
   if (!data.length) return;
 
   // Prepare CSV rows
@@ -143,6 +143,13 @@ const exportToCSV = (data: typeof ENGINEERS, filename = "engineers.csv") => {
       row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")
     )
     .join("\r\n");
+
+  // Dynamically generate the filename with the current date (YYYY-MM-DD)
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const filename = `engineers_${yyyy}-${mm}-${dd}.csv`;
 
   // Download
   const blob = new Blob([csvString], { type: "text/csv" });
