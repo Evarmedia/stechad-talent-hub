@@ -124,6 +124,40 @@ const filterEngineers = (engineers: typeof ENGINEERS, filter: string) => {
   }
 };
 
+const exportToCSV = (data: typeof ENGINEERS, filename = "engineers.csv") => {
+  if (!data.length) return;
+
+  // Prepare CSV rows
+  const headerRow = ["Name", "Country", "Experience (yrs)", "Status", "Email", "Phone", "Onboarded At"];
+  const rows = data.map(eng => [
+    eng.name,
+    eng.country,
+    eng.exp,
+    eng.status,
+    eng.email,
+    eng.phone,
+    eng.onboardedAt ? new Date(eng.onboardedAt).toLocaleDateString() : ""
+  ]);
+  const csvString = [headerRow, ...rows]
+    .map(row =>
+      row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")
+    )
+    .join("\r\n");
+
+  // Download
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }, 0);
+};
+
 const Engineers = () => {
   const [selectedEngineer, setSelectedEngineer] =
     useState<null | typeof ENGINEERS[0]>(null);
@@ -299,7 +333,12 @@ const Engineers = () => {
               </tbody>
             </table>
           </div>
-          <Button className="mt-4" variant="outline">
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => exportToCSV(filteredEngineers)}
+            disabled={loading || filteredEngineers.length === 0}
+          >
             Export List (CSV)
           </Button>
         </CardContent>
