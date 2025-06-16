@@ -6,13 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarDays, Clock, Users, CheckCircle, AlertCircle, Circle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarDays, Clock, Users, CheckCircle, AlertCircle, Circle, Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // Demo data for projects
-const projectsData = [
+const initialProjectsData = [
   {
     id: 1,
     title: "E-commerce Platform Redesign",
+    description: "Complete redesign of the e-commerce platform with modern UI/UX",
     status: "In Progress",
     progress: 65,
     deadline: "2024-07-15",
@@ -28,6 +35,7 @@ const projectsData = [
   {
     id: 2,
     title: "Mobile App Development",
+    description: "Native mobile application for iOS and Android platforms",
     status: "Planning",
     progress: 25,
     deadline: "2024-08-30",
@@ -43,6 +51,7 @@ const projectsData = [
   {
     id: 3,
     title: "Data Analytics Dashboard",
+    description: "Real-time analytics dashboard for business intelligence",
     status: "Completed",
     progress: 100,
     deadline: "2024-06-10",
@@ -85,7 +94,127 @@ const getTaskIcon = (status: string) => {
 };
 
 const PMProjects = () => {
+  const [projectsData, setProjectsData] = useState(initialProjectsData);
   const [selectedProject, setSelectedProject] = useState(projectsData[0]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Form state for creating/editing projects
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    status: "Planning",
+    progress: 0,
+    deadline: "",
+    priority: "Medium",
+    team: [],
+    tasks: []
+  });
+
+  const [newTeamMember, setNewTeamMember] = useState("");
+  const [newTask, setNewTask] = useState({ title: "", assignee: "", status: "pending" });
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      status: "Planning",
+      progress: 0,
+      deadline: "",
+      priority: "Medium",
+      team: [],
+      tasks: []
+    });
+    setNewTeamMember("");
+    setNewTask({ title: "", assignee: "", status: "pending" });
+  };
+
+  const handleCreateProject = () => {
+    if (!formData.title || !formData.deadline) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newProject = {
+      ...formData,
+      id: Math.max(...projectsData.map(p => p.id)) + 1,
+      tasks: formData.tasks.map((task, index) => ({ ...task, id: Date.now() + index }))
+    };
+
+    setProjectsData([...projectsData, newProject]);
+    setIsCreateDialogOpen(false);
+    resetForm();
+    toast({
+      title: "Success",
+      description: "Project created successfully"
+    });
+  };
+
+  const handleEditProject = () => {
+    const updatedProjects = projectsData.map(project =>
+      project.id === selectedProject.id ? { ...formData, id: selectedProject.id } : project
+    );
+    setProjectsData(updatedProjects);
+    setSelectedProject({ ...formData, id: selectedProject.id });
+    setIsEditDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "Project updated successfully"
+    });
+  };
+
+  const openEditDialog = () => {
+    setFormData({
+      title: selectedProject.title,
+      description: selectedProject.description || "",
+      status: selectedProject.status,
+      progress: selectedProject.progress,
+      deadline: selectedProject.deadline,
+      priority: selectedProject.priority,
+      team: [...selectedProject.team],
+      tasks: [...selectedProject.tasks]
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const addTeamMember = () => {
+    if (newTeamMember.trim() && !formData.team.includes(newTeamMember.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        team: [...prev.team, newTeamMember.trim()]
+      }));
+      setNewTeamMember("");
+    }
+  };
+
+  const removeTeamMember = (member: string) => {
+    setFormData(prev => ({
+      ...prev,
+      team: prev.team.filter(m => m !== member)
+    }));
+  };
+
+  const addTask = () => {
+    if (newTask.title.trim() && newTask.assignee.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        tasks: [...prev.tasks, { ...newTask, id: Date.now() }]
+      }));
+      setNewTask({ title: "", assignee: "", status: "pending" });
+    }
+  };
+
+  const removeTask = (taskId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      tasks: prev.tasks.filter(task => task.id !== taskId)
+    }));
+  };
 
   const completedProjects = projectsData.filter(p => p.status === "Completed").length;
   const inProgressProjects = projectsData.filter(p => p.status === "In Progress").length;
@@ -94,11 +223,175 @@ const PMProjects = () => {
     acc + project.tasks.filter(task => task.status === "completed").length, 0
   );
 
+  const ProjectForm = ({ isEdit = false }) => (
+    <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="title">Project Title *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            placeholder="Enter project title"
+          />
+        </div>
+        <div>
+          <Label htmlFor="deadline">Deadline *</Label>
+          <Input
+            id="deadline"
+            type="date"
+            value={formData.deadline}
+            onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          placeholder="Enter project description"
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="status">Status</Label>
+          <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Planning">Planning</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="priority">Priority</Label>
+          <Select value={formData.priority} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Low">Low</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="High">High</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="progress">Progress (%)</Label>
+          <Input
+            id="progress"
+            type="number"
+            min="0"
+            max="100"
+            value={formData.progress}
+            onChange={(e) => setFormData(prev => ({ ...prev, progress: parseInt(e.target.value) || 0 }))}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label>Team Members</Label>
+        <div className="flex gap-2 mb-2">
+          <Input
+            value={newTeamMember}
+            onChange={(e) => setNewTeamMember(e.target.value)}
+            placeholder="Add team member"
+            onKeyPress={(e) => e.key === 'Enter' && addTeamMember()}
+          />
+          <Button type="button" onClick={addTeamMember}>
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {formData.team.map((member, index) => (
+            <Badge key={index} variant="outline" className="flex items-center gap-1">
+              {member}
+              <button onClick={() => removeTeamMember(member)} className="ml-1">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Label>Tasks</Label>
+        <div className="space-y-2 mb-2">
+          <div className="grid grid-cols-4 gap-2">
+            <Input
+              value={newTask.title}
+              onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="Task title"
+            />
+            <Input
+              value={newTask.assignee}
+              onChange={(e) => setNewTask(prev => ({ ...prev, assignee: e.target.value }))}
+              placeholder="Assignee"
+            />
+            <Select value={newTask.status} onValueChange={(value) => setNewTask(prev => ({ ...prev, status: value }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button type="button" onClick={addTask}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-1 max-h-32 overflow-y-auto">
+          {formData.tasks.map((task) => (
+            <div key={task.id} className="flex items-center justify-between p-2 border rounded">
+              <div className="flex items-center gap-2">
+                {getTaskIcon(task.status)}
+                <span className="text-sm">{task.title}</span>
+                <Badge variant="outline" className="text-xs">{task.assignee}</Badge>
+              </div>
+              <button onClick={() => removeTask(task.id)}>
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => isEdit ? setIsEditDialogOpen(false) : setIsCreateDialogOpen(false)}>
+          Cancel
+        </Button>
+        <Button onClick={isEdit ? handleEditProject : handleCreateProject}>
+          {isEdit ? "Update Project" : "Create Project"}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Project Management</h1>
-        <Button>New Project</Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={resetForm}>New Project</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Create New Project</DialogTitle>
+            </DialogHeader>
+            <ProjectForm />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
@@ -252,7 +545,17 @@ const PMProjects = () => {
                   </div>
                 </div>
 
-                <Button className="w-full">View Full Project</Button>
+                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" onClick={openEditDialog}>Edit Project</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit Project</DialogTitle>
+                    </DialogHeader>
+                    <ProjectForm isEdit={true} />
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           </div>
