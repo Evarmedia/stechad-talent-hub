@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +13,7 @@ import { ProjectForm } from "./components/ProjectForm";
 import { ProjectCard } from "./components/ProjectCard";
 import { ProjectStats } from "./components/ProjectStats";
 import { ProjectDetails } from "./components/ProjectDetails";
+import { ProjectFilter } from "./components/ProjectFilter";
 import { initialProjectsData, createEmptyFormData, projectToFormData, Project } from "./utils/projectUtils";
 
 const getTaskIcon = (status: string) => {
@@ -29,11 +30,48 @@ const PMProjects = () => {
   const [selectedProject, setSelectedProject] = useState<Project>(projectsData[0]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "all",
+    priority: "all",
+    sortBy: "recent"
+  });
   const { toast } = useToast();
 
   const [formData, setFormData] = useState(createEmptyFormData());
   const [newTeamMember, setNewTeamMember] = useState("");
   const [newTask, setNewTask] = useState({ title: "", assignee: "", status: "pending" });
+
+  // Filter and sort projects
+  const filteredAndSortedProjects = useMemo(() => {
+    let filtered = projectsData.filter(project => {
+      const matchesStatus = filters.status === "all" || project.status === filters.status;
+      const matchesPriority = filters.priority === "all" || project.priority === filters.priority;
+      return matchesStatus && matchesPriority;
+    });
+
+    // Sort projects
+    filtered.sort((a, b) => {
+      switch (filters.sortBy) {
+        case "recent":
+          return b.id - a.id; // Assuming higher ID means more recent
+        case "deadline":
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+        case "priority":
+          const priorityOrder = { "High": 3, "Medium": 2, "Low": 1 };
+          return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
+        case "progress":
+          return b.progress - a.progress;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [projectsData, filters]);
+
+  const handleFilterChange = (filterType: string, value: string) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
 
   const resetForm = () => {
     setFormData(createEmptyFormData());
@@ -126,20 +164,26 @@ const PMProjects = () => {
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          </TabsList>
+          <ProjectFilter 
+            onFilterChange={handleFilterChange}
+            currentFilters={filters}
+          />
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Active Projects</CardTitle>
+                <CardTitle>Active Projects ({filteredAndSortedProjects.length})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {projectsData.map((project) => (
+                {filteredAndSortedProjects.map((project) => (
                   <ProjectCard
                     key={project.id}
                     project={project}
@@ -147,6 +191,11 @@ const PMProjects = () => {
                     onClick={() => setSelectedProject(project)}
                   />
                 ))}
+                {filteredAndSortedProjects.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No projects match the current filters
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -179,7 +228,7 @@ const PMProjects = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {projectsData.map((project) => (
+                {filteredAndSortedProjects.map((project) => (
                   <div key={project.id} className="border-l-2 border-gray-200 pl-4 relative">
                     <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-2 top-1"></div>
                     <div className="mb-2">
@@ -211,7 +260,7 @@ const PMProjects = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {projectsData.flatMap(project =>
+                  {filteredAndSortedProjects.flatMap(project =>
                     project.tasks.map(task => (
                       <TableRow key={task.id}>
                         <TableCell>{getTaskIcon(task.status)}</TableCell>
