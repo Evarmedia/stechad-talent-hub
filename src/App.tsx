@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,7 @@ import EngineerIndex from "./pages/dashboard/engineer/Index";
 import PMIndex from "./pages/dashboard/pm/Index";
 import PMPostJob from "./pages/dashboard/pm/PostJob";
 import PMManageJobs from "./pages/dashboard/pm/ManageJobs";
+import PMProjects from "./pages/dashboard/pm/Projects";
 import PMApplicants from "./pages/dashboard/pm/Applicants";
 import AdminIndex from "./pages/admin/Index";
 import AdminEngineers from "./pages/admin/Engineers";
@@ -58,6 +60,7 @@ const App = () => (
             <Route path="/dashboard/pm" element={<PMIndex />} />
             <Route path="/dashboard/pm/post-job" element={<PMPostJob />} />
             <Route path="/dashboard/pm/manage-jobs" element={<PMManageJobs />} />
+            <Route path="/dashboard/pm/projects" element={<PMProjects />} />
             <Route path="/dashboard/pm/applicants/:jobId" element={<PMApplicants />} />
             <Route path="/dashboard/pm/profile" element={<PMProfile />} />
 

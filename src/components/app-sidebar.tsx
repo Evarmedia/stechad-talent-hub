@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, User, ClipboardList, Settings, Briefcase, FileText, Users } from "lucide-react";
+import { Home, User, ClipboardList, Settings, Briefcase, FileText, Users, FolderKanban } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 
 const engineerMenu = [
@@ -15,6 +14,7 @@ const pmMenu = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
+  { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
   { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
 ];
 
