@@ -1,163 +1,246 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { subMonths, isWithinInterval } from "date-fns";
-import EngineerFilter from "./EngineerFilter";
-import EngineerTable from "./EngineerTable";
-import { exportToCSV } from "./exportUtils";
-import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Search, Eye, User } from "lucide-react";
 
 const ENGINEERS = [
   {
+    id: 1,
     name: "Jane Doe",
-    country: "France",
-    exp: 5,
+    email: "jane@example.com",
+    skills: ["React", "Node.js", "TypeScript"],
+    experience: "5 years",
     status: "Active",
-    email: "jane.doe@email.com",
-    phone: "+33 123 456 789",
-    onboardedAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+    isVetted: true,
+    joinedAt: "2024-01-15"
   },
   {
-    name: "Max Mustermann",
-    country: "Germany",
-    exp: 7,
-    status: "Blocked",
-    email: "max@muster.de",
-    phone: "+49 321 444 222",
-    onboardedAt: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    name: "Alice Smith",
-    country: "Spain",
-    exp: 3,
-    status: "Pending",
-    email: "alice@smith.es",
-    phone: "+34 777 555 101",
-    onboardedAt: new Date(Date.now() - 190 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    name: "Bob Lee",
-    country: "UK",
-    exp: 8,
+    id: 2,
+    name: "John Smith",
+    email: "john@example.com", 
+    skills: ["Python", "Django", "PostgreSQL"],
+    experience: "3 years",
     status: "Active",
-    email: "bob.lee@email.com",
-    phone: "+44 789 987 654",
-    onboardedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    isVetted: false,
+    joinedAt: "2024-02-20"
   },
-];
-
-const filterOptions = [
-  { value: "all", label: "All engineers" },
-  { value: "active", label: "Active" },
-  { value: "onboarded_1m", label: "Onboarded 1 month ago" },
-  { value: "onboarded_3m", label: "Onboarded 3 months ago" },
-  { value: "onboarded_6m", label: "Onboarded 6 months ago" },
-];
-
-const filterEngineers = (engineers: typeof ENGINEERS, filter: string) => {
-  const now = new Date();
-  switch (filter) {
-    case "active":
-      return engineers.filter((e) => e.status === "Active");
-    case "onboarded_1m":
-      return engineers.filter((e) => {
-        const od = new Date(e.onboardedAt);
-        return (
-          isWithinInterval(od, {
-            start: subMonths(now, 2),
-            end: subMonths(now, 1),
-          })
-        );
-      });
-    case "onboarded_3m":
-      return engineers.filter((e) => {
-        const od = new Date(e.onboardedAt);
-        return (
-          isWithinInterval(od, {
-            start: subMonths(now, 4),
-            end: subMonths(now, 3),
-          })
-        );
-      });
-    case "onboarded_6m":
-      return engineers.filter((e) => {
-        const od = new Date(e.onboardedAt);
-        return (
-          isWithinInterval(od, {
-            start: subMonths(now, 7),
-            end: subMonths(now, 6),
-          })
-        );
-      });
-    default:
-      return engineers;
+  {
+    id: 3,
+    name: "Alice Johnson",
+    email: "alice@example.com",
+    skills: ["Java", "Spring Boot", "AWS"],
+    experience: "7 years", 
+    status: "Inactive",
+    isVetted: true,
+    joinedAt: "2023-11-10"
   }
-};
-
-const searchEngineers = (engineers: typeof ENGINEERS, search: string) => {
-  if (!search.trim()) return engineers;
-  const lowered = search.toLowerCase();
-  return engineers.filter((e) =>
-    [
-      e.name,
-      e.country,
-      String(e.exp),
-      e.status,
-      e.email,
-      e.phone,
-      e.onboardedAt ? new Date(e.onboardedAt).toLocaleDateString() : "",
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(lowered)
-  );
-};
+];
 
 const Engineers = () => {
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
-  const [search, setSearch] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, []);
 
-  const filtered = filterEngineers(ENGINEERS, filter);
-  const searchedAndFiltered = searchEngineers(filtered, search);
+  const filteredEngineers = ENGINEERS.filter(engineer => {
+    const matchesSearch = engineer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         engineer.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "All" || engineer.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusColor = (status: string) => {
+    return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
+  };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h1 className="text-2xl font-bold">Engineers Management</h1>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search engineers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <select 
+          value={statusFilter} 
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border rounded-md px-3 py-2 bg-background"
+        >
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Engineers Management</CardTitle>
+          <CardTitle>Engineers List ({filteredEngineers.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-            <EngineerFilter filter={filter} setFilter={setFilter} filterOptions={filterOptions} />
-            <div className="relative w-full sm:w-64">
-              <Input
-                type="text"
-                placeholder="Search engineers..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-                disabled={loading}
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={18} />
-            </div>
+          {/* Mobile: Card layout */}
+          <div className="md:hidden space-y-4">
+            {loading
+              ? Array(3).fill(0).map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="w-10 h-10 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-40" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-6 w-16" />
+                        <Skeleton className="h-8 w-20" />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              : filteredEngineers.map((engineer) => (
+                  <div key={engineer.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{engineer.name}</h3>
+                          {engineer.isVetted && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                              Vetted
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{engineer.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm font-medium">Skills: </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {engineer.skills.map(skill => (
+                            <Badge key={skill} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Experience: </span>
+                        <span className="font-medium">{engineer.experience}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <Badge className={getStatusColor(engineer.status)}>
+                        {engineer.status}
+                      </Badge>
+                      <Button size="sm" variant="outline">
+                        <Eye className="w-3 h-3 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                ))}
           </div>
-          <EngineerTable engineers={searchedAndFiltered} loading={loading} />
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => exportToCSV(searchedAndFiltered)}
-            disabled={loading || searchedAndFiltered.length === 0}
-          >
-            Export List (CSV)
-          </Button>
+
+          {/* Desktop: Table layout */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Joined</th>
+                  <th className="p-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading
+                  ? Array(3).fill(0).map((_, i) => (
+                      <tr key={i} className="border-b">
+                        <td className="p-3"><Skeleton className="h-5 w-40" /></td>
+                        <td className="p-3"><Skeleton className="h-5 w-32" /></td>
+                        <td className="p-3"><Skeleton className="h-5 w-20" /></td>
+                        <td className="p-3"><Skeleton className="h-5 w-16" /></td>
+                        <td className="p-3"><Skeleton className="h-5 w-24" /></td>
+                        <td className="p-3"><Skeleton className="h-8 w-20" /></td>
+                      </tr>
+                    ))
+                  : filteredEngineers.map((engineer) => (
+                      <tr key={engineer.id} className="border-b hover:bg-gray-50">
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{engineer.name}</span>
+                                {engineer.isVetted && (
+                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                    Vetted
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-sm text-muted-foreground">{engineer.email}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-1">
+                            {engineer.skills.slice(0, 2).map(skill => (
+                              <Badge key={skill} variant="outline" className="text-xs">
+                                {skill}
+                              </Badge>
+                            ))}
+                            {engineer.skills.length > 2 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{engineer.skills.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 text-sm">{engineer.experience}</td>
+                        <td className="p-3">
+                          <Badge className={getStatusColor(engineer.status)}>
+                            {engineer.status}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-sm text-muted-foreground">{engineer.joinedAt}</td>
+                        <td className="p-3">
+                          <Button size="sm" variant="outline">
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
