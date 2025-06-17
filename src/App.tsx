@@ -11,9 +11,12 @@ import Landing from "./pages/Landing";
 import EngineerSignup from "./pages/EngineerSignup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import VerifyOTP from "./pages/VerifyOTP";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import EngineerJobs from "./pages/dashboard/engineer/Jobs";
+import EngineerProjects from "./pages/dashboard/engineer/Projects";
 import EngineerApplications from "./pages/dashboard/engineer/Applications";
 import EngineerProfile from "./pages/dashboard/engineer/Profile";
 import EngineerIndex from "./pages/dashboard/engineer/Index";
@@ -24,8 +27,10 @@ import PMProjects from "./pages/dashboard/pm/Projects";
 import PMApplicants from "./pages/dashboard/pm/Applicants";
 import AdminIndex from "./pages/admin/Index";
 import AdminEngineers from "./pages/admin/Engineers";
+import AdminProjectManagers from "./pages/admin/ProjectManagers";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminApplications from "./pages/admin/Applications";
+import AdminEngineerVetting from "./pages/admin/EngineerVetting";
 import AdminSettings from "./pages/admin/Settings";
 import PMProfile from "./pages/dashboard/pm/Profile";
 import AdminProfile from "./pages/admin/Profile";
@@ -45,6 +50,8 @@ const App = () => (
             <Route path="/engineer-signup" element={<EngineerSignup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<Onboarding />} />
           </Route>
 
@@ -53,6 +60,7 @@ const App = () => (
             {/* Engineer Dashboard routes */}
             <Route path="/dashboard/engineer" element={<EngineerIndex />} />
             <Route path="/dashboard/engineer/jobs" element={<EngineerJobs />} />
+            <Route path="/dashboard/engineer/projects" element={<EngineerProjects />} />
             <Route path="/dashboard/engineer/applications" element={<EngineerApplications />} />
             <Route path="/dashboard/engineer/profile" element={<EngineerProfile />} />
 
@@ -67,8 +75,10 @@ const App = () => (
             {/* Admin Dashboard routes */}
             <Route path="/admin" element={<AdminIndex />} />
             <Route path="/admin/engineers" element={<AdminEngineers />} />
+            <Route path="/admin/project-managers" element={<AdminProjectManagers />} />
             <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/admin/applications" element={<AdminApplications />} />
+            <Route path="/admin/engineer-vetting" element={<AdminEngineerVetting />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/profile" element={<AdminProfile />} />
           </Route>

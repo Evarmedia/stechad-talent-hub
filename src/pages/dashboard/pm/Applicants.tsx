@@ -42,26 +42,98 @@ const statusColor = (status: string) => {
 const Applicants = () => {
   const { jobId } = useParams();
   const [loading, setLoading] = useState(true);
+  const [applicants, setApplicants] = useState(APPLICANTS);
+  
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 950);
     return () => clearTimeout(t);
   }, []);
+
+  const updateApplicantStatus = (index: number, newStatus: string) => {
+    const updated = [...applicants];
+    updated[index].status = newStatus;
+    setApplicants(updated);
+  };
   
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-2 md:p-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg md:text-xl">Applicants for Job {jobId}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Mobile: Card layout */}
+          <div className="md:hidden space-y-4">
+            {loading
+              ? Array(3).fill(0).map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4 space-y-3">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  </div>
+                ))
+              : applicants.map((a, i) => (
+                  <div key={i} className="border rounded-lg p-4 space-y-3">
+                    <div>
+                      <h3 className="font-medium text-base">{a.name}</h3>
+                      <p className="text-sm text-muted-foreground">{a.experience} years experience</p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {a.skills.map(s => (
+                          <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
+                        ))}
+                      </div>
+                      <div className="mt-2">
+                        <a href="#" className="underline text-primary text-sm">{a.resume}</a>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex gap-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2 h-7"
+                            onClick={() => updateApplicantStatus(i, "Shortlisted")}
+                          >
+                            Shortlist
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2 h-7"
+                            onClick={() => updateApplicantStatus(i, "Rejected")}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs px-2 h-7"
+                          onClick={() => updateApplicantStatus(i, "Hired")}
+                        >
+                          Hire
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+          </div>
+
+          {/* Desktop: Table layout */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="text-left">
                   <th className="p-2 text-sm text-text-muted">Name</th>
-                  <th className="p-2 text-sm text-text-muted hidden sm:table-cell">Experience</th>
-                  <th className="p-2 text-sm text-text-muted hidden md:table-cell">Skills</th>
-                  <th className="p-2 text-sm text-text-muted hidden lg:table-cell">Resume</th>
+                  <th className="p-2 text-sm text-text-muted">Experience</th>
+                  <th className="p-2 text-sm text-text-muted">Skills</th>
+                  <th className="p-2 text-sm text-text-muted">Resume</th>
                   <th className="p-2 text-sm text-text-muted">Status</th>
                   <th className="p-2"></th>
                 </tr>
@@ -70,47 +142,59 @@ const Applicants = () => {
                 {loading
                   ? Array(3).fill(0).map((_,i)=>(
                     <tr key={i} className="border-b">
-                      <td className="p-2"><Skeleton className="h-5 w-24 md:w-32" /></td>
-                      <td className="p-2 hidden sm:table-cell"><Skeleton className="h-5 w-24" /></td>
-                      <td className="p-2 hidden md:table-cell"><Skeleton className="h-5 w-36" /></td>
-                      <td className="p-2 hidden lg:table-cell"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-32" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-36" /></td>
+                      <td className="p-2"><Skeleton className="h-5 w-24" /></td>
                       <td className="p-2"><Skeleton className="h-5 w-20" /></td>
-                      <td className="p-2"><Skeleton className="h-8 w-20 md:w-36" /></td>
+                      <td className="p-2"><Skeleton className="h-8 w-36" /></td>
                     </tr>
                   ))
-                  : APPLICANTS.map((a, i) => (
+                  : applicants.map((a, i) => (
                     <tr key={i} className="border-b">
                       <td className="p-2">
                         <div className="font-medium">{a.name}</div>
-                        <div className="text-xs text-gray-500 sm:hidden">{a.experience} yrs</div>
-                        <div className="text-xs text-gray-500 md:hidden">
-                          {a.skills.slice(0, 2).join(", ")}
-                          {a.skills.length > 2 && "..."}
-                        </div>
-                        <div className="text-xs text-gray-500 lg:hidden">
-                          <a href="#" className="underline text-primary">{a.resume}</a>
-                        </div>
                       </td>
-                      <td className="p-2 hidden sm:table-cell">{a.experience} yrs</td>
-                      <td className="p-2 hidden md:table-cell">
+                      <td className="p-2">{a.experience} yrs</td>
+                      <td className="p-2">
                         <div className="flex gap-1 flex-wrap">
                           {a.skills.map(s => (
                             <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
                           ))}
                         </div>
                       </td>
-                      <td className="p-2 hidden lg:table-cell">
+                      <td className="p-2">
                         <a href="#" className="underline text-primary text-sm">{a.resume}</a>
                       </td>
                       <td className="p-2">
                         <span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span>
                       </td>
                       <td className="p-2">
-                        <div className="flex flex-col md:flex-row gap-1">
-                          <Button size="sm" variant="outline" className="text-xs px-2">Shortlist</Button>
-                          <Button size="sm" variant="outline" className="text-xs px-2">Reject</Button>
-                          <Button size="sm" variant="outline" className="text-xs px-2 hidden md:inline-flex">Mark Hired</Button>
-                          <Button size="sm" variant="outline" className="text-xs px-2 md:hidden">Hire</Button>
+                        <div className="flex gap-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2"
+                            onClick={() => updateApplicantStatus(i, "Shortlisted")}
+                          >
+                            Shortlist
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2"
+                            onClick={() => updateApplicantStatus(i, "Rejected")}
+                          >
+                            Reject
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2"
+                            onClick={() => updateApplicantStatus(i, "Hired")}
+                          >
+                            Hire
+                          </Button>
                         </div>
                       </td>
                     </tr>
