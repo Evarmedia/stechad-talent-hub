@@ -14,8 +14,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { User, Plus, Eye } from "lucide-react";
-import { PMProjectsDialog } from "@/components/PMProjectsDialog";
+import { User, Plus, Edit } from "lucide-react";
 
 const INITIAL_PMS = [
   {
@@ -41,8 +40,6 @@ const ProjectManagers = () => {
   const [pms, setPms] = useState(INITIAL_PMS);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPmEmail, setNewPmEmail] = useState("");
-  const [selectedPM, setSelectedPM] = useState(null);
-  const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
@@ -68,11 +65,6 @@ const ProjectManagers = () => {
     setNewPmEmail("");
     setIsAddDialogOpen(false);
     toast({ title: "Success", description: "PM invitation sent successfully!" });
-  };
-
-  const handleViewProjects = (pm: any) => {
-    setSelectedPM(pm);
-    setIsProjectsDialogOpen(true);
   };
 
   return (
@@ -155,11 +147,11 @@ const ProjectManagers = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className={`px-2 py-1 rounded text-xs ${
-                        pm.status === "Active" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                        pm.status === "Active" ? "bg-success text-white" : "bg-warning text-white"
                       }`}>
                         {pm.status}
                       </span>
-                      <Button size="sm" variant="outline" className="text-xs" onClick={() => handleViewProjects(pm)}>
+                      <Button size="sm" variant="outline" className="text-xs">
                         View Projects
                       </Button>
                     </div>
@@ -206,14 +198,14 @@ const ProjectManagers = () => {
                         <td className="p-3">{pm.projectsCount}</td>
                         <td className="p-3">
                           <span className={`px-2 py-1 rounded text-xs ${
-                            pm.status === "Active" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                            pm.status === "Active" ? "bg-success text-white" : "bg-warning text-white"
                           }`}>
                             {pm.status}
                           </span>
                         </td>
                         <td className="p-3 text-muted-foreground">{pm.joinedAt}</td>
                         <td className="p-3">
-                          <Button size="sm" variant="outline" className="text-xs" onClick={() => handleViewProjects(pm)}>
+                          <Button size="sm" variant="outline" className="text-xs">
                             View Projects
                           </Button>
                         </td>
@@ -224,12 +216,6 @@ const ProjectManagers = () => {
           </div>
         </CardContent>
       </Card>
-
-      <PMProjectsDialog
-        pm={selectedPM}
-        isOpen={isProjectsDialogOpen}
-        onClose={() => setIsProjectsDialogOpen(false)}
-      />
     </div>
   );
 };

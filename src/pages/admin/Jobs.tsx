@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Eye, MapPin, Calendar } from "lucide-react";
-import { JobDetailsDialog } from "@/components/JobDetailsDialog";
 
 const JOBS = [
   {
@@ -46,8 +45,6 @@ const JOBS = [
 const AdminJobs = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
@@ -60,11 +57,6 @@ const AdminJobs = () => {
 
   const getStatusColor = (status: string) => {
     return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
-  };
-
-  const handleViewJob = (job: any) => {
-    setSelectedJob(job);
-    setIsDetailsOpen(true);
   };
 
   return (
@@ -133,7 +125,7 @@ const AdminJobs = () => {
                       <Badge className={getStatusColor(job.status)}>
                         {job.status}
                       </Badge>
-                      <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
+                      <Button size="sm" variant="outline">
                         <Eye className="w-3 h-3 mr-1" />
                         View
                       </Button>
@@ -187,7 +179,7 @@ const AdminJobs = () => {
                         </td>
                         <td className="p-3 text-sm text-muted-foreground">{job.posted}</td>
                         <td className="p-3">
-                          <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
+                          <Button size="sm" variant="outline">
                             <Eye className="w-4 h-4 mr-1" />
                             View
                           </Button>
@@ -199,12 +191,6 @@ const AdminJobs = () => {
           </div>
         </CardContent>
       </Card>
-
-      <JobDetailsDialog
-        job={selectedJob}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-      />
     </div>
   );
 };

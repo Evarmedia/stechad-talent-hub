@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Search, Eye, User } from "lucide-react";
-import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
 
 const ENGINEERS = [
   {
@@ -45,8 +44,6 @@ const Engineers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedEngineer, setSelectedEngineer] = useState(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
@@ -62,11 +59,6 @@ const Engineers = () => {
 
   const getStatusColor = (status: string) => {
     return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
-  };
-
-  const handleViewEngineer = (engineer: any) => {
-    setSelectedEngineer(engineer);
-    setIsDetailsOpen(true);
   };
 
   return (
@@ -163,7 +155,7 @@ const Engineers = () => {
                       <Badge className={getStatusColor(engineer.status)}>
                         {engineer.status}
                       </Badge>
-                      <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                      <Button size="sm" variant="outline">
                         <Eye className="w-3 h-3 mr-1" />
                         View
                       </Button>
@@ -239,7 +231,7 @@ const Engineers = () => {
                         </td>
                         <td className="p-3 text-sm text-muted-foreground">{engineer.joinedAt}</td>
                         <td className="p-3">
-                          <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                          <Button size="sm" variant="outline">
                             <Eye className="w-4 h-4 mr-1" />
                             View
                           </Button>
@@ -251,12 +243,6 @@ const Engineers = () => {
           </div>
         </CardContent>
       </Card>
-
-      <EngineerDetailsDialog
-        engineer={selectedEngineer}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-      />
     </div>
   );
 };

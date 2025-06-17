@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +54,7 @@ const PMProjects = () => {
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case "recent":
-          return b.id - a.id;
+          return b.id - a.id; // Assuming higher ID means more recent
         case "deadline":
           return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         case "priority":
@@ -133,14 +132,14 @@ const PMProjects = () => {
   );
 
   return (
-    <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-full overflow-hidden">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-xl md:text-3xl font-bold">Project Management</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Project Management</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm} className="w-full md:w-auto">New Project</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
@@ -166,30 +165,28 @@ const PMProjects = () => {
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <div className="flex flex-col space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:w-auto">
-            <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="timeline" className="text-xs md:text-sm">Timeline</TabsTrigger>
-            <TabsTrigger value="tasks" className="text-xs md:text-sm">Tasks</TabsTrigger>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <TabsList className="grid w-full md:w-auto grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
           </TabsList>
-          {!isMobile && (
-            <div className="flex justify-end">
-              <ProjectFilter 
-                onFilterChange={handleFilterChange}
-                currentFilters={filters}
-              />
-            </div>
-          )}
+          <div className="w-full md:w-auto overflow-x-auto">
+            <ProjectFilter 
+              onFilterChange={handleFilterChange}
+              currentFilters={filters}
+            />
+          </div>
         </div>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base md:text-xl">Active Projects ({filteredAndSortedProjects.length})</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Active Projects ({filteredAndSortedProjects.length})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-96 md:max-h-none overflow-y-auto">
                   {filteredAndSortedProjects.map((project) => (
                     <ProjectCard
                       key={project.id}
@@ -199,7 +196,7 @@ const PMProjects = () => {
                     />
                   ))}
                   {filteredAndSortedProjects.length === 0 && (
-                    <div className="text-center py-8 text-gray-500 text-sm">
+                    <div className="text-center py-8 text-gray-500">
                       No projects match the current filters
                     </div>
                   )}
@@ -209,7 +206,7 @@ const PMProjects = () => {
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <ProjectDetails project={selectedProject} onEdit={openEditDialog} />
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Project</DialogTitle>
                 </DialogHeader>
@@ -232,7 +229,7 @@ const PMProjects = () => {
         <TabsContent value="timeline" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base md:text-xl">Project Timeline</CardTitle>
+              <CardTitle>Project Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -255,37 +252,16 @@ const PMProjects = () => {
         <TabsContent value="tasks" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base md:text-xl">All Tasks</CardTitle>
+              <CardTitle>All Tasks</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Mobile: Card layout */}
-              <div className="md:hidden space-y-4">
-                {filteredAndSortedProjects.flatMap(project =>
-                  project.tasks.map(task => (
-                    <div key={task.id} className="border rounded-lg p-3 space-y-2">
-                      <div className="flex items-start gap-2">
-                        {getTaskIcon(task.status)}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm truncate">{task.title}</h4>
-                          <p className="text-xs text-gray-500">{project.title}</p>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Assignee: {task.assignee}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Desktop: Table layout */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12">Status</TableHead>
                       <TableHead>Task</TableHead>
-                      <TableHead>Project</TableHead>
+                      <TableHead className="hidden md:table-cell">Project</TableHead>
                       <TableHead>Assignee</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -294,9 +270,14 @@ const PMProjects = () => {
                       project.tasks.map(task => (
                         <TableRow key={task.id}>
                           <TableCell>{getTaskIcon(task.status)}</TableCell>
-                          <TableCell className="font-medium">{task.title}</TableCell>
-                          <TableCell>{project.title}</TableCell>
-                          <TableCell>{task.assignee}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="max-w-32 md:max-w-none truncate">{task.title}</div>
+                            <div className="text-xs text-gray-500 md:hidden">{project.title}</div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{project.title}</TableCell>
+                          <TableCell>
+                            <div className="text-xs md:text-sm">{task.assignee}</div>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
