@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Users, Briefcase, FileText, UserCheck, TrendingUp, Calendar } from "lucide-react";
 
 const stats = [
@@ -100,8 +101,8 @@ const AdminIndex = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               Recent Engineer Signups
-              <Button variant="outline" size="sm" className="text-xs">
-                View All
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link to="/admin/engineers">View All</Link>
               </Button>
             </CardTitle>
           </CardHeader>
@@ -140,8 +141,8 @@ const AdminIndex = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               Latest Job Postings
-              <Button variant="outline" size="sm" className="text-xs">
-                View All
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link to="/admin/jobs">View All</Link>
               </Button>
             </CardTitle>
           </CardHeader>
@@ -179,8 +180,8 @@ const AdminIndex = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               Recent Projects
-              <Button variant="outline" size="sm" className="text-xs">
-                View All
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link to="/admin/project-managers">View All</Link>
               </Button>
             </CardTitle>
           </CardHeader>
