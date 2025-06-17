@@ -51,7 +51,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ role, children }) => {
             <Link
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 px-4 py-2 rounded-md font-semibold text-text-main hover:bg-primary-light
+              className={`flex items-center gap-3 px-4 py-2 rounded-md font-semibold text-text-main hover:bg-primary-light transition-colors
                 ${location.pathname === item.to ? "bg-primary text-white font-bold" : ""}`}
             >
               <span className="text-lg">{item.icon}</span>

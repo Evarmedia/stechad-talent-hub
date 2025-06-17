@@ -1,0 +1,72 @@
+
+import React from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
+
+const recentProjects = [
+  { title: "E-commerce Platform", pm: "John Doe", status: "In Progress" },
+  { title: "Mobile App", pm: "Alice Smith", status: "Planning" },
+  { title: "Analytics Dashboard", pm: "John Doe", status: "Completed" },
+];
+
+interface RecentProjectsProps {
+  loading: boolean;
+}
+
+const RecentProjects: React.FC<RecentProjectsProps> = ({ loading }) => {
+  const getProjectStatusColor = (status: string) => {
+    switch (status) {
+      case "Completed": return "bg-green-100 text-green-800";
+      case "In Progress": return "bg-blue-100 text-blue-800";
+      case "Planning": return "bg-yellow-100 text-yellow-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center justify-between">
+          Recent Projects
+          <Button asChild variant="outline" size="sm" className="text-xs">
+            <Link to="/admin/project-managers">View All</Link>
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {Array(3).fill(0).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recentProjects.map((p, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="font-medium text-sm">{p.title}</div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">PM: {p.pm}</span>
+                  <Badge className={getProjectStatusColor(p.status)} variant="outline">
+                    {p.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default RecentProjects;

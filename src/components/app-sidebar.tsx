@@ -36,9 +36,11 @@ function getRoleMenu(pathname: string) {
   if (pathname.startsWith("/admin")) return adminMenu;
   return [];
 }
+
 export function AppSidebar() {
   const { pathname } = useLocation();
   const menu = getRoleMenu(pathname);
+  
   return (
     <Sidebar>
       <SidebarContent>
@@ -56,8 +58,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {menu.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(item.to)}>
-                    <Link to={item.to} className="flex items-center gap-2">
+                  <SidebarMenuButton asChild isActive={pathname === item.to}>
+                    <Link to={item.to} className="flex items-center gap-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
                       <item.icon className="w-4 h-4" />
                       <span>{item.label}</span>
                     </Link>
