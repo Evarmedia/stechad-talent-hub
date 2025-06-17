@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CheckCircle, AlertCircle, Circle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { ProjectForm } from "./components/ProjectForm";
 import { ProjectCard } from "./components/ProjectCard";
@@ -36,6 +36,7 @@ const PMProjects = () => {
     sortBy: "recent"
   });
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [formData, setFormData] = useState(createEmptyFormData());
   const [newTeamMember, setNewTeamMember] = useState("");
@@ -131,14 +132,14 @@ const PMProjects = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Project Management</h1>
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Project Management</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>New Project</Button>
+            <Button onClick={resetForm} className="w-full md:w-auto">New Project</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
@@ -164,44 +165,48 @@ const PMProjects = () => {
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <TabsList>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <TabsList className="grid w-full md:w-auto grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
           </TabsList>
-          <ProjectFilter 
-            onFilterChange={handleFilterChange}
-            currentFilters={filters}
-          />
+          <div className="w-full md:w-auto overflow-x-auto">
+            <ProjectFilter 
+              onFilterChange={handleFilterChange}
+              currentFilters={filters}
+            />
+          </div>
         </div>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Active Projects ({filteredAndSortedProjects.length})</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Active Projects ({filteredAndSortedProjects.length})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {filteredAndSortedProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    isSelected={selectedProject.id === project.id}
-                    onClick={() => setSelectedProject(project)}
-                  />
-                ))}
-                {filteredAndSortedProjects.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No projects match the current filters
-                  </div>
-                )}
+                <div className="max-h-96 md:max-h-none overflow-y-auto">
+                  {filteredAndSortedProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      isSelected={selectedProject.id === project.id}
+                      onClick={() => setSelectedProject(project)}
+                    />
+                  ))}
+                  {filteredAndSortedProjects.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No projects match the current filters
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <ProjectDetails project={selectedProject} onEdit={openEditDialog} />
-              <DialogContent className="max-w-4xl">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Project</DialogTitle>
                 </DialogHeader>
@@ -232,11 +237,11 @@ const PMProjects = () => {
                   <div key={project.id} className="border-l-2 border-gray-200 pl-4 relative">
                     <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-2 top-1"></div>
                     <div className="mb-2">
-                      <h3 className="font-semibold">{project.title}</h3>
-                      <p className="text-sm text-gray-600">Deadline: {project.deadline}</p>
+                      <h3 className="font-semibold text-sm md:text-base">{project.title}</h3>
+                      <p className="text-xs md:text-sm text-gray-600">Deadline: {project.deadline}</p>
                     </div>
                     <Progress value={project.progress} className="h-2 mb-2" />
-                    <p className="text-sm text-gray-500">{project.progress}% complete</p>
+                    <p className="text-xs md:text-sm text-gray-500">{project.progress}% complete</p>
                   </div>
                 ))}
               </div>
@@ -250,28 +255,35 @@ const PMProjects = () => {
               <CardTitle>All Tasks</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Assignee</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAndSortedProjects.flatMap(project =>
-                    project.tasks.map(task => (
-                      <TableRow key={task.id}>
-                        <TableCell>{getTaskIcon(task.status)}</TableCell>
-                        <TableCell className="font-medium">{task.title}</TableCell>
-                        <TableCell>{project.title}</TableCell>
-                        <TableCell>{task.assignee}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Status</TableHead>
+                      <TableHead>Task</TableHead>
+                      <TableHead className="hidden md:table-cell">Project</TableHead>
+                      <TableHead>Assignee</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAndSortedProjects.flatMap(project =>
+                      project.tasks.map(task => (
+                        <TableRow key={task.id}>
+                          <TableCell>{getTaskIcon(task.status)}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="max-w-32 md:max-w-none truncate">{task.title}</div>
+                            <div className="text-xs text-gray-500 md:hidden">{project.title}</div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{project.title}</TableCell>
+                          <TableCell>
+                            <div className="text-xs md:text-sm">{task.assignee}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

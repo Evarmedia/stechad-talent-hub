@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, CheckCircle, AlertCircle, Circle } from "lucide-react";
+import { Plus, Trash2, CheckCircle, AlertCircle, Circle, Edit } from "lucide-react";
 
 interface Task {
   id: number;
@@ -58,6 +58,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   onCancel,
   isEdit = false
 }) => {
+  const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+
   const addTeamMember = () => {
     if (newTeamMember.trim() && !formData.team.includes(newTeamMember.trim())) {
       setFormData(prev => ({
@@ -92,9 +94,29 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  const startEditingTask = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const saveTaskEdit = () => {
+    if (editingTask) {
+      setFormData(prev => ({
+        ...prev,
+        tasks: prev.tasks.map(task => 
+          task.id === editingTask.id ? editingTask : task
+        )
+      }));
+      setEditingTask(null);
+    }
+  };
+
+  const cancelTaskEdit = () => {
+    setEditingTask(null);
+  };
+
   return (
     <div className="space-y-4 max-h-96 overflow-y-auto">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="title">Project Title *</Label>
           <Input
@@ -125,7 +147,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="status">Status</Label>
           <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
@@ -193,7 +215,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       <div>
         <Label>Tasks</Label>
         <div className="space-y-2 mb-2">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
             <Input
               value={newTask.title}
               onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
@@ -214,7 +236,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
-            <Button type="button" onClick={addTask}>
+            <Button type="button" onClick={addTask} className="w-full md:w-auto">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
@@ -222,24 +244,61 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         <div className="space-y-1 max-h-32 overflow-y-auto">
           {formData.tasks.map((task) => (
             <div key={task.id} className="flex items-center justify-between p-2 border rounded">
-              <div className="flex items-center gap-2">
-                {getTaskIcon(task.status)}
-                <span className="text-sm">{task.title}</span>
-                <Badge variant="outline" className="text-xs">{task.assignee}</Badge>
-              </div>
-              <button onClick={() => removeTask(task.id)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </button>
+              {editingTask && editingTask.id === task.id ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    value={editingTask.title}
+                    onChange={(e) => setEditingTask(prev => prev ? { ...prev, title: e.target.value } : null)}
+                    className="flex-1"
+                  />
+                  <Input
+                    value={editingTask.assignee}
+                    onChange={(e) => setEditingTask(prev => prev ? { ...prev, assignee: e.target.value } : null)}
+                    className="w-24"
+                  />
+                  <Select 
+                    value={editingTask.status} 
+                    onValueChange={(value) => setEditingTask(prev => prev ? { ...prev, status: value } : null)}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={saveTaskEdit}>Save</Button>
+                  <Button size="sm" variant="outline" onClick={cancelTaskEdit}>Cancel</Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    {getTaskIcon(task.status)}
+                    <span className="text-sm">{task.title}</span>
+                    <Badge variant="outline" className="text-xs">{task.assignee}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => startEditingTask(task)}>
+                      <Edit className="w-4 h-4 text-blue-500" />
+                    </button>
+                    <button onClick={() => removeTask(task.id)}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={onCancel}>
+      <div className="flex flex-col md:flex-row justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={onCancel} className="w-full md:w-auto">
           Cancel
         </Button>
-        <Button onClick={onSubmit}>
+        <Button onClick={onSubmit} className="w-full md:w-auto">
           {isEdit ? "Update Project" : "Create Project"}
         </Button>
       </div>
