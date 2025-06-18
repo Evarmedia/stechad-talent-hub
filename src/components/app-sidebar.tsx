@@ -56,16 +56,26 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menu.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild isActive={pathname === item.to}>
-                    <Link to={item.to} className="flex items-center gap-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menu.map((item) => {
+                const isActive = pathname === item.to;
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link 
+                        to={item.to} 
+                        className={`flex items-center gap-2 transition-colors ${
+                          isActive 
+                            ? 'bg-red-700 text-white hover:bg-red-800' 
+                            : 'hover:bg-red-100 hover:text-red-800'
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

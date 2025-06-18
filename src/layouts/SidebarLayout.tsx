@@ -47,17 +47,23 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ role, children }) => {
           </Link>
         </div>
         <nav className="flex-1 flex flex-col gap-2 px-4">
-          {menu.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`flex items-center gap-3 px-4 py-2 rounded-md font-semibold text-text-main hover:bg-primary-light transition-colors
-                ${location.pathname === item.to ? "bg-primary text-white font-bold" : ""}`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+          {menu.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-4 py-2 rounded-md font-semibold transition-colors ${
+                  isActive 
+                    ? "bg-red-700 text-white font-bold" 
+                    : "text-text-main hover:bg-red-100 hover:text-red-800"
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
         <div className="p-6 mt-auto text-xs text-text-muted">
           &copy; 2025 STECHAD
