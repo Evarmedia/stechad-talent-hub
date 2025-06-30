@@ -13,76 +13,30 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const JOB_LIST = [
-  {
-    title: "React Developer",
-    location: "Paris, France",
-    skills: ["React", "TypeScript", "Node.js"],
-    remote: true,
-    description:
-      "As a React Developer, you will be responsible for building modern web applications using React and related technologies. You'll work with a collaborative team, participate in design decisions, and help shape the direction of our frontend.",
-    responsibilities: [
-      "Develop and maintain user interfaces using React.",
-      "Collaborate with backend and design teams.",
-      "Write clean, scalable, and well-tested code.",
-    ],
-    requirements: [
-      "2+ years of experience with React.",
-      "Familiarity with TypeScript.",
-      "Experience with REST APIs.",
-    ],
-  },
-  {
-    title: "DevOps Engineer",
-    location: "Berlin, Germany",
-    skills: ["AWS", "Docker", "Kubernetes"],
-    remote: false,
-    description:
-      "Seeking a DevOps Engineer to maintain and improve our CI/CD pipelines, manage infrastructure, and collaborate with developers to ensure smooth deployments.",
-    responsibilities: [
-      "Implement and manage CI/CD pipelines.",
-      "Manage cloud infrastructure and containers.",
-      "Monitor system health and performance.",
-    ],
-    requirements: [
-      "3+ years of DevOps experience.",
-      "Hands-on with AWS and Kubernetes.",
-      "Strong scripting skills (Bash, Python, etc.).",
-    ],
-  },
-  {
-    title: "Java Backend Engineer",
-    location: "Remote",
-    skills: ["Java", "Spring", "SQL"],
-    remote: true,
-    description:
-      "We're looking for a Java Backend Engineer to build robust APIs and scalable backend services. You will work closely with our product and frontend teams.",
-    responsibilities: [
-      "Design and build RESTful APIs with Spring.",
-      "Optimize database queries and structures.",
-      "Ensure backend scalability and security.",
-    ],
-    requirements: [
-      "Solid Java and Spring background.",
-      "SQL database experience.",
-      "Good understanding of API security.",
-    ],
-  },
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [openJD, setOpenJD] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [jobsList, setJobsList] = useState([]);
+  
+  const { getJobs, loading } = useDataContext();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchJobs = async () => {
+      const filters = {
+        remote: remoteOnly || undefined,
+        search: search || undefined
+      };
+      const jobs = await getJobs(filters);
+      setJobsList(jobs);
+    };
 
-  const filtered = JOB_LIST.filter(
+    fetchJobs();
+  }, [getJobs, search, remoteOnly]);
+
+  const filtered = jobsList.filter(
     (job) =>
       (!remoteOnly || job.remote) &&
       job.title.toLowerCase().includes(search.toLowerCase())
@@ -139,7 +93,7 @@ const EngineerJobs = () => {
         ) : (
           <>
             {filtered.map((job, idx) => (
-              <React.Fragment key={idx}>
+              <React.Fragment key={job.id}>
                 <Card className="mb-4">
                   <CardHeader>
                     <CardTitle className="flex justify-between">
@@ -163,7 +117,7 @@ const EngineerJobs = () => {
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm">Apply</Button>
-                      <Dialog open={openJD === idx} onOpenChange={open => setOpenJD(open ? idx : null)}>
+                      <Dialog open={openJD === job.id} onOpenChange={open => setOpenJD(open ? job.id : null)}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
                             View JD

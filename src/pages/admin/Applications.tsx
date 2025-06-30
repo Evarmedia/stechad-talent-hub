@@ -1,131 +1,263 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Download } from "lucide-react";
-
-const APPLICATIONS = [
-  { engineer: "Jane Doe", job: "React Developer", status: "Pending", date: "2025-06-02" },
-  { engineer: "Max Mustermann", job: "DevOps Engineer", status: "Shortlisted", date: "2025-05-30" },
-  { engineer: "Alice Smith", job: "Java Backend Engineer", status: "Hired", date: "2025-05-21" },
-];
-
-const statusColor = (status: string) => {
-  switch (status) {
-    case "Pending": return "bg-yellow-100 text-yellow-800";
-    case "Shortlisted": return "bg-green-100 text-green-800";
-    case "Rejected": return "bg-red-100 text-red-800";
-    case "Hired": return "bg-blue-100 text-blue-800";
-    default: return "bg-gray-100 text-gray-800";
-  }
-};
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search, Filter, FileText, Clock, Check, X } from "lucide-react";
+import { useDataContext } from "@/hooks/useDataContext";
 
 const AdminApplications = () => {
-  const [filter, setFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
+  const [applicationsList, setApplicationsList] = useState([]);
+  const [filteredApplications, setFilteredApplications] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  
+  const { getApplications, updateApplication, loading } = useDataContext();
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchApplications = async () => {
+      const applications = await getApplications();
+      setApplicationsList(applications);
+      setFilteredApplications(applications);
+    };
 
-  const filtered = filter === "All"
-    ? APPLICATIONS
-    : APPLICATIONS.filter(a => a.status === filter);
+    fetchApplications();
+  }, [getApplications]);
+
+  useEffect(() => {
+    let filtered = [...applicationsList];
+
+    if (searchTerm) {
+      filtered = filtered.filter(app => 
+        app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(app => app.status === statusFilter);
+    }
+
+    setFilteredApplications(filtered);
+  }, [applicationsList, searchTerm, statusFilter]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "reviewed": return "bg-blue-100 text-blue-800";
+      case "rejected": return "bg-red-100 text-red-800";
+      case "accepted": return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "pending": return <Clock className="w-4 h-4" />;
+      case "reviewed": return <FileText className="w-4 h-4" />;
+      case "accepted": return <Check className="w-4 h-4" />;
+      case "rejected": return <X className="w-4 h-4" />;
+      default: return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const handleStatusUpdate = async (applicationId, newStatus) => {
+    try {
+      await updateApplication(applicationId, { status: newStatus });
+      const updatedApplications = await getApplications();
+      setApplicationsList(updatedApplications);
+    } catch (error) {
+      console.error('Error updating application status:', error);
+    }
+  };
+
+  const stats = {
+    total: applicationsList.length,
+    pending: applicationsList.filter(app => app.status === "pending").length,
+    reviewed: applicationsList.filter(app => app.status === "reviewed").length,
+    accepted: applicationsList.filter(app => app.status === "accepted").length,
+    rejected: applicationsList.filter(app => app.status === "rejected").length
+  };
 
   return (
-    <div className="p-4 md:p-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Applications Review</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Application Management</h1>
+        <p className="text-gray-600">Review and manage job applications</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-sm text-gray-600">Total Applications</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-sm text-gray-600">Pending</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">{stats.reviewed}</div>
+            <div className="text-sm text-gray-600">Reviewed</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">{stats.accepted}</div>
+            <div className="text-sm text-gray-600">Accepted</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+            <div className="text-sm text-gray-600">Rejected</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <label className="mr-2 font-semibold text-primary">Filter by Status:</label>
-              <select 
-                value={filter} 
-                onChange={e => setFilter(e.target.value)} 
-                className="border rounded p-2 bg-background"
-              >
-                <option>All</option>
-                <option>Pending</option>
-                <option>Shortlisted</option>
-                <option>Rejected</option>
-                <option>Hired</option>
-              </select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search by job title or engineer name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <Button size="sm" variant="outline" className="w-full md:w-auto">
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
-          </div>
-
-          {/* Mobile: Card layout */}
-          <div className="md:hidden space-y-4">
-            {loading
-              ? Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="border rounded-lg p-4 space-y-3">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <div className="flex justify-between items-center">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-4 w-16" />
-                    </div>
-                  </div>
-                ))
-              : filtered.map((a, i) => (
-                  <div key={i} className="border rounded-lg p-4 space-y-3">
-                    <div>
-                      <h3 className="font-medium text-base">{a.engineer}</h3>
-                      <p className="text-sm text-muted-foreground">{a.job}</p>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <Badge className={statusColor(a.status)}>{a.status}</Badge>
-                      <span className="text-sm text-muted-foreground">{a.date}</span>
-                    </div>
-                  </div>
-                ))}
-          </div>
-
-          {/* Desktop: Table layout */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full min-w-[650px]">
-              <thead>
-                <tr className="text-left">
-                  <th className="p-2 text-sm text-muted-foreground">Engineer</th>
-                  <th className="p-2 text-sm text-muted-foreground">Job Title</th>
-                  <th className="p-2 text-sm text-muted-foreground">Status</th>
-                  <th className="p-2 text-sm text-muted-foreground">Applied</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading
-                  ? Array(3).fill(0).map((_,i)=>(
-                    <tr key={i} className="border-b">
-                      <td className="p-2"><Skeleton className="h-5 w-40" /></td>
-                      <td className="p-2"><Skeleton className="h-5 w-44" /></td>
-                      <td className="p-2"><Skeleton className="h-5 w-28" /></td>
-                      <td className="p-2"><Skeleton className="h-5 w-20" /></td>
-                    </tr>
-                  ))
-                  : filtered.map((a, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="p-2">{a.engineer}</td>
-                      <td className="p-2">{a.job}</td>
-                      <td className="p-2">
-                        <Badge className={statusColor(a.status)}>{a.status}</Badge>
-                      </td>
-                      <td className="p-2">{a.date}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="reviewed">Reviewed</SelectItem>
+                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Applications List */}
+      <div className="space-y-4">
+        {loading ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div>Loading applications...</div>
+            </CardContent>
+          </Card>
+        ) : filteredApplications.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="text-gray-500">No applications found</div>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredApplications.map((application) => (
+            <Card key={application.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">{application.jobTitle}</h3>
+                    <p className="text-gray-600">Applied by {application.engineerName}</p>
+                    <p className="text-sm text-gray-500">Applied on {application.appliedDate}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge className={getStatusColor(application.status)}>
+                      {getStatusIcon(application.status)}
+                      <span className="ml-1 capitalize">{application.status}</span>
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-2">Experience Level: {application.experience}</p>
+                  {application.skills && (
+                    <div className="flex flex-wrap gap-1">
+                      {application.skills.map((skill, index) => (
+                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {application.coverLetter && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-1">Cover Letter:</p>
+                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                      {application.coverLetter}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  {application.status === "pending" && (
+                    <>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleStatusUpdate(application.id, "reviewed")}
+                      >
+                        Mark as Reviewed
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleStatusUpdate(application.id, "accepted")}
+                      >
+                        Accept
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleStatusUpdate(application.id, "rejected")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  {application.status === "reviewed" && (
+                    <>
+                      <Button 
+                        size="sm"
+                        onClick={() => handleStatusUpdate(application.id, "accepted")}
+                      >
+                        Accept
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleStatusUpdate(application.id, "rejected")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };
