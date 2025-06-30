@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,7 @@ interface Project {
 interface ProjectDetailsProps {
   project: Project;
   onEdit: () => void;
+  onDelete: () => Promise<void>;
 }
 
 const getStatusColor = (status: string) => {
@@ -54,7 +54,7 @@ const getTaskIcon = (status: string) => {
   }
 };
 
-export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onEdit }) => {
+export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onEdit, onDelete }) => {
   return (
     <Card>
       <CardHeader>
@@ -108,7 +108,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onEdit 
           </div>
         </div>
 
-        <Button className="w-full" onClick={onEdit}>Edit Project</Button>
+        <div className="flex gap-2">
+          <Button className="flex-1" onClick={onEdit}>Edit Project</Button>
+          <Button variant="destructive" className="flex-1" onClick={onDelete}>Delete Project</Button>
+        </div>
       </CardContent>
     </Card>
   );
