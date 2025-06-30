@@ -1,4 +1,3 @@
-
 // Centralized mock data for the STECHAD platform
 
 export const mockEngineers = [
@@ -294,11 +293,156 @@ export const mockProjectManagers = [
   }
 ];
 
+// Mock interviews data
+export const mockInterviews = [
+  {
+    id: 1,
+    candidateName: "Jane Doe",
+    candidateEmail: "jane@example.com",
+    candidateId: 1,
+    interviewerEmail: "pm@company.com",
+    interviewerId: 1,
+    jobId: 1,
+    jobTitle: "React Developer",
+    dateTime: "2025-07-05T14:00:00Z",
+    duration: 60,
+    phoneNumber: "+1234567890",
+    zoomLink: "https://zoom.us/j/123456789",
+    calendarEventId: "google-calendar-event-id-1",
+    status: "scheduled", // scheduled, completed, cancelled, rescheduled
+    notes: "",
+    createdAt: "2025-06-30T10:00:00Z"
+  },
+  {
+    id: 2,
+    candidateName: "Max Mustermann",
+    candidateEmail: "max@example.com",
+    candidateId: 2,
+    interviewerEmail: "pm@company.com",
+    interviewerId: 1,
+    jobId: 2,
+    jobTitle: "DevOps Engineer",
+    dateTime: "2025-07-08T16:00:00Z",
+    duration: 45,
+    phoneNumber: "+0987654321",
+    zoomLink: "https://zoom.us/j/987654321",
+    calendarEventId: "google-calendar-event-id-2",
+    status: "scheduled",
+    notes: "",
+    createdAt: "2025-06-29T15:00:00Z"
+  }
+];
+
 // Helper function to simulate API delay
 export const simulateDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Generate unique IDs
 export const generateId = () => Date.now() + Math.random();
+
+// Interview API functions
+export const interviewAPI = {
+  // Schedule new interview
+  schedule: async (interviewData) => {
+    await simulateDelay(800);
+    
+    // Simulate API call to backend
+    const response = {
+      success: true,
+      interview: {
+        id: generateId(),
+        candidateName: interviewData.candidateName,
+        candidateEmail: interviewData.candidateEmail,
+        candidateId: interviewData.candidateId,
+        interviewerEmail: interviewData.interviewerEmail,
+        interviewerId: interviewData.interviewerId,
+        jobId: interviewData.jobId,
+        jobTitle: interviewData.jobTitle,
+        dateTime: interviewData.dateTime,
+        duration: interviewData.duration,
+        phoneNumber: interviewData.phoneNumber,
+        zoomLink: "https://zoom.us/j/" + Math.floor(Math.random() * 1000000000),
+        calendarEventId: "google-calendar-event-id-" + generateId(),
+        status: "scheduled",
+        notes: interviewData.notes || "",
+        createdAt: new Date().toISOString()
+      }
+    };
+    
+    return response;
+  },
+
+  // Get interviews for a user
+  getInterviews: async (userId, userRole) => {
+    await simulateDelay(500);
+    
+    let filteredInterviews = [...mockInterviews];
+    
+    if (userRole === 'engineer') {
+      filteredInterviews = filteredInterviews.filter(interview => 
+        interview.candidateId === userId
+      );
+    } else if (userRole === 'pm') {
+      filteredInterviews = filteredInterviews.filter(interview => 
+        interview.interviewerId === userId
+      );
+    }
+    
+    return filteredInterviews;
+  },
+
+  // Update interview (reschedule, cancel, etc.)
+  updateInterview: async (interviewId, updateData) => {
+    await simulateDelay(600);
+    
+    const response = {
+      success: true,
+      interview: {
+        id: interviewId,
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      }
+    };
+    
+    return response;
+  },
+
+  // Cancel interview
+  cancelInterview: async (interviewId, reason) => {
+    await simulateDelay(500);
+    
+    const response = {
+      success: true,
+      interview: {
+        id: interviewId,
+        status: "cancelled",
+        cancellationReason: reason,
+        cancelledAt: new Date().toISOString()
+      }
+    };
+    
+    return response;
+  },
+
+  // Reschedule interview
+  rescheduleInterview: async (interviewId, newDateTime, reason) => {
+    await simulateDelay(700);
+    
+    const response = {
+      success: true,
+      interview: {
+        id: interviewId,
+        dateTime: newDateTime,
+        status: "rescheduled",
+        rescheduleReason: reason,
+        rescheduledAt: new Date().toISOString(),
+        zoomLink: "https://zoom.us/j/" + Math.floor(Math.random() * 1000000000),
+        calendarEventId: "google-calendar-event-id-" + generateId()
+      }
+    };
+    
+    return response;
+  }
+};
 
 // Authentication API functions
 export const authAPI = {

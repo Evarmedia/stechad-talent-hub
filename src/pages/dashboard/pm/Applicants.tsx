@@ -1,9 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import ScheduleInterviewDialog from "@/components/ScheduleInterviewDialog";
 
 const APPLICANTS = [
   {
@@ -43,6 +43,8 @@ const Applicants = () => {
   const { jobId } = useParams();
   const [loading, setLoading] = useState(true);
   const [applicants, setApplicants] = useState(APPLICANTS);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
   
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 950);
@@ -54,6 +56,17 @@ const Applicants = () => {
     updated[index].status = newStatus;
     setApplicants(updated);
   };
+
+  const handleScheduleInterview = (applicant: any, index: number) => {
+    setSelectedApplicant({
+      ...applicant,
+      id: index + 1, // Mock ID
+      index: index
+    });
+    setScheduleDialogOpen(true);
+  };
+
+  const jobTitle = `Job ${jobId}`;
   
   return (
     <div className="p-2 md:p-8">
@@ -111,14 +124,26 @@ const Applicants = () => {
                             Reject
                           </Button>
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="text-xs px-2 h-7"
-                          onClick={() => updateApplicantStatus(i, "Hired")}
-                        >
-                          Hire
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs px-2 h-7"
+                            onClick={() => updateApplicantStatus(i, "Hired")}
+                          >
+                            Hire
+                          </Button>
+                          {a.status === "Shortlisted" && (
+                            <Button 
+                              size="sm" 
+                              variant="default" 
+                              className="text-xs px-2 h-7"
+                              onClick={() => handleScheduleInterview(a, i)}
+                            >
+                              Interview
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -170,7 +195,7 @@ const Applicants = () => {
                         <span className={`px-2 py-1 rounded ${statusColor(a.status)} text-xs`}>{a.status}</span>
                       </td>
                       <td className="p-2">
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           <Button 
                             size="sm" 
                             variant="outline" 
@@ -195,6 +220,16 @@ const Applicants = () => {
                           >
                             Hire
                           </Button>
+                          {a.status === "Shortlisted" && (
+                            <Button 
+                              size="sm" 
+                              variant="default" 
+                              className="text-xs px-2 bg-green-600 hover:bg-green-700"
+                              onClick={() => handleScheduleInterview(a, i)}
+                            >
+                              Schedule Interview
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -204,6 +239,20 @@ const Applicants = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Schedule Interview Dialog */}
+      {selectedApplicant && (
+        <ScheduleInterviewDialog
+          isOpen={scheduleDialogOpen}
+          onClose={() => {
+            setScheduleDialogOpen(false);
+            setSelectedApplicant(null);
+          }}
+          applicant={selectedApplicant}
+          jobId={parseInt(jobId || '1')}
+          jobTitle={jobTitle}
+        />
+      )}
     </div>
   );
 };
