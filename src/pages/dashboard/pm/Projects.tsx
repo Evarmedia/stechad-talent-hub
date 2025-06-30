@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProjectStats } from "./components/ProjectStats";
 import { ProjectCard } from "./components/ProjectCard";
 import { ProjectDetails } from "./components/ProjectDetails";
-import { ProjectForm } from "./components/ProjectForm";
+import { ProjectFormDialog } from "./components/ProjectFormDialog";
 import { ProjectFilter } from "./components/ProjectFilter";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Plus } from "lucide-react";
@@ -143,7 +143,7 @@ const Projects = () => {
       </div>
 
       {showForm && (
-        <ProjectForm
+        <ProjectFormDialog
           project={editingProject}
           onSave={editingProject ? handleUpdateProject : handleCreateProject}
           onCancel={() => {
