@@ -18,7 +18,6 @@ const statusColor = (status: string) => {
 };
 
 interface Engineer {
-  id: number;
   name: string;
   country: string;
   exp: number;

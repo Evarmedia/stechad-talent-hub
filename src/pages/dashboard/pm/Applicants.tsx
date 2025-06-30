@@ -4,7 +4,30 @@ import { useParams } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDataContext } from "@/hooks/useDataContext";
+
+const APPLICANTS = [
+  {
+    name: "Jane Doe",
+    experience: 5,
+    skills: ["React", "Node.js", "AWS"],
+    resume: "jane_resume.pdf",
+    status: "Pending"
+  },
+  {
+    name: "Max Mustermann",
+    experience: 7,
+    skills: ["Java", "Spring"],
+    resume: "max_resume.pdf",
+    status: "Shortlisted"
+  },
+  {
+    name: "Alice Smith",
+    experience: 3,
+    skills: ["Python", "SQL"],
+    resume: "alice_cv.pdf",
+    status: "Rejected"
+  }
+];
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -18,31 +41,18 @@ const statusColor = (status: string) => {
 
 const Applicants = () => {
   const { jobId } = useParams();
-  const { applicants: applicantsActions, loading } = useDataContext();
-  const [applicants, setApplicants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [applicants, setApplicants] = useState(APPLICANTS);
   
   useEffect(() => {
-    const loadApplicants = async () => {
-      try {
-        const jobApplicants = await applicantsActions.getByJobId(jobId);
-        setApplicants(jobApplicants);
-      } catch (error) {
-        console.error('Error loading applicants:', error);
-      }
-    };
-    
-    loadApplicants();
-  }, [jobId, applicantsActions]);
+    const t = setTimeout(() => setLoading(false), 950);
+    return () => clearTimeout(t);
+  }, []);
 
-  const updateApplicantStatus = async (index: number, newStatus: string) => {
-    try {
-      await applicantsActions.updateStatus(index, newStatus);
-      const updatedApplicants = [...applicants];
-      updatedApplicants[index].status = newStatus;
-      setApplicants(updatedApplicants);
-    } catch (error) {
-      console.error('Error updating applicant status:', error);
-    }
+  const updateApplicantStatus = (index: number, newStatus: string) => {
+    const updated = [...applicants];
+    updated[index].status = newStatus;
+    setApplicants(updated);
   };
   
   return (
