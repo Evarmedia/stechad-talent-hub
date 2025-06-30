@@ -61,6 +61,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         notes: formData.notes
       };
 
+      console.log('Submitting interview data:', interviewData);
       await scheduleInterview(interviewData);
       toast({ 
         title: "Success", 
@@ -75,6 +76,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         notes: ''
       });
     } catch (error) {
+      console.error('Error scheduling interview:', error);
       toast({ 
         title: "Error", 
         description: error.message || "Failed to schedule interview" 

@@ -297,39 +297,51 @@ export const mockProjectManagers = [
 export const mockInterviews = [
   {
     id: 1,
-    candidateName: "Jane Doe",
-    candidateEmail: "jane@example.com",
-    candidateId: 1,
-    interviewerEmail: "pm@company.com",
-    interviewerId: 1,
+    candidateName: "Alice Johnson",
+    candidateEmail: "alice.johnson@email.com",
+    candidateId: 1, // Links to engineer ID 1
+    interviewerEmail: "sarah.wilson@company.com",
+    interviewerId: 4, // Links to PM ID 4
     jobId: 1,
-    jobTitle: "React Developer",
-    dateTime: "2025-07-05T14:00:00Z",
+    jobTitle: "Senior Frontend Developer",
+    dateTime: "2024-01-15T10:00:00Z",
     duration: 60,
     phoneNumber: "+1234567890",
+    status: "scheduled",
     zoomLink: "https://zoom.us/j/123456789",
-    calendarEventId: "google-calendar-event-id-1",
-    status: "scheduled", // scheduled, completed, cancelled, rescheduled
-    notes: "",
-    createdAt: "2025-06-30T10:00:00Z"
+    calendarEventId: "cal-event-1",
+    notes: "Technical interview focusing on React and TypeScript"
   },
   {
     id: 2,
-    candidateName: "Max Mustermann",
-    candidateEmail: "max@example.com",
-    candidateId: 2,
-    interviewerEmail: "pm@company.com",
-    interviewerId: 1,
+    candidateName: "Bob Smith",
+    candidateEmail: "bob.smith@email.com",
+    candidateId: 2, // Links to engineer ID 2
+    interviewerEmail: "mike.chen@company.com",
+    interviewerId: 5, // Links to PM ID 5
     jobId: 2,
-    jobTitle: "DevOps Engineer",
-    dateTime: "2025-07-08T16:00:00Z",
+    jobTitle: "Backend Developer",
+    dateTime: "2024-01-16T14:30:00Z",
     duration: 45,
-    phoneNumber: "+0987654321",
+    status: "completed",
     zoomLink: "https://zoom.us/j/987654321",
-    calendarEventId: "google-calendar-event-id-2",
-    status: "scheduled",
-    notes: "",
-    createdAt: "2025-06-29T15:00:00Z"
+    calendarEventId: "cal-event-2",
+    notes: "Backend architecture discussion"
+  },
+  {
+    id: 3,
+    candidateName: "Charlie Brown",
+    candidateEmail: "charlie.brown@email.com",
+    candidateId: 3, // Links to engineer ID 3
+    interviewerEmail: "sarah.wilson@company.com",
+    interviewerId: 4, // Links to PM ID 4
+    jobId: 3,
+    jobTitle: "Full Stack Developer",
+    dateTime: "2024-01-17T09:00:00Z",
+    duration: 60,
+    status: "rescheduled",
+    zoomLink: "https://zoom.us/j/456789123",
+    calendarEventId: "cal-event-3"
   }
 ];
 
@@ -343,104 +355,115 @@ export const generateId = () => Date.now() + Math.random();
 export const interviewAPI = {
   // Schedule new interview
   schedule: async (interviewData) => {
-    await simulateDelay(800);
-    
-    // Simulate API call to backend
-    const response = {
-      success: true,
-      interview: {
-        id: generateId(),
-        candidateName: interviewData.candidateName,
-        candidateEmail: interviewData.candidateEmail,
-        candidateId: interviewData.candidateId,
-        interviewerEmail: interviewData.interviewerEmail,
-        interviewerId: interviewData.interviewerId,
-        jobId: interviewData.jobId,
-        jobTitle: interviewData.jobTitle,
-        dateTime: interviewData.dateTime,
-        duration: interviewData.duration,
-        phoneNumber: interviewData.phoneNumber,
-        zoomLink: "https://zoom.us/j/" + Math.floor(Math.random() * 1000000000),
-        calendarEventId: "google-calendar-event-id-" + generateId(),
-        status: "scheduled",
-        notes: interviewData.notes || "",
-        createdAt: new Date().toISOString()
-      }
+    await simulateDelay();
+    const newInterview = {
+      id: generateId(),
+      ...interviewData,
+      status: "scheduled",
+      zoomLink: `https://zoom.us/j/${Math.floor(Math.random() * 1000000000)}`,
+      calendarEventId: `cal-event-${generateId()}`,
+      createdAt: new Date().toISOString()
     };
     
-    return response;
+    mockInterviews.unshift(newInterview);
+    
+    return {
+      success: true,
+      interview: newInterview
+    };
   },
 
   // Get interviews for a user
   getInterviews: async (userId, userRole) => {
-    await simulateDelay(500);
+    await simulateDelay();
     
-    let filteredInterviews = [...mockInterviews];
+    let filteredInterviews = [];
     
     if (userRole === 'engineer') {
-      filteredInterviews = filteredInterviews.filter(interview => 
+      // For engineers, get interviews where they are the candidate
+      filteredInterviews = mockInterviews.filter(interview => 
         interview.candidateId === userId
       );
     } else if (userRole === 'pm') {
-      filteredInterviews = filteredInterviews.filter(interview => 
+      // For PMs, get interviews where they are the interviewer
+      filteredInterviews = mockInterviews.filter(interview => 
         interview.interviewerId === userId
       );
     }
     
-    return filteredInterviews;
+    return filteredInterviews.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
   },
 
-  // Update interview (reschedule, cancel, etc.)
+  // Update interview
   updateInterview: async (interviewId, updateData) => {
-    await simulateDelay(600);
+    await simulateDelay();
     
-    const response = {
-      success: true,
-      interview: {
-        id: interviewId,
-        ...updateData,
-        updatedAt: new Date().toISOString()
-      }
+    const interviewIndex = mockInterviews.findIndex(i => i.id === interviewId);
+    if (interviewIndex === -1) {
+      throw new Error('Interview not found');
+    }
+    
+    const updatedInterview = {
+      ...mockInterviews[interviewIndex],
+      ...updateData,
+      updatedAt: new Date().toISOString()
     };
     
-    return response;
+    mockInterviews[interviewIndex] = updatedInterview;
+    
+    return {
+      success: true,
+      interview: updatedInterview
+    };
   },
 
   // Cancel interview
   cancelInterview: async (interviewId, reason) => {
-    await simulateDelay(500);
+    await simulateDelay();
     
-    const response = {
-      success: true,
-      interview: {
-        id: interviewId,
-        status: "cancelled",
-        cancellationReason: reason,
-        cancelledAt: new Date().toISOString()
-      }
+    const interviewIndex = mockInterviews.findIndex(i => i.id === interviewId);
+    if (interviewIndex === -1) {
+      throw new Error('Interview not found');
+    }
+    
+    const updatedInterview = {
+      ...mockInterviews[interviewIndex],
+      status: 'cancelled',
+      cancellationReason: reason,
+      cancelledAt: new Date().toISOString()
     };
     
-    return response;
+    mockInterviews[interviewIndex] = updatedInterview;
+    
+    return {
+      success: true,
+      interview: updatedInterview
+    };
   },
 
   // Reschedule interview
   rescheduleInterview: async (interviewId, newDateTime, reason) => {
-    await simulateDelay(700);
+    await simulateDelay();
     
-    const response = {
-      success: true,
-      interview: {
-        id: interviewId,
-        dateTime: newDateTime,
-        status: "rescheduled",
-        rescheduleReason: reason,
-        rescheduledAt: new Date().toISOString(),
-        zoomLink: "https://zoom.us/j/" + Math.floor(Math.random() * 1000000000),
-        calendarEventId: "google-calendar-event-id-" + generateId()
-      }
+    const interviewIndex = mockInterviews.findIndex(i => i.id === interviewId);
+    if (interviewIndex === -1) {
+      throw new Error('Interview not found');
+    }
+    
+    const updatedInterview = {
+      ...mockInterviews[interviewIndex],
+      dateTime: newDateTime,
+      status: 'rescheduled',
+      rescheduleReason: reason,
+      rescheduledAt: new Date().toISOString()
     };
     
-    return response;
+    mockInterviews[interviewIndex] = updatedInterview;
+    
+    return {
+      success: true,
+      interview: updatedInterview
+    };
   }
 };
 

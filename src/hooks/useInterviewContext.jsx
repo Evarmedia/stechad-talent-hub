@@ -12,13 +12,16 @@ export const InterviewProvider = ({ children }) => {
   const scheduleInterview = useCallback(async (interviewData) => {
     setLoading(true);
     try {
+      console.log('Scheduling interview with data:', interviewData);
       const response = await interviewAPI.schedule(interviewData);
       if (response.success) {
         setInterviews(prev => [response.interview, ...prev]);
+        console.log('Interview scheduled successfully:', response.interview);
         return response.interview;
       }
       throw new Error('Failed to schedule interview');
     } catch (error) {
+      console.error('Error scheduling interview:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -29,10 +32,13 @@ export const InterviewProvider = ({ children }) => {
   const fetchInterviews = useCallback(async (userId, userRole) => {
     setLoading(true);
     try {
+      console.log('Fetching interviews for user:', userId, 'role:', userRole);
       const interviewList = await interviewAPI.getInterviews(userId, userRole);
+      console.log('Fetched interviews:', interviewList);
       setInterviews(interviewList);
       return interviewList;
     } catch (error) {
+      console.error('Error fetching interviews:', error);
       throw error;
     } finally {
       setLoading(false);
