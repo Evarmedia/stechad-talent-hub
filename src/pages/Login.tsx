@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "", role: "engineer" });
-  const [loading, setLoading] = useState(false);
+  const { login, authLoading } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/";
 
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -25,27 +28,36 @@ const Login = () => {
     return "";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const err = validate();
     if (err) {
       toast({ title: "Login Failed", description: err });
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (form.role === "engineer") {
-        toast({ title: "Welcome Engineer", description: "Login successful!" });
-        navigate("/dashboard/engineer/jobs");
-      } else if (form.role === "pm") {
-        toast({ title: "Welcome Project Manager", description: "Login successful!" });
-        navigate("/dashboard/pm/post-job");
-      } else if (form.role === "admin") {
-        toast({ title: "Welcome Admin", description: "Login successful!" });
-        navigate("/admin");
+
+    try {
+      const user = await login(form.email, form.password, form.role);
+      toast({ title: `Welcome ${user.name}`, description: "Login successful!" });
+      
+      // Navigate based on role or return to previous page
+      if (from !== "/") {
+        navigate(from, { replace: true });
+      } else {
+        if (form.role === "engineer") {
+          navigate("/dashboard/engineer");
+        } else if (form.role === "pm") {
+          navigate("/dashboard/pm");
+        } else if (form.role === "admin") {
+          navigate("/admin");
+        }
       }
-    }, 1000);
+    } catch (error) {
+      toast({ 
+        title: "Login Failed", 
+        description: error.message || "Invalid credentials" 
+      });
+    }
   };
 
   return (
@@ -58,7 +70,7 @@ const Login = () => {
             value={form.role}
             onChange={handleChange}
             className="p-3 mb-2 border border-border rounded"
-            disabled={loading}
+            disabled={authLoading}
           >
             <option value="engineer">Engineer</option>
             <option value="pm">Project Manager</option>
@@ -71,7 +83,7 @@ const Login = () => {
             value={form.email}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
             autoFocus
           />
           <input
@@ -81,14 +93,14 @@ const Login = () => {
             value={form.password}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
           />
           <button
             type="submit"
-            className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${loading ? "opacity-60" : "hover:bg-primary-faint"}`}
-            disabled={loading}
+            className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${authLoading ? "opacity-60" : "hover:bg-primary-faint"}`}
+            disabled={authLoading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {authLoading ? "Logging in..." : "Login"}
           </button>
         </form>
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-text-muted mt-4 gap-2">

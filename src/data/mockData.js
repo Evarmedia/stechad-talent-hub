@@ -59,6 +59,47 @@ export const mockEngineers = [
   }
 ];
 
+// Authentication users data
+export const mockUsers = [
+  {
+    id: 1,
+    email: "jane.doe@example.com",
+    password: "password123",
+    role: "engineer",
+    name: "Jane Doe",
+    profileData: {
+      country: "France",
+      skills: ["React", "TypeScript", "Node.js"],
+      experience: "Senior",
+      availability: "Available",
+      isVetted: true
+    }
+  },
+  {
+    id: 2,
+    email: "pm@email.com",
+    password: "password123",
+    role: "pm",
+    name: "Pat Smith",
+    profileData: {
+      company: "Acme Corp",
+      country: "Germany",
+      activeProjects: 2,
+      completedProjects: 5
+    }
+  },
+  {
+    id: 3,
+    email: "admin@email.com",
+    password: "password123",
+    role: "admin",
+    name: "Alex Admin",
+    profileData: {
+      role: "Platform Administrator"
+    }
+  }
+];
+
 export const mockJobs = [
   {
     id: 1,
@@ -258,3 +299,59 @@ export const simulateDelay = (ms = 500) => new Promise(resolve => setTimeout(res
 
 // Generate unique IDs
 export const generateId = () => Date.now() + Math.random();
+
+// Authentication API functions
+export const authAPI = {
+  login: async (email, password, role) => {
+    await simulateDelay(800);
+    const user = mockUsers.find(u => u.email === email && u.password === password && u.role === role);
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      profileData: user.profileData
+    };
+  },
+
+  signup: async (userData) => {
+    await simulateDelay(1000);
+    const existingUser = mockUsers.find(u => u.email === userData.email);
+    if (existingUser) {
+      throw new Error('User already exists');
+    }
+    const newUser = {
+      id: generateId(),
+      email: userData.email,
+      password: userData.password,
+      role: userData.role || 'engineer',
+      name: userData.name,
+      profileData: userData.profileData || {}
+    };
+    mockUsers.push(newUser);
+    return {
+      id: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+      name: newUser.name,
+      profileData: newUser.profileData
+    };
+  },
+
+  updateProfile: async (userId, profileData) => {
+    await simulateDelay(500);
+    const userIndex = mockUsers.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+      throw new Error('User not found');
+    }
+    mockUsers[userIndex] = { 
+      ...mockUsers[userIndex], 
+      ...profileData,
+      profileData: { ...mockUsers[userIndex].profileData, ...profileData.profileData }
+    };
+    return mockUsers[userIndex];
+  }
+};

@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const EngineerSignup = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
-  const [loading, setLoading] = useState(false);
+  const { signup, authLoading } = useAuthContext();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,12 +28,33 @@ const EngineerSignup = () => {
       toast({ title: "Signup Failed", description: err });
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast({ title: "Signup Success! 🎉", description: "Welcome to STECHAD. Complete your profile to get started." });
-      navigate("/onboarding", { state: { name: form.name, email: form.email } });
-    }, 1300);
+
+    try {
+      const newUser = await signup({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: "engineer",
+        profileData: {
+          country: "",
+          skills: [],
+          experience: "",
+          availability: "Available",
+          isVetted: false
+        }
+      });
+
+      toast({ 
+        title: "Signup Success! 🎉", 
+        description: "Welcome to STECHAD. Complete your profile to get started." 
+      });
+      navigate("/onboarding", { state: { name: newUser.name, email: newUser.email } });
+    } catch (error) {
+      toast({ 
+        title: "Signup Failed", 
+        description: error.message || "An error occurred during signup" 
+      });
+    }
   };
 
   return (
@@ -47,7 +69,7 @@ const EngineerSignup = () => {
             value={form.name}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
             autoFocus
           />
           <input
@@ -57,7 +79,7 @@ const EngineerSignup = () => {
             value={form.email}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
           />
           <input
             type="password"
@@ -66,7 +88,7 @@ const EngineerSignup = () => {
             value={form.password}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
           />
           <input
             type="password"
@@ -75,14 +97,14 @@ const EngineerSignup = () => {
             value={form.confirm}
             onChange={handleChange}
             className="p-3"
-            disabled={loading}
+            disabled={authLoading}
           />
           {/* Social signup */}
           <div className="flex gap-3 justify-center pt-1">
             <button
               type="button"
               className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
-              disabled={loading}
+              disabled={authLoading}
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="w-5 h-5 mr-2" />
               Google
@@ -90,7 +112,7 @@ const EngineerSignup = () => {
             <button
               type="button"
               className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
-              disabled={loading}
+              disabled={authLoading}
             >
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" className="w-5 h-5 mr-2" />
               LinkedIn
@@ -98,10 +120,10 @@ const EngineerSignup = () => {
           </div>
           <button
             type="submit"
-            className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${loading ? "opacity-60" : "hover:bg-primary-faint"}`}
-            disabled={loading}
+            className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${authLoading ? "opacity-60" : "hover:bg-primary-faint"}`}
+            disabled={authLoading}
           >
-            {loading ? "Creating Account..." : "Sign Up"}
+            {authLoading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
         <div className="text-center text-sm text-text-muted mt-4">

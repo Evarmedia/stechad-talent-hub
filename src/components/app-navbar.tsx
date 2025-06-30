@@ -1,6 +1,8 @@
+
 import React from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../hooks/useAuthContext";
 import STECHADLogo from "@/components/STECHADLogo";
 
 const navRoles = [
@@ -19,9 +21,17 @@ function getProfileRoute(pathname: string) {
 
 export function AppNavbar() {
   const { pathname } = useLocation();
+  const { user, logout } = useAuthContext();
+  const navigate = useNavigate();
+  
   const currentRole =
     navRoles.find((r) => pathname.startsWith(r.path))?.name || "Dashboard";
   const profileRoute = getProfileRoute(pathname);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="w-full shadow-sm sticky top-0 z-40 bg-white flex items-center justify-between h-[56px] px-4 md:px-8">
@@ -34,10 +44,15 @@ export function AppNavbar() {
         <span className="ml-4 text-muted-foreground font-medium text-base hidden md:inline">| {currentRole}</span>
       </div>
       <nav className="flex gap-4 items-center text-sm">
+        <span className="text-muted-foreground hidden md:inline">
+          Welcome, {user?.name}
+        </span>
         <Link to={profileRoute} className="text-primary font-medium hover:underline">
           My Account
         </Link>
-        <Link to="/login" className="hover:underline text-muted-foreground">Logout</Link>
+        <button onClick={handleLogout} className="hover:underline text-muted-foreground">
+          Logout
+        </button>
       </nav>
     </header>
   );
