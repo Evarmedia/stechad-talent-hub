@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Download } from "lucide-react";
-
-const APPLICATIONS = [
-  { engineer: "Jane Doe", job: "React Developer", status: "Pending", date: "2025-06-02" },
-  { engineer: "Max Mustermann", job: "DevOps Engineer", status: "Shortlisted", date: "2025-05-30" },
-  { engineer: "Alice Smith", job: "Java Backend Engineer", status: "Hired", date: "2025-05-21" },
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -24,16 +19,25 @@ const statusColor = (status: string) => {
 
 const AdminApplications = () => {
   const [filter, setFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
+  const { applications: applicationsActions, loading } = useDataContext();
+  const [applications, setApplications] = useState([]);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
-  }, []);
+    const loadApplications = async () => {
+      try {
+        const allApplications = await applicationsActions.getAll();
+        setApplications(allApplications);
+      } catch (error) {
+        console.error('Error loading applications:', error);
+      }
+    };
+    
+    loadApplications();
+  }, [applicationsActions]);
 
   const filtered = filter === "All"
-    ? APPLICATIONS
-    : APPLICATIONS.filter(a => a.status === filter);
+    ? applications
+    : applications.filter(a => a.status === filter);
 
   return (
     <div className="p-4 md:p-8">

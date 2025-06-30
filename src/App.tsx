@@ -1,94 +1,62 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PublicLayout from "./layouts/PublicLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Index from "./pages/Index";
-import Landing from "./pages/Landing";
-import EngineerSignup from "./pages/EngineerSignup";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import VerifyOTP from "./pages/VerifyOTP";
-import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound";
-import Onboarding from "./pages/Onboarding";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import { DataProvider } from "@/hooks/useDataContext";
+import SidebarLayout from "./layouts/SidebarLayout";
+import EngineerIndex from "./pages/dashboard/engineer/Index";
 import EngineerJobs from "./pages/dashboard/engineer/Jobs";
-import EngineerProjects from "./pages/dashboard/engineer/Projects";
 import EngineerApplications from "./pages/dashboard/engineer/Applications";
 import EngineerProfile from "./pages/dashboard/engineer/Profile";
-import EngineerIndex from "./pages/dashboard/engineer/Index";
 import PMIndex from "./pages/dashboard/pm/Index";
-import PMPostJob from "./pages/dashboard/pm/PostJob";
-import PMManageJobs from "./pages/dashboard/pm/ManageJobs";
-import PMProjects from "./pages/dashboard/pm/Projects";
-import PMApplicants from "./pages/dashboard/pm/Applicants";
+import PostJob from "./pages/dashboard/pm/PostJob";
+import ManageJobs from "./pages/dashboard/pm/ManageJobs";
+import Applicants from "./pages/dashboard/pm/Applicants";
 import AdminIndex from "./pages/admin/Index";
 import AdminEngineers from "./pages/admin/Engineers";
-import AdminProjectManagers from "./pages/admin/ProjectManagers";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminApplications from "./pages/admin/Applications";
-import AdminEngineerVetting from "./pages/admin/EngineerVetting";
 import AdminSettings from "./pages/admin/Settings";
-import PMProfile from "./pages/dashboard/pm/Profile";
-import AdminProfile from "./pages/admin/Profile";
+import AdminProjectManagers from "./pages/admin/ProjectManagers";
+import EngineerVetting from "./pages/admin/EngineerVetting";
+import Projects from "./pages/dashboard/pm/Projects";
+import EngineerProjects from "./pages/dashboard/engineer/Projects";
 
-const queryClient = new QueryClient();
+function App() {
+  return (
+    <DataProvider>
+      <Router>
+        <div className="min-h-screen bg-background text-foreground">
+          <Routes>
+            <Route path="/" element={<SidebarLayout role="engineer"><EngineerIndex /></SidebarLayout>} />
+            
+            {/* Engineer Routes */}
+            <Route path="/dashboard/engineer" element={<SidebarLayout role="engineer"><EngineerIndex /></SidebarLayout>} />
+            <Route path="/dashboard/engineer/jobs" element={<SidebarLayout role="engineer"><EngineerJobs /></SidebarLayout>} />
+            <Route path="/dashboard/engineer/applications" element={<SidebarLayout role="engineer"><EngineerApplications /></SidebarLayout>} />
+            <Route path="/dashboard/engineer/profile" element={<SidebarLayout role="engineer"><EngineerProfile /></SidebarLayout>} />
+            <Route path="/dashboard/engineer/projects" element={<SidebarLayout role="engineer"><EngineerProjects /></SidebarLayout>} />
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route element={<PublicLayout />}>
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/engineer-signup" element={<EngineerSignup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify-otp" element={<VerifyOTP />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-          </Route>
+            {/* Project Manager Routes */}
+            <Route path="/dashboard/pm" element={<SidebarLayout role="pm"><PMIndex /></SidebarLayout>} />
+            <Route path="/dashboard/pm/post-job" element={<SidebarLayout role="pm"><PostJob /></SidebarLayout>} />
+            <Route path="/dashboard/pm/manage-jobs" element={<SidebarLayout role="pm"><ManageJobs /></SidebarLayout>} />
+            <Route path="/dashboard/pm/applicants/:jobId" element={<SidebarLayout role="pm"><Applicants /></SidebarLayout>} />
+            <Route path="/dashboard/pm/projects" element={<SidebarLayout role="pm"><Projects /></SidebarLayout>} />
 
-          {/* Dashboard Layout for all roles */}
-          <Route element={<DashboardLayout />}>
-            {/* Engineer Dashboard routes */}
-            <Route path="/dashboard/engineer" element={<EngineerIndex />} />
-            <Route path="/dashboard/engineer/jobs" element={<EngineerJobs />} />
-            <Route path="/dashboard/engineer/projects" element={<EngineerProjects />} />
-            <Route path="/dashboard/engineer/applications" element={<EngineerApplications />} />
-            <Route path="/dashboard/engineer/profile" element={<EngineerProfile />} />
-
-            {/* Project Manager Dashboard routes */}
-            <Route path="/dashboard/pm" element={<PMIndex />} />
-            <Route path="/dashboard/pm/post-job" element={<PMPostJob />} />
-            <Route path="/dashboard/pm/manage-jobs" element={<PMManageJobs />} />
-            <Route path="/dashboard/pm/projects" element={<PMProjects />} />
-            <Route path="/dashboard/pm/applicants/:jobId" element={<PMApplicants />} />
-            <Route path="/dashboard/pm/profile" element={<PMProfile />} />
-
-            {/* Admin Dashboard routes */}
-            <Route path="/admin" element={<AdminIndex />} />
-            <Route path="/admin/engineers" element={<AdminEngineers />} />
-            <Route path="/admin/project-managers" element={<AdminProjectManagers />} />
-            <Route path="/admin/jobs" element={<AdminJobs />} />
-            <Route path="/admin/applications" element={<AdminApplications />} />
-            <Route path="/admin/engineer-vetting" element={<AdminEngineerVetting />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/profile" element={<AdminProfile />} />
-          </Route>
-
-          {/* 404 fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+            {/* Admin Routes */}
+            <Route path="/admin" element={<SidebarLayout role="admin"><AdminIndex /></SidebarLayout>} />
+            <Route path="/admin/engineers" element={<SidebarLayout role="admin"><AdminEngineers /></SidebarLayout>} />
+            <Route path="/admin/jobs" element={<SidebarLayout role="admin"><AdminJobs /></SidebarLayout>} />
+            <Route path="/admin/applications" element={<SidebarLayout role="admin"><AdminApplications /></SidebarLayout>} />
+            <Route path="/admin/settings" element={<SidebarLayout role="admin"><AdminSettings /></SidebarLayout>} />
+            <Route path="/admin/project-managers" element={<SidebarLayout role="admin"><AdminProjectManagers /></SidebarLayout>} />
+            <Route path="/admin/engineer-vetting" element={<SidebarLayout role="admin"><EngineerVetting /></SidebarLayout>} />
+          </Routes>
+          <Toaster />
+        </div>
+      </Router>
+    </DataProvider>
+  );
+}
 
 export default App;
