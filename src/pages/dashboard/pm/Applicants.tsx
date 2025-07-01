@@ -1,78 +1,92 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScheduleInterviewDialog from "@/components/ScheduleInterviewDialog";
-
-const APPLICANTS = [
-  {
-    name: "Jane Doe",
-    experience: 5,
-    skills: ["React", "Node.js", "AWS"],
-    resume: "jane_resume.pdf",
-    status: "Pending"
-  },
-  {
-    name: "Max Mustermann",
-    experience: 7,
-    skills: ["Java", "Spring"],
-    resume: "max_resume.pdf",
-    status: "Shortlisted"
-  },
-  {
-    name: "Alice Smith",
-    experience: 3,
-    skills: ["Python", "SQL"],
-    resume: "alice_cv.pdf",
-    status: "Rejected"
-  }
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const statusColor = (status: string) => {
   switch (status) {
-    case "Pending": return "bg-warning text-white";
-    case "Shortlisted": return "bg-success text-white";
-    case "Rejected": return "bg-destructive text-white";
-    case "Hired": return "bg-primary text-white";
-    default: return "bg-muted";
+    case "Pending": return "bg-yellow-500 text-white";
+    case "Shortlisted": return "bg-green-500 text-white";
+    case "Rejected": return "bg-red-500 text-white";
+    case "Hired": return "bg-blue-500 text-white";
+    default: return "bg-gray-500 text-white";
   }
 };
 
 const Applicants = () => {
   const { jobId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [applicants, setApplicants] = useState(APPLICANTS);
+  const [applicants, setApplicants] = useState([]);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [job, setJob] = useState(null);
+  
+  const { getApplications, getJobById, getEngineerById, updateApplication } = useDataContext();
   
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 950);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [jobData, applicationsData] = await Promise.all([
+          getJobById(parseInt(jobId || '1')),
+          getApplications({ jobId: parseInt(jobId || '1') })
+        ]);
+        
+        setJob(jobData);
+        
+        // Fetch engineer details for each application
+        const applicantsWithDetails = await Promise.all(
+          applicationsData.map(async (app) => {
+            const engineer = await getEngineerById(app.engineerId);
+            return {
+              ...app,
+              name: engineer?.name || 'Unknown',
+              experience: engineer?.experience || 'N/A',
+              skills: engineer?.skills || [],
+              resume: `${engineer?.name?.replace(' ', '_')}_resume.pdf` || 'resume.pdf'
+            };
+          })
+        );
+        
+        setApplicants(applicantsWithDetails);
+      } catch (error) {
+        console.error('Error fetching applicants:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const updateApplicantStatus = (index: number, newStatus: string) => {
-    const updated = [...applicants];
-    updated[index].status = newStatus;
-    setApplicants(updated);
+    fetchData();
+  }, [jobId, getApplications, getJobById, getEngineerById]);
+
+  const updateApplicantStatus = async (applicationId: number, newStatus: string) => {
+    try {
+      await updateApplication(applicationId, { status: newStatus });
+      setApplicants(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      ));
+    } catch (error) {
+      console.error('Error updating application status:', error);
+    }
   };
 
-  const handleScheduleInterview = (applicant: any, index: number) => {
-    setSelectedApplicant({
-      ...applicant,
-      id: index + 1, // Mock ID
-      index: index
-    });
+  const handleScheduleInterview = (applicant: any) => {
+    setSelectedApplicant(applicant);
     setScheduleDialogOpen(true);
   };
 
-  const jobTitle = `Job ${jobId}`;
+  const jobTitle = job?.title || `Job ${jobId}`;
   
   return (
     <div className="p-2 md:p-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Applicants for Job {jobId}</CardTitle>
+          <CardTitle className="text-lg md:text-xl">
+            Applicants for {jobTitle} ({applicants.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {/* Mobile: Card layout */}
@@ -89,14 +103,14 @@ const Applicants = () => {
                     </div>
                   </div>
                 ))
-              : applicants.map((a, i) => (
-                  <div key={i} className="border rounded-lg p-4 space-y-3">
+              : applicants.map((a) => (
+                  <div key={a.id} className="border rounded-lg p-4 space-y-3">
                     <div>
                       <h3 className="font-medium text-base">{a.name}</h3>
                       <p className="text-sm text-muted-foreground">{a.experience} years experience</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {a.skills.map(s => (
-                          <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
+                          <span key={s} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">{s}</span>
                         ))}
                       </div>
                       <div className="mt-2">
@@ -111,7 +125,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2 h-7"
-                            onClick={() => updateApplicantStatus(i, "Shortlisted")}
+                            onClick={() => updateApplicantStatus(a.id, "Shortlisted")}
                           >
                             Shortlist
                           </Button>
@@ -119,7 +133,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2 h-7"
-                            onClick={() => updateApplicantStatus(i, "Rejected")}
+                            onClick={() => updateApplicantStatus(a.id, "Rejected")}
                           >
                             Reject
                           </Button>
@@ -129,7 +143,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2 h-7"
-                            onClick={() => updateApplicantStatus(i, "Hired")}
+                            onClick={() => updateApplicantStatus(a.id, "Hired")}
                           >
                             Hire
                           </Button>
@@ -138,7 +152,7 @@ const Applicants = () => {
                               size="sm" 
                               variant="default" 
                               className="text-xs px-2 h-7"
-                              onClick={() => handleScheduleInterview(a, i)}
+                              onClick={() => handleScheduleInterview(a)}
                             >
                               Interview
                             </Button>
@@ -155,11 +169,11 @@ const Applicants = () => {
             <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="text-left">
-                  <th className="p-2 text-sm text-text-muted">Name</th>
-                  <th className="p-2 text-sm text-text-muted">Experience</th>
-                  <th className="p-2 text-sm text-text-muted">Skills</th>
-                  <th className="p-2 text-sm text-text-muted">Resume</th>
-                  <th className="p-2 text-sm text-text-muted">Status</th>
+                  <th className="p-2 text-sm text-muted-foreground">Name</th>
+                  <th className="p-2 text-sm text-muted-foreground">Experience</th>
+                  <th className="p-2 text-sm text-muted-foreground">Skills</th>
+                  <th className="p-2 text-sm text-muted-foreground">Resume</th>
+                  <th className="p-2 text-sm text-muted-foreground">Status</th>
                   <th className="p-2"></th>
                 </tr>
               </thead>
@@ -175,8 +189,8 @@ const Applicants = () => {
                       <td className="p-2"><Skeleton className="h-8 w-36" /></td>
                     </tr>
                   ))
-                  : applicants.map((a, i) => (
-                    <tr key={i} className="border-b">
+                  : applicants.map((a) => (
+                    <tr key={a.id} className="border-b">
                       <td className="p-2">
                         <div className="font-medium">{a.name}</div>
                       </td>
@@ -184,7 +198,7 @@ const Applicants = () => {
                       <td className="p-2">
                         <div className="flex gap-1 flex-wrap">
                           {a.skills.map(s => (
-                            <span key={s} className="bg-primary-light text-primary px-2 py-1 rounded text-xs">{s}</span>
+                            <span key={s} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">{s}</span>
                           ))}
                         </div>
                       </td>
@@ -200,7 +214,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2"
-                            onClick={() => updateApplicantStatus(i, "Shortlisted")}
+                            onClick={() => updateApplicantStatus(a.id, "Shortlisted")}
                           >
                             Shortlist
                           </Button>
@@ -208,7 +222,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2"
-                            onClick={() => updateApplicantStatus(i, "Rejected")}
+                            onClick={() => updateApplicantStatus(a.id, "Rejected")}
                           >
                             Reject
                           </Button>
@@ -216,7 +230,7 @@ const Applicants = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-xs px-2"
-                            onClick={() => updateApplicantStatus(i, "Hired")}
+                            onClick={() => updateApplicantStatus(a.id, "Hired")}
                           >
                             Hire
                           </Button>
@@ -225,7 +239,7 @@ const Applicants = () => {
                               size="sm" 
                               variant="default" 
                               className="text-xs px-2 bg-green-600 hover:bg-green-700"
-                              onClick={() => handleScheduleInterview(a, i)}
+                              onClick={() => handleScheduleInterview(a)}
                             >
                               Schedule Interview
                             </Button>

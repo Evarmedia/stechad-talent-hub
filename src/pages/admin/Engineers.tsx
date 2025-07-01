@@ -7,53 +7,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Search, Eye, User } from "lucide-react";
 import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
-
-const ENGINEERS = [
-  {
-    id: 1,
-    name: "Jane Doe",
-    email: "jane@example.com",
-    skills: ["React", "Node.js", "TypeScript"],
-    experience: "5 years",
-    status: "Active",
-    isVetted: true,
-    joinedAt: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    email: "john@example.com", 
-    skills: ["Python", "Django", "PostgreSQL"],
-    experience: "3 years",
-    status: "Active",
-    isVetted: false,
-    joinedAt: "2024-02-20"
-  },
-  {
-    id: 3,
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    skills: ["Java", "Spring Boot", "AWS"],
-    experience: "7 years", 
-    status: "Inactive",
-    isVetted: true,
-    joinedAt: "2023-11-10"
-  }
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const Engineers = () => {
   const [loading, setLoading] = useState(true);
+  const [engineers, setEngineers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedEngineer, setSelectedEngineer] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
-  }, []);
+  const { getEngineers } = useDataContext();
 
-  const filteredEngineers = ENGINEERS.filter(engineer => {
+  useEffect(() => {
+    const fetchEngineers = async () => {
+      try {
+        const engineersData = await getEngineers();
+        setEngineers(engineersData);
+      } catch (error) {
+        console.error('Error fetching engineers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEngineers();
+  }, [getEngineers]);
+
+  const filteredEngineers = engineers.filter(engineer => {
     const matchesSearch = engineer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          engineer.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || engineer.status === statusFilter;
@@ -155,7 +136,11 @@ const Engineers = () => {
                       </div>
                       <div className="text-sm">
                         <span className="text-muted-foreground">Experience: </span>
-                        <span className="font-medium">{engineer.experience}</span>
+                        <span className="font-medium">{engineer.experience} years</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Country: </span>
+                        <span className="font-medium">{engineer.country}</span>
                       </div>
                     </div>
 
@@ -180,6 +165,7 @@ const Engineers = () => {
                   <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Joined</th>
                   <th className="p-3"></th>
@@ -191,6 +177,7 @@ const Engineers = () => {
                       <tr key={i} className="border-b">
                         <td className="p-3"><Skeleton className="h-5 w-40" /></td>
                         <td className="p-3"><Skeleton className="h-5 w-32" /></td>
+                        <td className="p-3"><Skeleton className="h-5 w-20" /></td>
                         <td className="p-3"><Skeleton className="h-5 w-20" /></td>
                         <td className="p-3"><Skeleton className="h-5 w-16" /></td>
                         <td className="p-3"><Skeleton className="h-5 w-24" /></td>
@@ -231,7 +218,8 @@ const Engineers = () => {
                             )}
                           </div>
                         </td>
-                        <td className="p-3 text-sm">{engineer.experience}</td>
+                        <td className="p-3 text-sm">{engineer.experience} years</td>
+                        <td className="p-3 text-sm">{engineer.country}</td>
                         <td className="p-3">
                           <Badge className={getStatusColor(engineer.status)}>
                             {engineer.status}

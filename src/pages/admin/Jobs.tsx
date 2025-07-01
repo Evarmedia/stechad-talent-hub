@@ -6,60 +6,38 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Eye, MapPin, Calendar } from "lucide-react";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
-
-const JOBS = [
-  {
-    id: 1,
-    title: "React Developer",
-    company: "TechCorp Inc.",
-    location: "Paris, France",
-    type: "Full-time",
-    status: "Active",
-    applications: 12,
-    posted: "2025-06-02",
-    salary: "€50,000 - €70,000"
-  },
-  {
-    id: 2,
-    title: "DevOps Engineer", 
-    company: "StartupXYZ",
-    location: "Berlin, Germany",
-    type: "Contract",
-    status: "Active", 
-    applications: 8,
-    posted: "2025-06-01",
-    salary: "€60,000 - €80,000"
-  },
-  {
-    id: 3,
-    title: "Java Backend Engineer",
-    company: "Enterprise Ltd",
-    location: "London, UK",
-    type: "Full-time",
-    status: "Closed",
-    applications: 25,
-    posted: "2025-05-20",
-    salary: "£45,000 - £65,000"
-  }
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const AdminJobs = () => {
   const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  const { getJobs } = useDataContext();
+
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchJobs = async () => {
+      try {
+        const jobsData = await getJobs();
+        setJobs(jobsData);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [getJobs]);
 
   const filteredJobs = statusFilter === "All" 
-    ? JOBS 
-    : JOBS.filter(job => job.status === statusFilter);
+    ? jobs 
+    : jobs.filter(job => job.status === statusFilter);
 
   const getStatusColor = (status: string) => {
-    return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
+    return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
   };
 
   const handleViewJob = (job: any) => {
@@ -77,8 +55,8 @@ const AdminJobs = () => {
           className="border rounded-md px-3 py-2 bg-background"
         >
           <option value="All">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Closed">Closed</option>
+          <option value="active">Active</option>
+          <option value="closed">Closed</option>
         </select>
       </div>
 
@@ -117,7 +95,7 @@ const AdminJobs = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span>Posted: {job.posted}</span>
+                        <span>Posted: {job.postedDate}</span>
                       </div>
                       <div>
                         <span className="font-medium">Salary: </span>
@@ -185,7 +163,7 @@ const AdminJobs = () => {
                             {job.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-sm text-muted-foreground">{job.posted}</td>
+                        <td className="p-3 text-sm text-muted-foreground">{job.postedDate}</td>
                         <td className="p-3">
                           <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
                             <Eye className="w-4 h-4 mr-1" />

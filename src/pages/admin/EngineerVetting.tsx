@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,69 +15,55 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle, User, Eye } from "lucide-react";
-
-const INITIAL_ENGINEERS = [
-  {
-    id: 1,
-    name: "Jane Doe",
-    email: "jane.doe@email.com",
-    experience: 5,
-    skills: ["React", "Node.js", "AWS"],
-    status: "Active",
-    vetted: false,
-    onboardedAt: "2024-06-01",
-    portfolio: "https://janedoe.dev",
-    github: "https://github.com/janedoe"
-  },
-  {
-    id: 2,
-    name: "Max Mustermann",
-    email: "max@muster.de",
-    experience: 7,
-    skills: ["Java", "Spring", "Docker"],
-    status: "Active",
-    vetted: true,
-    onboardedAt: "2024-05-15",
-    portfolio: "https://maxdev.io",
-    github: "https://github.com/maxmuster"
-  },
-  {
-    id: 3,
-    name: "Alice Smith",
-    email: "alice@smith.es",
-    experience: 3,
-    skills: ["Python", "Django", "PostgreSQL"],
-    status: "Pending",
-    vetted: false,
-    onboardedAt: "2024-06-10",
-    portfolio: "https://alicesmith.com",
-    github: "https://github.com/alicesmith"
-  }
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const EngineerVetting = () => {
   const [loading, setLoading] = useState(true);
-  const [engineers, setEngineers] = useState(INITIAL_ENGINEERS);
-  const [selectedEngineer, setSelectedEngineer] = useState<typeof INITIAL_ENGINEERS[0] | null>(null);
+  const [engineers, setEngineers] = useState([]);
+  const [selectedEngineer, setSelectedEngineer] = useState(null);
+
+  const { getEngineers, updateEngineer } = useDataContext();
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchEngineers = async () => {
+      try {
+        const engineersData = await getEngineers();
+        setEngineers(engineersData);
+      } catch (error) {
+        console.error('Error fetching engineers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleVetEngineer = (engineerId: number) => {
-    setEngineers(engineers.map(eng => 
-      eng.id === engineerId ? { ...eng, vetted: true } : eng
-    ));
-    toast({ title: "Success", description: "Engineer has been vetted successfully!" });
-    setSelectedEngineer(null);
+    fetchEngineers();
+  }, [getEngineers]);
+
+  const handleVetEngineer = async (engineerId: number) => {
+    try {
+      await updateEngineer(engineerId, { isVetted: true });
+      setEngineers(engineers.map(eng => 
+        eng.id === engineerId ? { ...eng, isVetted: true } : eng
+      ));
+      toast({ title: "Success", description: "Engineer has been vetted successfully!" });
+      setSelectedEngineer(null);
+    } catch (error) {
+      console.error('Error vetting engineer:', error);
+      toast({ title: "Error", description: "Failed to vet engineer", variant: "destructive" });
+    }
   };
 
-  const handleUnvetEngineer = (engineerId: number) => {
-    setEngineers(engineers.map(eng => 
-      eng.id === engineerId ? { ...eng, vetted: false } : eng
-    ));
-    toast({ title: "Success", description: "Engineer vetting status removed." });
+  const handleUnvetEngineer = async (engineerId: number) => {
+    try {
+      await updateEngineer(engineerId, { isVetted: false });
+      setEngineers(engineers.map(eng => 
+        eng.id === engineerId ? { ...eng, isVetted: false } : eng
+      ));
+      toast({ title: "Success", description: "Engineer vetting status removed." });
+    } catch (error) {
+      console.error('Error unveting engineer:', error);
+      toast({ title: "Error", description: "Failed to remove vetting status", variant: "destructive" });
+    }
   };
 
   return (
@@ -88,7 +75,7 @@ const EngineerVetting = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Engineers Awaiting Vetting</CardTitle>
+          <CardTitle>Engineers for Vetting ({engineers.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Mobile: Card layout */}
@@ -114,7 +101,7 @@ const EngineerVetting = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium">{engineer.name}</h3>
-                            {engineer.vetted && (
+                            {engineer.isVetted && (
                               <Badge variant="secondary" className="text-xs">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Vetted
@@ -174,8 +161,8 @@ const EngineerVetting = () => {
                                   <p className="text-sm">{selectedEngineer.experience} years</p>
                                 </div>
                                 <div>
-                                  <label className="text-sm font-medium">Onboarded</label>
-                                  <p className="text-sm">{selectedEngineer.onboardedAt}</p>
+                                  <label className="text-sm font-medium">Country</label>
+                                  <p className="text-sm">{selectedEngineer.country}</p>
                                 </div>
                               </div>
                               <div>
@@ -189,17 +176,15 @@ const EngineerVetting = () => {
                               <div className="space-y-2">
                                 <div>
                                   <label className="text-sm font-medium">Portfolio</label>
-                                  <a href={selectedEngineer.portfolio} target="_blank" rel="noopener noreferrer" 
-                                     className="text-sm text-primary underline block">
-                                    {selectedEngineer.portfolio}
-                                  </a>
+                                  <p className="text-sm text-primary">
+                                    {selectedEngineer.portfolio || 'Not provided'}
+                                  </p>
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">GitHub</label>
-                                  <a href={selectedEngineer.github} target="_blank" rel="noopener noreferrer" 
-                                     className="text-sm text-primary underline block">
-                                    {selectedEngineer.github}
-                                  </a>
+                                  <p className="text-sm text-primary">
+                                    {selectedEngineer.github || 'Not provided'}
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -208,7 +193,7 @@ const EngineerVetting = () => {
                             <DialogClose asChild>
                               <Button variant="outline">Close</Button>
                             </DialogClose>
-                            {selectedEngineer && !selectedEngineer.vetted && (
+                            {selectedEngineer && !selectedEngineer.isVetted && (
                               <Button onClick={() => handleVetEngineer(selectedEngineer.id)}>
                                 <CheckCircle className="w-4 h-4 mr-1" />
                                 Vet Engineer
@@ -217,7 +202,7 @@ const EngineerVetting = () => {
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
-                      {engineer.vetted ? (
+                      {engineer.isVetted ? (
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -296,7 +281,7 @@ const EngineerVetting = () => {
                           </span>
                         </td>
                         <td className="p-3">
-                          {engineer.vetted ? (
+                          {engineer.isVetted ? (
                             <Badge variant="secondary">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               Vetted
@@ -333,8 +318,8 @@ const EngineerVetting = () => {
                                         <p className="text-sm">{selectedEngineer.experience} years</p>
                                       </div>
                                       <div>
-                                        <label className="text-sm font-medium">Onboarded</label>
-                                        <p className="text-sm">{selectedEngineer.onboardedAt}</p>
+                                        <label className="text-sm font-medium">Country</label>
+                                        <p className="text-sm">{selectedEngineer.country}</p>
                                       </div>
                                     </div>
                                     <div>
@@ -348,17 +333,15 @@ const EngineerVetting = () => {
                                     <div className="space-y-2">
                                       <div>
                                         <label className="text-sm font-medium">Portfolio</label>
-                                        <a href={selectedEngineer.portfolio} target="_blank" rel="noopener noreferrer" 
-                                           className="text-sm text-primary underline block">
-                                          {selectedEngineer.portfolio}
-                                        </a>
+                                        <p className="text-sm text-primary">
+                                          {selectedEngineer.portfolio || 'Not provided'}
+                                        </p>
                                       </div>
                                       <div>
                                         <label className="text-sm font-medium">GitHub</label>
-                                        <a href={selectedEngineer.github} target="_blank" rel="noopener noreferrer" 
-                                           className="text-sm text-primary underline block">
-                                          {selectedEngineer.github}
-                                        </a>
+                                        <p className="text-sm text-primary">
+                                          {selectedEngineer.github || 'Not provided'}
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
@@ -367,7 +350,7 @@ const EngineerVetting = () => {
                                   <DialogClose asChild>
                                     <Button variant="outline">Close</Button>
                                   </DialogClose>
-                                  {selectedEngineer && !selectedEngineer.vetted && (
+                                  {selectedEngineer && !selectedEngineer.isVetted && (
                                     <Button onClick={() => handleVetEngineer(selectedEngineer.id)}>
                                       <CheckCircle className="w-4 h-4 mr-1" />
                                       Vet Engineer
@@ -376,7 +359,7 @@ const EngineerVetting = () => {
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                            {engineer.vetted ? (
+                            {engineer.isVetted ? (
                               <Button 
                                 size="sm" 
                                 variant="outline" 

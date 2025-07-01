@@ -16,38 +16,42 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { User, Plus, Eye } from "lucide-react";
 import { PMProjectsDialog } from "@/components/PMProjectsDialog";
-
-const INITIAL_PMS = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@company.com",
-    projectsCount: 3,
-    status: "Active",
-    joinedAt: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Alice Smith",
-    email: "alice.smith@company.com",
-    projectsCount: 2,
-    status: "Active",
-    joinedAt: "2024-03-20"
-  }
-];
+import { useDataContext } from "@/hooks/useDataContext";
 
 const ProjectManagers = () => {
   const [loading, setLoading] = useState(true);
-  const [pms, setPms] = useState(INITIAL_PMS);
+  const [pms, setPms] = useState([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPmEmail, setNewPmEmail] = useState("");
   const [selectedPM, setSelectedPM] = useState(null);
   const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
 
+  const { getProjectManagers, getProjects } = useDataContext();
+
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchPMs = async () => {
+      try {
+        const [pmsData, projectsData] = await Promise.all([
+          getProjectManagers(),
+          getProjects()
+        ]);
+        
+        // Count projects for each PM
+        const pmsWithProjects = pmsData.map(pm => ({
+          ...pm,
+          projectsCount: projectsData.filter(p => p.managerId === pm.id).length
+        }));
+        
+        setPms(pmsWithProjects);
+      } catch (error) {
+        console.error('Error fetching project managers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPMs();
+  }, [getProjectManagers, getProjects]);
 
   const handleAddPM = () => {
     if (!newPmEmail || !/^\S+@\S+\.\S+$/.test(newPmEmail)) {
@@ -116,7 +120,7 @@ const ProjectManagers = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Project Managers List</CardTitle>
+          <CardTitle>Project Managers List ({pms.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Mobile: Card layout */}
