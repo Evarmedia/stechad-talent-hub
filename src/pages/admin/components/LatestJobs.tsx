@@ -5,17 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 
-const recentJobs = [
-  { title: "Java Backend Engineer", posted: "1 day ago", applications: 8 },
-  { title: "React Developer", posted: "2 days ago", applications: 12 },
-  { title: "DevOps Engineer", posted: "3 days ago", applications: 6 },
-];
-
 interface LatestJobsProps {
   loading: boolean;
+  jobs: any[];
 }
 
-const LatestJobs: React.FC<LatestJobsProps> = ({ loading }) => {
+const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
+  const recentJobs = jobs.slice(0, 3);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -45,11 +42,16 @@ const LatestJobs: React.FC<LatestJobsProps> = ({ loading }) => {
               <div key={idx} className="space-y-1">
                 <div className="font-medium text-sm">{j.title}</div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{j.posted}</span>
+                  <span>Posted: {j.postedDate}</span>
                   <span>{j.applications} applications</span>
                 </div>
               </div>
             ))}
+            {recentJobs.length === 0 && (
+              <div className="text-center text-muted-foreground py-4">
+                No jobs found
+              </div>
+            )}
           </div>
         )}
       </CardContent>

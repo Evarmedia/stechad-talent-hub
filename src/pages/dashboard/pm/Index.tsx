@@ -7,40 +7,59 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, Briefcase, Clock, TrendingUp, Calendar, CheckCircle } from "lucide-react";
-
-const demoJobs = [
-  { id: 1, title: "React Fullstack Developer", posted: "2025-06-07", applicants: 5, status: "Active" },
-  { id: 2, title: "AWS DevOps Lead", posted: "2025-05-31", applicants: 3, status: "Active" },
-  { id: 3, title: "Senior Backend Engineer", posted: "2025-06-01", applicants: 8, status: "Closed" },
-];
-
-const demoProjects = [
-  { title: "E-commerce Platform", progress: 75, status: "In Progress", team: 4, deadline: "2025-07-15" },
-  { title: "Mobile App Development", progress: 30, status: "Planning", team: 3, deadline: "2025-08-30" },
-  { title: "Analytics Dashboard", progress: 100, status: "Completed", team: 5, deadline: "2025-06-01" },
-];
-
-const stats = [
-  { label: "Active Jobs", value: 2, icon: Briefcase, change: "+1 this week" },
-  { label: "Total Applicants", value: 16, icon: Users, change: "+5 new" },
-  { label: "Projects", value: 3, icon: Clock, change: "1 completed" },
-  { label: "Success Rate", value: "94%", icon: TrendingUp, change: "+2%" },
-];
+import { useDataContext } from "@/hooks/useDataContext";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const PMDashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [applications, setApplications] = useState([]);
+  
+  const { getJobs, getProjects, getApplications } = useDataContext();
+  const { user } = useAuthContext();
+
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 950);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [jobsData, projectsData, applicationsData] = await Promise.all([
+          getJobs(),
+          getProjects(),
+          getApplications()
+        ]);
+        
+        setJobs(jobsData);
+        setProjects(projectsData);
+        setApplications(applicationsData);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [getJobs, getProjects, getApplications]);
+
+  const activeJobs = jobs.filter(job => job.status === 'active').length;
+  const totalApplications = applications.length;
+  const totalProjects = projects.length;
+  const completedProjects = projects.filter(p => p.status === 'Completed').length;
+
+  const stats = [
+    { label: "Active Jobs", value: activeJobs, icon: Briefcase, change: "+1 this week" },
+    { label: "Total Applicants", value: totalApplications, icon: Users, change: "+5 new" },
+    { label: "Projects", value: totalProjects, icon: Clock, change: `${completedProjects} completed` },
+    { label: "Success Rate", value: "94%", icon: TrendingUp, change: "+2%" },
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Completed": return "bg-green-100 text-green-800";
       case "In Progress": return "bg-blue-100 text-blue-800";
       case "Planning": return "bg-yellow-100 text-yellow-800";
-      case "Active": return "bg-green-100 text-green-800";
-      case "Closed": return "bg-gray-100 text-gray-800";
+      case "active": return "bg-green-100 text-green-800";
+      case "closed": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -112,7 +131,7 @@ const PMDashboard = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {demoJobs.map((job) => (
+                {jobs.slice(0, 3).map((job) => (
                   <div key={job.id} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{job.title}</span>
@@ -121,8 +140,8 @@ const PMDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Posted: {job.posted}</span>
-                      <span>{job.applicants} applicants</span>
+                      <span>Posted: {job.postedDate}</span>
+                      <span>{job.applications} applicants</span>
                     </div>
                   </div>
                 ))}
@@ -157,7 +176,7 @@ const PMDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {demoProjects.map((project, idx) => (
+                {projects.slice(0, 3).map((project, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{project.title}</span>
@@ -173,7 +192,7 @@ const PMDashboard = () => {
                       <Progress value={project.progress} className="h-2" />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{project.team} team members</span>
+                      <span>{project.team?.length || 0} team members</span>
                       <span>Due: {project.deadline}</span>
                     </div>
                   </div>

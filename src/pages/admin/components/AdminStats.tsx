@@ -4,18 +4,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Briefcase, FileText, UserCheck, TrendingUp } from "lucide-react";
 
-const stats = [
-  { label: "Engineers", value: 74, icon: Users, change: "+12%" },
-  { label: "Project Managers", value: 8, icon: UserCheck, change: "+2%" },
-  { label: "Active Jobs", value: 23, icon: Briefcase, change: "+5%" },
-  { label: "Applications", value: 112, icon: FileText, change: "+18%" },
-];
-
 interface AdminStatsProps {
   loading: boolean;
+  engineers: any[];
+  jobs: any[];
+  applications: any[];
+  projectManagers: any[];
 }
 
-const AdminStats: React.FC<AdminStatsProps> = ({ loading }) => {
+const AdminStats: React.FC<AdminStatsProps> = ({ loading, engineers, jobs, applications, projectManagers }) => {
+  const stats = [
+    { label: "Engineers", value: engineers.length, icon: Users, change: "+12%" },
+    { label: "Project Managers", value: projectManagers.length, icon: UserCheck, change: "+2%" },
+    { label: "Active Jobs", value: jobs.filter(j => j.status === 'active').length, icon: Briefcase, change: "+5%" },
+    { label: "Applications", value: applications.length, icon: FileText, change: "+18%" },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {loading

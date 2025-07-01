@@ -6,17 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 
-const recentProjects = [
-  { title: "E-commerce Platform", pm: "John Doe", status: "In Progress" },
-  { title: "Mobile App", pm: "Alice Smith", status: "Planning" },
-  { title: "Analytics Dashboard", pm: "John Doe", status: "Completed" },
-];
-
 interface RecentProjectsProps {
   loading: boolean;
+  projects: any[];
 }
 
-const RecentProjects: React.FC<RecentProjectsProps> = ({ loading }) => {
+const RecentProjects: React.FC<RecentProjectsProps> = ({ loading, projects }) => {
+  const recentProjects = projects.slice(0, 3);
+
   const getProjectStatusColor = (status: string) => {
     switch (status) {
       case "Completed": return "bg-green-100 text-green-800";
@@ -55,13 +52,20 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ loading }) => {
               <div key={idx} className="space-y-1">
                 <div className="font-medium text-sm">{p.title}</div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PM: {p.pm}</span>
+                  <span className="text-xs text-muted-foreground">
+                    Team: {p.team?.length || 0} members
+                  </span>
                   <Badge className={getProjectStatusColor(p.status)} variant="outline">
                     {p.status}
                   </Badge>
                 </div>
               </div>
             ))}
+            {recentProjects.length === 0 && (
+              <div className="text-center text-muted-foreground py-4">
+                No projects found
+              </div>
+            )}
           </div>
         )}
       </CardContent>

@@ -7,26 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Briefcase, User, CheckCircle, Clock, Calendar, TrendingUp } from "lucide-react";
-
-const RECENT_APPS = [
-  { id: 1, title: "Frontend React Dev", applied: "2025-06-13", status: "Pending", company: "TechCorp" },
-  { id: 2, title: "AWS Cloud Specialist", applied: "2025-05-21", status: "Shortlisted", company: "CloudWorks" },
-  { id: 3, title: "Full Stack Developer", applied: "2025-06-10", status: "Interview", company: "StartupX" },
-];
-
-const CURRENT_PROJECTS = [
-  { title: "E-commerce Platform", progress: 75, status: "In Progress", deadline: "2025-07-15", role: "Frontend Developer" },
-  { title: "Mobile App Backend", progress: 60, status: "In Progress", deadline: "2025-08-01", role: "Backend Engineer" },
-];
-
-const skills = ["React", "Node.js", "SQL", "AWS", "TypeScript", "Python"];
-
-const stats = [
-  { label: "Applications", value: 12, icon: Briefcase, change: "+3 this week" },
-  { label: "Interviews", value: 4, icon: User, change: "2 scheduled" },
-  { label: "Projects", value: 2, icon: CheckCircle, change: "Active" },
-  { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" },
-];
+import { useDataContext } from "@/hooks/useDataContext";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const quickLinks = [
   { to: "/dashboard/engineer/jobs", label: "Browse Jobs", icon: "💼" },
@@ -37,20 +19,57 @@ const quickLinks = [
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Shortlisted": return "bg-blue-100 text-blue-800";
-    case "Interview": return "bg-purple-100 text-purple-800";
-    case "Pending": return "bg-yellow-100 text-yellow-800";
+    case "reviewed": return "bg-blue-100 text-blue-800";
+    case "pending": return "bg-yellow-100 text-yellow-800";
+    case "rejected": return "bg-red-100 text-red-800";
     case "In Progress": return "bg-green-100 text-green-800";
+    case "Completed": return "bg-green-100 text-green-800";
     default: return "bg-gray-100 text-gray-800";
   }
 };
 
 const EngineerDashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  
+  const { getApplications, getProjects, getJobs } = useDataContext();
+  const { user } = useAuthContext();
+
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [applicationsData, projectsData, jobsData] = await Promise.all([
+          getApplications({ engineerId: user?.id }),
+          getProjects(),
+          getJobs()
+        ]);
+        
+        setApplications(applicationsData);
+        setProjects(projectsData);
+        setJobs(jobsData);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, [getApplications, getProjects, getJobs, user]);
+
+  const stats = [
+    { label: "Applications", value: applications.length, icon: Briefcase, change: "+3 this week" },
+    { label: "Interviews", value: 4, icon: User, change: "2 scheduled" },
+    { label: "Projects", value: projects.filter(p => p.status === "In Progress").length, icon: CheckCircle, change: "Active" },
+    { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" },
+  ];
+
+  // Get user skills from profile or default set
+  const skills = user?.profileData?.skills || ["React", "Node.js", "SQL", "AWS", "TypeScript", "Python"];
 
   return (
     <div className="py-8 max-w-6xl mx-auto px-4">
@@ -118,7 +137,9 @@ const EngineerDashboard = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="font-semibold">Availability:</span>
-                  <Badge className="bg-green-100 text-green-800">Available</Badge>
+                  <Badge className="bg-green-100 text-green-800">
+                    {user?.profileData?.availability || "Available"}
+                  </Badge>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="font-semibold">Profile Completion:</span>
@@ -155,20 +176,24 @@ const EngineerDashboard = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {RECENT_APPS.map((app) => (
+                {applications.slice(0, 3).map((app) => (
                   <div key={app.id} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{app.title}</span>
+                      <span className="font-medium text-sm">{app.jobTitle}</span>
                       <Badge className={getStatusColor(app.status)} variant="outline">
                         {app.status}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{app.company}</span>
-                      <span>{app.applied}</span>
+                      <span>Applied: {app.appliedDate}</span>
                     </div>
                   </div>
                 ))}
+                {applications.length === 0 && (
+                  <div className="text-center text-muted-foreground py-4">
+                    No applications yet. <Link to="/dashboard/engineer/jobs" className="text-primary hover:underline">Browse jobs</Link>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -201,7 +226,7 @@ const EngineerDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {CURRENT_PROJECTS.map((project, idx) => (
+              {projects.filter(p => p.status === "In Progress").slice(0, 2).map((project, idx) => (
                 <div key={idx} className="space-y-2 p-3 border rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-sm">{project.title}</span>
@@ -209,7 +234,7 @@ const EngineerDashboard = () => {
                       {project.status}
                     </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground">{project.role}</div>
+                  <div className="text-xs text-muted-foreground">{project.description}</div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span>Progress</span>
@@ -222,6 +247,11 @@ const EngineerDashboard = () => {
                   </div>
                 </div>
               ))}
+              {projects.filter(p => p.status === "In Progress").length === 0 && (
+                <div className="col-span-2 text-center text-muted-foreground py-8">
+                  No active projects
+                </div>
+              )}
             </div>
           )}
         </CardContent>

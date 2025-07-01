@@ -6,19 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 
-const recentEngineers = [
-  { name: "Jane Doe", country: "France", isVetted: true },
-  { name: "Max Mustermann", country: "Germany", isVetted: false },
-  { name: "Alice Smith", country: "Spain", isVetted: true },
-  { name: "Hong Lee", country: "Poland", isVetted: false },
-  { name: "Olga Ivanova", country: "Russia", isVetted: true },
-];
-
 interface RecentEngineersProps {
   loading: boolean;
+  engineers: any[];
 }
 
-const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading }) => {
+const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers }) => {
+  const recentEngineers = engineers.slice(0, 5);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -54,6 +49,11 @@ const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading }) => {
                 )}
               </div>
             ))}
+            {recentEngineers.length === 0 && (
+              <div className="text-center text-muted-foreground py-4">
+                No engineers found
+              </div>
+            )}
           </div>
         )}
       </CardContent>
