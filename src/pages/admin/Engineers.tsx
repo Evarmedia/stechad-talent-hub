@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,7 @@ const Engineers = () => {
 
   // Sort by recent if filter is applied
   const sortedEngineers = dateFilter === "Recent" 
-    ? [...filteredEngineers].sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt))
+    ? [...filteredEngineers].sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime())
     : filteredEngineers;
 
   const getStatusColor = (status: string) => {
