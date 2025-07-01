@@ -156,7 +156,12 @@ const ManageJobs = () => {
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
                           <Eye className="w-3 h-3 mr-1" />
-                          View
+                          Details
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <Link to={`/dashboard/pm/applicants/${job.id}`}>
+                            View Apps
+                          </Link>
                         </Button>
                         <Button 
                           size="sm" 
@@ -226,7 +231,12 @@ const ManageJobs = () => {
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
                               <Eye className="w-4 h-4 mr-1" />
-                              View
+                              Details
+                            </Button>
+                            <Button size="sm" variant="outline" asChild>
+                              <Link to={`/dashboard/pm/applicants/${job.id}`}>
+                                View Apps
+                              </Link>
                             </Button>
                             <Button 
                               size="sm" 

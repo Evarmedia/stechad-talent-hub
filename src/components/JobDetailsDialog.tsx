@@ -13,7 +13,8 @@ interface Job {
   type: string;
   status: string;
   applications: number;
-  posted: string;
+  postedDate?: string;
+  posted?: string;
   salary: string;
 }
 
@@ -31,8 +32,11 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
   if (!job) return null;
 
   const getStatusColor = (status: string) => {
-    return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
+    if (!status) return "bg-gray-100 text-gray-800";
+    return status.toLowerCase() === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
   };
+
+  const displayDate = job.postedDate || job.posted || "Not specified";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -96,7 +100,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Posted</span>
                 </div>
-                <p className="text-sm">{job.posted}</p>
+                <p className="text-sm">{displayDate}</p>
               </CardContent>
             </Card>
 
@@ -119,7 +123,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
               <p className="text-sm text-muted-foreground">
                 We are looking for an experienced {job.title} to join our team at {job.company}. 
                 The ideal candidate will have strong technical skills and experience working in a collaborative environment.
-                This is a {job.type.toLowerCase()} position based in {job.location}.
+                This is a {job.type?.toLowerCase()} position based in {job.location}.
               </p>
             </CardContent>
           </Card>

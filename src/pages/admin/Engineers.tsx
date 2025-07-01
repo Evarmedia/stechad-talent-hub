@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Search, Eye, User } from "lucide-react";
+import { Search, Eye, User, Download } from "lucide-react";
 import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
 import { useDataContext } from "@/hooks/useDataContext";
+import { exportToCSV } from "./exportUtils";
 
 const Engineers = () => {
   const [loading, setLoading] = useState(true);
   const [engineers, setEngineers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [dateFilter, setDateFilter] = useState("All");
   const [selectedEngineer, setSelectedEngineer] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -38,8 +40,22 @@ const Engineers = () => {
     const matchesSearch = engineer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          engineer.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || engineer.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    let matchesDate = true;
+    if (dateFilter === "Recent") {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const joinedDate = new Date(engineer.joinedAt);
+      matchesDate = joinedDate >= oneMonthAgo;
+    }
+    
+    return matchesSearch && matchesStatus && matchesDate;
   });
+
+  // Sort by recent if filter is applied
+  const sortedEngineers = dateFilter === "Recent" 
+    ? [...filteredEngineers].sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt))
+    : filteredEngineers;
 
   const getStatusColor = (status: string) => {
     return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
@@ -50,10 +66,27 @@ const Engineers = () => {
     setIsDetailsOpen(true);
   };
 
+  const handleExportCSV = () => {
+    const dataToExport = sortedEngineers.map(engineer => ({
+      name: engineer.name,
+      country: engineer.country,
+      exp: engineer.experience.replace(' years', ''),
+      status: engineer.status,
+      email: engineer.email,
+      phone: engineer.phone || 'N/A',
+      onboardedAt: engineer.joinedAt
+    }));
+    exportToCSV(dataToExport);
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Engineers Management</h1>
+        <Button onClick={handleExportCSV} variant="outline">
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Filters */}
@@ -76,11 +109,19 @@ const Engineers = () => {
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
+        <select 
+          value={dateFilter} 
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="border rounded-md px-3 py-2 bg-background"
+        >
+          <option value="All">All Engineers</option>
+          <option value="Recent">Recent (Last Month)</option>
+        </select>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Engineers List ({filteredEngineers.length})</CardTitle>
+          <CardTitle>Engineers List ({sortedEngineers.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Mobile: Card layout */}
@@ -104,7 +145,7 @@ const Engineers = () => {
                     </div>
                   </div>
                 ))
-              : filteredEngineers.map((engineer) => (
+              : sortedEngineers.map((engineer) => (
                   <div key={engineer.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -136,7 +177,7 @@ const Engineers = () => {
                       </div>
                       <div className="text-sm">
                         <span className="text-muted-foreground">Experience: </span>
-                        <span className="font-medium">{engineer.experience} years</span>
+                        <span className="font-medium">{engineer.experience}</span>
                       </div>
                       <div className="text-sm">
                         <span className="text-muted-foreground">Country: </span>
@@ -184,7 +225,7 @@ const Engineers = () => {
                         <td className="p-3"><Skeleton className="h-8 w-20" /></td>
                       </tr>
                     ))
-                  : filteredEngineers.map((engineer) => (
+                  : sortedEngineers.map((engineer) => (
                       <tr key={engineer.id} className="border-b hover:bg-gray-50">
                         <td className="p-3">
                           <div className="flex items-center gap-3">
@@ -218,7 +259,7 @@ const Engineers = () => {
                             )}
                           </div>
                         </td>
-                        <td className="p-3 text-sm">{engineer.experience} years</td>
+                        <td className="p-3 text-sm">{engineer.experience}</td>
                         <td className="p-3 text-sm">{engineer.country}</td>
                         <td className="p-3">
                           <Badge className={getStatusColor(engineer.status)}>
