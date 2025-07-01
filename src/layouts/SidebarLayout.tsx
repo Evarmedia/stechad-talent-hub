@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import STECHADLogo from "@/components/STECHADLogo";
@@ -9,12 +8,14 @@ const sidebarMenus: Record<Role, { label: string; to: string; icon: React.ReactN
   engineer: [
     { label: "View Jobs", to: "/dashboard/engineer/jobs", icon: "💼" },
     { label: "My Applications", to: "/dashboard/engineer/applications", icon: "📝" },
+    { label: "Interviews", to: "/dashboard/engineer/interviews", icon: "📅" },
     { label: "Profile", to: "/dashboard/engineer/profile", icon: "👤" },
     { label: "Logout", to: "/logout", icon: "🚪" }
   ],
   pm: [
     { label: "Post Job", to: "/dashboard/pm/post-job", icon: "➕" },
     { label: "Manage Jobs", to: "/dashboard/pm/manage-jobs", icon: "🗂️" },
+    { label: "Interviews", to: "/dashboard/pm/interviews", icon: "📅" },
     { label: "Logout", to: "/logout", icon: "🚪" }
   ],
   admin: [
