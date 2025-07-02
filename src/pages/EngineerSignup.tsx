@@ -3,14 +3,9 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
 
 const EngineerSignup = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup, authLoading } = useAuthContext();
   const navigate = useNavigate();
 
@@ -67,7 +62,7 @@ const EngineerSignup = () => {
       <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8">
         <h1 className="text-2xl font-bold text-primary mb-6">Join STECHAD as Engineer</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <Input
+          <input
             type="text"
             name="name"
             placeholder="Full Name"
@@ -77,7 +72,7 @@ const EngineerSignup = () => {
             disabled={authLoading}
             autoFocus
           />
-          <Input
+          <input
             type="email"
             name="email"
             placeholder="Email Address"
@@ -86,44 +81,24 @@ const EngineerSignup = () => {
             className="p-3"
             disabled={authLoading}
           />
-          <div className="relative">
-            <Input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              className="p-3 pr-10"
-              disabled={authLoading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              disabled={authLoading}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-          <div className="relative">
-            <Input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirm"
-              placeholder="Confirm Password"
-              value={form.confirm}
-              onChange={handleChange}
-              className="p-3 pr-10"
-              disabled={authLoading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              disabled={authLoading}
-            >
-              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            className="p-3"
+            disabled={authLoading}
+          />
+          <input
+            type="password"
+            name="confirm"
+            placeholder="Confirm Password"
+            value={form.confirm}
+            onChange={handleChange}
+            className="p-3"
+            disabled={authLoading}
+          />
           {/* Social signup */}
           <div className="flex gap-3 justify-center pt-1">
             <button
@@ -143,13 +118,13 @@ const EngineerSignup = () => {
               LinkedIn
             </button>
           </div>
-          <Button
+          <button
             type="submit"
             className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${authLoading ? "opacity-60" : "hover:bg-primary-faint"}`}
             disabled={authLoading}
           >
             {authLoading ? "Creating Account..." : "Sign Up"}
-          </Button>
+          </button>
         </form>
         <div className="text-center text-sm text-text-muted mt-4">
           Already have an account?{" "}

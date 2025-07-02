@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,91 +14,32 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
-import { useAuthContext } from "@/hooks/useAuthContext";
-import { toast } from "@/hooks/use-toast";
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
+  const [remoteOnly, setRemoteOnly] = useState(false);
   const [openJD, setOpenJD] = useState<number | null>(null);
   const [jobsList, setJobsList] = useState([]);
-  const [applying, setApplying] = useState<number | null>(null);
-  const [userApplications, setUserApplications] = useState([]);
   
-  const { getJobs, loading, createApplication, getApplications } = useDataContext();
-  const { user } = useAuthContext();
+  const { getJobs, loading } = useDataContext();
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch jobs
+    const fetchJobs = async () => {
       const filters = {
+        remote: remoteOnly || undefined,
         search: search || undefined
       };
       const jobs = await getJobs(filters);
       setJobsList(jobs);
-
-      // Fetch user's applications if user is logged in
-      if (user) {
-        const applications = await getApplications({ engineerId: user.id });
-        setUserApplications(applications);
-      }
     };
 
-    fetchData();
-  }, [getJobs, getApplications, search, user]);
-
-  const hasAppliedToJob = (jobId: number) => {
-    return userApplications.some(app => app.jobId === jobId);
-  };
-
-  const handleApply = async (jobId: number, jobTitle: string) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to apply for jobs",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (hasAppliedToJob(jobId)) {
-      toast({
-        title: "Error",
-        description: "You have already applied to this job",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setApplying(jobId);
-    try {
-      await createApplication({
-        jobId,
-        jobTitle,
-        engineerId: user.id,
-        status: "pending"
-      });
-      
-      // Refresh applications list
-      const applications = await getApplications({ engineerId: user.id });
-      setUserApplications(applications);
-      
-      toast({
-        title: "Success",
-        description: "Application submitted successfully!",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit application. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setApplying(null);
-    }
-  };
+    fetchJobs();
+  }, [getJobs, search, remoteOnly]);
 
   const filtered = jobsList.filter(
-    (job) => job.title.toLowerCase().includes(search.toLowerCase())
+    (job) =>
+      (!remoteOnly || job.remote) &&
+      job.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -109,6 +51,15 @@ const EngineerJobs = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <label className="flex items-center gap-1 text-sm ml-3">
+            <input
+              type="checkbox"
+              checked={remoteOnly}
+              onChange={() => setRemoteOnly((v) => !v)}
+              className="mr-1"
+            />
+            Remote only
+          </label>
         </div>
         <Button variant="outline" disabled>
           Filter by Skills (coming soon)
@@ -165,18 +116,7 @@ const EngineerJobs = () => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleApply(job.id, job.title)}
-                        disabled={applying === job.id || hasAppliedToJob(job.id)}
-                      >
-                        {applying === job.id 
-                          ? "Applying..." 
-                          : hasAppliedToJob(job.id) 
-                            ? "Already Applied" 
-                            : "Apply"
-                        }
-                      </Button>
+                      <Button size="sm">Apply</Button>
                       <Dialog open={openJD === job.id} onOpenChange={open => setOpenJD(open ? job.id : null)}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
