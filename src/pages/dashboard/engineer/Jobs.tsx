@@ -14,14 +14,18 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
+import { useAuthContext } from "@/hooks/useAuthContext";
+import { toast } from "@/hooks/use-toast";
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [openJD, setOpenJD] = useState<number | null>(null);
   const [jobsList, setJobsList] = useState([]);
+  const [applying, setApplying] = useState<number | null>(null);
   
-  const { getJobs, loading } = useDataContext();
+  const { getJobs, loading, createApplication } = useDataContext();
+  const { user } = useAuthContext();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -35,6 +39,40 @@ const EngineerJobs = () => {
 
     fetchJobs();
   }, [getJobs, search, remoteOnly]);
+
+  const handleApply = async (jobId: number, jobTitle: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to apply for jobs",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setApplying(jobId);
+    try {
+      await createApplication({
+        jobId,
+        jobTitle,
+        engineerId: user.id,
+        status: "pending"
+      });
+      
+      toast({
+        title: "Success",
+        description: "Application submitted successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit application. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setApplying(null);
+    }
+  };
 
   const filtered = jobsList.filter(
     (job) =>
@@ -116,7 +154,13 @@ const EngineerJobs = () => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm">Apply</Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleApply(job.id, job.title)}
+                        disabled={applying === job.id}
+                      >
+                        {applying === job.id ? "Applying..." : "Apply"}
+                      </Button>
                       <Dialog open={openJD === job.id} onOpenChange={open => setOpenJD(open ? job.id : null)}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
