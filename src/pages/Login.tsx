@@ -3,9 +3,13 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "", role: "engineer" });
+  const [showPassword, setShowPassword] = useState(false);
   const { login, authLoading } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -76,7 +80,7 @@ const Login = () => {
             <option value="pm">Project Manager</option>
             <option value="admin">Admin (Staff Only)</option>
           </select>
-          <input
+          <Input
             type="email"
             name="email"
             placeholder="Email Address"
@@ -86,22 +90,32 @@ const Login = () => {
             disabled={authLoading}
             autoFocus
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            className="p-3"
-            disabled={authLoading}
-          />
-          <button
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              className="p-3 pr-10"
+              disabled={authLoading}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              disabled={authLoading}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          <Button
             type="submit"
             className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${authLoading ? "opacity-60" : "hover:bg-primary-faint"}`}
             disabled={authLoading}
           >
             {authLoading ? "Logging in..." : "Login"}
-          </button>
+          </Button>
         </form>
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-text-muted mt-4 gap-2">
           <Link to="/forgot-password" className="text-primary font-semibold underline text-center">Forgot password?</Link>
