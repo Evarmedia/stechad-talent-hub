@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,27 +12,42 @@ import { useDataContext } from "@/hooks/useDataContext";
 const ManageJobs = () => {
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const { getJobs, updateJob, deleteJob } = useDataContext();
+  const { getJobs, getApplications, updateJob, deleteJob } = useDataContext();
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchData = async () => {
       try {
-        const jobsData = await getJobs();
-        setJobs(jobsData);
+        const [jobsData, applicationsData] = await Promise.all([
+          getJobs(),
+          getApplications()
+        ]);
+        
+        // Calculate application counts for each job
+        const jobsWithRealApplications = jobsData.map(job => {
+          const jobApplications = applicationsData.filter(app => app.jobId === job.id);
+          return {
+            ...job,
+            applications: jobApplications.length
+          };
+        });
+        
+        setJobs(jobsWithRealApplications);
+        setApplications(applicationsData);
       } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJobs();
-  }, [getJobs]);
+    fetchData();
+  }, [getJobs, getApplications]);
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
