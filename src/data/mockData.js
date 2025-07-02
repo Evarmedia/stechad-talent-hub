@@ -8,9 +8,12 @@ export const mockEngineers = [
     country: "France", 
     skills: ["React", "TypeScript", "Node.js"], 
     isVetted: true,
-    experience: "Senior",
+    experience: "5 years",
     availability: "Available",
-    joinedDate: "2024-01-15"
+    joinedDate: "2024-01-15",
+    joinedAt: "2024-01-15",
+    status: "Active",
+    phone: "+33 1 23 45 67 89"
   },
   { 
     id: 2, 
@@ -19,9 +22,12 @@ export const mockEngineers = [
     country: "Germany", 
     skills: ["Java", "Spring", "SQL"], 
     isVetted: false,
-    experience: "Mid-level",
+    experience: "3 years",
     availability: "Available",
-    joinedDate: "2024-02-10"
+    joinedDate: "2024-02-10",
+    joinedAt: "2024-02-10",
+    status: "Active",
+    phone: "+49 30 12345678"
   },
   { 
     id: 3, 
@@ -30,9 +36,12 @@ export const mockEngineers = [
     country: "Spain", 
     skills: ["Python", "Django", "PostgreSQL"], 
     isVetted: true,
-    experience: "Senior",
+    experience: "7 years",
     availability: "Busy",
-    joinedDate: "2024-01-20"
+    joinedDate: "2024-01-20",
+    joinedAt: "2024-01-20",
+    status: "Active",
+    phone: "+34 91 123 45 67"
   },
   { 
     id: 4, 
@@ -41,9 +50,12 @@ export const mockEngineers = [
     country: "Poland", 
     skills: ["JavaScript", "Vue.js", "MongoDB"], 
     isVetted: false,
-    experience: "Junior",
+    experience: "2 years",
     availability: "Available",
-    joinedDate: "2024-03-05"
+    joinedDate: "2024-03-05",
+    joinedAt: "2024-03-05",
+    status: "Active",
+    phone: "+48 22 123 45 67"
   },
   { 
     id: 5, 
@@ -52,9 +64,12 @@ export const mockEngineers = [
     country: "Russia", 
     skills: ["C#", ".NET", "Azure"], 
     isVetted: true,
-    experience: "Senior",
+    experience: "6 years",
     availability: "Available",
-    joinedDate: "2024-02-28"
+    joinedDate: "2024-02-28",
+    joinedAt: "2024-02-28",
+    status: "Inactive",
+    phone: "+7 495 123 45 67"
   }
 ];
 
@@ -103,11 +118,15 @@ export const mockJobs = [
   {
     id: 1,
     title: "React Developer",
+    company: "TechCorp Inc.",
     location: "Paris, France",
+    type: "Full-time",
+    salary: "$70,000 - $90,000",
     skills: ["React", "TypeScript", "Node.js"],
     remote: true,
-    status: "active",
+    status: "Active",
     postedDate: "2024-06-25",
+    posted: "2024-06-25",
     applications: 12,
     description: "As a React Developer, you will be responsible for building modern web applications using React and related technologies. You'll work with a collaborative team, participate in design decisions, and help shape the direction of our frontend.",
     responsibilities: [
@@ -125,11 +144,15 @@ export const mockJobs = [
   {
     id: 2,
     title: "DevOps Engineer",
+    company: "StartupIO",
     location: "Berlin, Germany",
+    type: "Full-time",
+    salary: "$80,000 - $100,000",
     skills: ["AWS", "Docker", "Kubernetes"],
     remote: false,
-    status: "active",
+    status: "Active",
     postedDate: "2024-06-23",
+    posted: "2024-06-23",
     applications: 6,
     description: "Seeking a DevOps Engineer to maintain and improve our CI/CD pipelines, manage infrastructure, and collaborate with developers to ensure smooth deployments.",
     responsibilities: [
@@ -147,11 +170,15 @@ export const mockJobs = [
   {
     id: 3,
     title: "Java Backend Engineer",
+    company: "Enterprise Solutions",
     location: "Remote",
+    type: "Contract",
+    salary: "$60,000 - $80,000",
     skills: ["Java", "Spring", "SQL"],
     remote: true,
-    status: "active",
+    status: "Active",
     postedDate: "2024-06-22",
+    posted: "2024-06-22",
     applications: 8,
     description: "We're looking for a Java Backend Engineer to build robust APIs and scalable backend services. You will work closely with our product and frontend teams.",
     responsibilities: [

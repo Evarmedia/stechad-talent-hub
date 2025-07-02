@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Briefcase, User, CheckCircle, Clock, Calendar, TrendingUp } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useInterviewContext } from "@/hooks/useInterviewContext";
 
 const quickLinks = [
   { to: "/dashboard/engineer/jobs", label: "Browse Jobs", icon: "💼" },
@@ -24,6 +25,7 @@ const getStatusColor = (status: string) => {
     case "rejected": return "bg-red-100 text-red-800";
     case "In Progress": return "bg-green-100 text-green-800";
     case "Completed": return "bg-green-100 text-green-800";
+    case "Active": return "bg-green-100 text-green-800";
     default: return "bg-gray-100 text-gray-800";
   }
 };
@@ -32,23 +34,25 @@ const EngineerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [jobs, setJobs] = useState([]);
   
-  const { getApplications, getProjects, getJobs } = useDataContext();
+  const { getApplications, getProjects } = useDataContext();
   const { user } = useAuthContext();
+  const { interviews, fetchInterviews } = useInterviewContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [applicationsData, projectsData, jobsData] = await Promise.all([
+        const [applicationsData, projectsData] = await Promise.all([
           getApplications({ engineerId: user?.id }),
-          getProjects(),
-          getJobs()
+          getProjects()
         ]);
         
         setApplications(applicationsData);
         setProjects(projectsData);
-        setJobs(jobsData);
+        
+        if (user) {
+          await fetchInterviews(user.id, user.role);
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -59,12 +63,15 @@ const EngineerDashboard = () => {
     if (user) {
       fetchData();
     }
-  }, [getApplications, getProjects, getJobs, user]);
+  }, [getApplications, getProjects, fetchInterviews, user]);
+
+  const activeProjects = projects.filter(p => p.status === "In Progress" || p.status === "Active");
+  const scheduledInterviews = interviews.filter(i => i.status === "scheduled");
 
   const stats = [
     { label: "Applications", value: applications.length, icon: Briefcase, change: "+3 this week" },
-    { label: "Interviews", value: 4, icon: User, change: "2 scheduled" },
-    { label: "Projects", value: projects.filter(p => p.status === "In Progress").length, icon: CheckCircle, change: "Active" },
+    { label: "Interviews", value: scheduledInterviews.length, icon: User, change: `${scheduledInterviews.length} scheduled` },
+    { label: "Projects", value: activeProjects.length, icon: CheckCircle, change: "Active" },
     { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" },
   ];
 
@@ -226,8 +233,8 @@ const EngineerDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.filter(p => p.status === "In Progress").slice(0, 2).map((project, idx) => (
-                <div key={idx} className="space-y-2 p-3 border rounded-lg">
+              {activeProjects.slice(0, 2).map((project) => (
+                <div key={project.id} className="space-y-2 p-3 border rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-sm">{project.title}</span>
                     <Badge className={getStatusColor(project.status)} variant="outline">
@@ -247,7 +254,7 @@ const EngineerDashboard = () => {
                   </div>
                 </div>
               ))}
-              {projects.filter(p => p.status === "In Progress").length === 0 && (
+              {activeProjects.length === 0 && (
                 <div className="col-span-2 text-center text-muted-foreground py-8">
                   No active projects
                 </div>
