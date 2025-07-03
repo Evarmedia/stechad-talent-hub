@@ -1,23 +1,34 @@
+
 import React, { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { toast } from "@/hooks/use-toast";
+import { useDataContext } from "@/hooks/useDataContext";
 
 const ALL_SKILLS = [
-  "React", "Node.js", "Python", "Java", "AWS", "Docker", "C#", "SQL", "TypeScript", "Kubernetes"
+  "React", "Node.js", "Python", "Java", "AWS", "Docker", "C#", "SQL", "TypeScript", "Kubernetes",
+  "JavaScript", "Angular", "Vue.js", "Express.js", "MongoDB", "PostgreSQL", "Redis", "GraphQL",
+  "Next.js", "Laravel", "Spring Boot", "Django", "Flask", "Ruby on Rails", "PHP", "Go",
+  "Rust", "Swift", "Kotlin", "Flutter", "React Native", "Firebase", "Azure", "GCP"
 ];
 
 const PostJob = () => {
+  const { createJob } = useDataContext();
   const [form, setForm] = useState({
     title: "",
+    company: "",
     location: "",
     description: "",
     skills: [] as string[],
     duration: "",
     openings: "",
     remote: false,
+    salary: "",
+    experience: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -38,60 +49,198 @@ const PostJob = () => {
     }
   }
 
-  function handleSkillToggle(skill: string) {
+  function handleSkillsChange(skills: string[]) {
     setForm(f => ({
       ...f,
-      skills: f.skills.includes(skill)
-        ? f.skills.filter(s => s !== skill)
-        : [...f.skills, skill],
+      skills,
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    if (!form.title || !form.location || !form.description || !form.duration || !form.openings) {
+      toast({ 
+        title: "Error", 
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const jobData = {
+        title: form.title,
+        company: form.company || "Your Company",
+        location: form.location,
+        description: form.description,
+        skills: form.skills,
+        duration: form.duration,
+        openings: parseInt(form.openings),
+        remote: form.remote,
+        salary: form.salary || "Competitive",
+        experience: form.experience || "Mid-level",
+        posted: new Date().toISOString().split('T')[0],
+        status: "active"
+      };
+
+      await createJob(jobData);
+      
+      toast({ 
+        title: "Success!", 
+        description: `Job "${form.title}" was successfully posted.` 
+      });
+      
+      // Reset form
+      setForm({
+        title: "",
+        company: "",
+        location: "",
+        description: "",
+        skills: [],
+        duration: "",
+        openings: "",
+        remote: false,
+        salary: "",
+        experience: "",
+      });
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "Failed to post job. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-      toast({ title: "Job Posted!", description: `Job "${form.title}" was successfully posted.` });
-    }, 1100);
+    }
   }
 
   return (
-    <div className="p-8 max-w-xl mx-auto">
+    <div className="p-8 max-w-2xl mx-auto">
       <Card>
         <CardHeader>
           <CardTitle>Post a Job</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <label className="block font-semibold text-primary">Job Title</label>
-            <Input name="title" value={form.title} onChange={handleChange} required />
-            <label className="block font-semibold text-primary">Location</label>
-            <Input name="location" value={form.location} onChange={handleChange} required />
-            <label className="block font-semibold text-primary">Job Description</label>
-            <Textarea name="description" value={form.description} onChange={handleChange} rows={4} required />
-            <label className="block font-semibold text-primary">Required Skills</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {ALL_SKILLS.map(skill => (
-                <Button
-                  type="button"
-                  key={skill}
-                  variant={form.skills.includes(skill) ? "default" : "outline"}
-                  onClick={() => handleSkillToggle(skill)}
-                  className="rounded-full text-xs"
-                >
-                  {skill}
-                </Button>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="title">Job Title *</Label>
+                <Input 
+                  id="title"
+                  name="title" 
+                  value={form.title} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              <div>
+                <Label htmlFor="company">Company</Label>
+                <Input 
+                  id="company"
+                  name="company" 
+                  value={form.company} 
+                  onChange={handleChange} 
+                  placeholder="Your Company"
+                />
+              </div>
             </div>
-            <label className="block font-semibold text-primary">Duration</label>
-            <Input name="duration" value={form.duration} onChange={handleChange} placeholder="e.g. 6 months" required />
-            <label className="block font-semibold text-primary">Number of Openings</label>
-            <Input name="openings" type="number" value={form.openings} onChange={handleChange} required />
-            <label className="block font-semibold text-primary">Remote?</label>
-            <input type="checkbox" name="remote" checked={form.remote} onChange={handleChange} className="ml-2" />
-            <Button type="submit" className="w-full mt-3" disabled={loading}>
-              {loading ? "Posting..." : "Submit Job"}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">Location *</Label>
+                <Input 
+                  id="location"
+                  name="location" 
+                  value={form.location} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              <div>
+                <Label htmlFor="salary">Salary</Label>
+                <Input 
+                  id="salary"
+                  name="salary" 
+                  value={form.salary} 
+                  onChange={handleChange} 
+                  placeholder="e.g. $80,000 - $120,000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="description">Job Description *</Label>
+              <Textarea 
+                id="description"
+                name="description" 
+                value={form.description} 
+                onChange={handleChange} 
+                rows={4} 
+                required 
+              />
+            </div>
+
+            <div>
+              <Label>Required Skills</Label>
+              <MultiSelect
+                options={ALL_SKILLS}
+                selected={form.skills}
+                onChange={handleSkillsChange}
+                placeholder="Search and select skills..."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="duration">Duration *</Label>
+                <Input 
+                  id="duration"
+                  name="duration" 
+                  value={form.duration} 
+                  onChange={handleChange} 
+                  placeholder="e.g. 6 months" 
+                  required 
+                />
+              </div>
+              <div>
+                <Label htmlFor="openings">Number of Openings *</Label>
+                <Input 
+                  id="openings"
+                  name="openings" 
+                  type="number" 
+                  value={form.openings} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              <div>
+                <Label htmlFor="experience">Experience Level</Label>
+                <Input 
+                  id="experience"
+                  name="experience" 
+                  value={form.experience} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Mid-level"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  name="remote" 
+                  checked={form.remote} 
+                  onChange={handleChange} 
+                />
+                Remote Position
+              </Label>
+            </div>
+
+            <Button type="submit" className="w-full mt-6" disabled={loading}>
+              {loading ? "Posting..." : "Post Job"}
             </Button>
           </form>
         </CardContent>
