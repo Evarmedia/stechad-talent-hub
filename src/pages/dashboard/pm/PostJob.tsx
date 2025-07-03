@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { toast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
@@ -27,6 +27,7 @@ const PostJob = () => {
     duration: "",
     openings: "",
     remote: false,
+    employmentType: "fulltime",
     salary: "",
     experience: "",
   });
@@ -56,6 +57,13 @@ const PostJob = () => {
     }));
   }
 
+  function handleEmploymentTypeChange(value: string) {
+    setForm(f => ({
+      ...f,
+      employmentType: value,
+    }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     
@@ -79,6 +87,7 @@ const PostJob = () => {
         duration: form.duration,
         openings: parseInt(form.openings),
         remote: form.remote,
+        employmentType: form.employmentType,
         salary: form.salary || "Competitive",
         experience: form.experience || "Mid-level",
         posted: new Date().toISOString().split('T')[0],
@@ -102,6 +111,7 @@ const PostJob = () => {
         duration: "",
         openings: "",
         remote: false,
+        employmentType: "fulltime",
         salary: "",
         experience: "",
       });
@@ -188,7 +198,7 @@ const PostJob = () => {
                 options={ALL_SKILLS}
                 selected={form.skills}
                 onChange={handleSkillsChange}
-                placeholder="Search and select skills..."
+                placeholder="Type to search or add custom skills..."
               />
             </div>
 
@@ -227,16 +237,40 @@ const PostJob = () => {
               </div>
             </div>
 
-            <div>
-              <Label className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  name="remote" 
-                  checked={form.remote} 
-                  onChange={handleChange} 
-                />
-                Remote Position
-              </Label>
+            <div className="space-y-4">
+              <div>
+                <Label className="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    name="remote" 
+                    checked={form.remote} 
+                    onChange={handleChange} 
+                  />
+                  Remote Position
+                </Label>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Employment Type</Label>
+                <RadioGroup 
+                  value={form.employmentType} 
+                  onValueChange={handleEmploymentTypeChange}
+                  className="flex flex-col space-y-2 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fulltime" id="fulltime" />
+                    <Label htmlFor="fulltime">Full-time</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="contract" id="contract" />
+                    <Label htmlFor="contract">Contract</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="parttime" id="parttime" />
+                    <Label htmlFor="parttime">Part-time</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
 
             <Button type="submit" className="w-full mt-6" disabled={loading}>
