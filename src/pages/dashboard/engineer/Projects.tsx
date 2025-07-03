@@ -28,19 +28,26 @@ const getTaskIcon = (status: string) => {
 
 const EngineerProjects = () => {
   const [projects, setProjects] = useState([]);
-  const { getProjects, loading } = useDataContext();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const { getProjects } = useDataContext();
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const projectsData = await getProjects();
-      setProjects(projectsData);
+      try {
+        const projectsData = await getProjects();
+        setProjects(projectsData);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setInitialLoading(false);
+      }
     };
 
     fetchProjects();
-  }, [getProjects]);
+  }, []);
 
   const currentProjects = projects.filter(project => 
-    project.status === "In Progress" || project.status === "Active"
+    project.status === "In Progress" || project.status === "active"
   );
   
   const completedProjects = projects.filter(project => 
@@ -61,7 +68,7 @@ const EngineerProjects = () => {
         </TabsList>
 
         <TabsContent value="current" className="space-y-6">
-          {loading ? (
+          {initialLoading ? (
             <div className="space-y-4">
               {Array(2).fill(0).map((_, i) => (
                 <Card key={i}>
@@ -143,7 +150,7 @@ const EngineerProjects = () => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
-          {loading ? (
+          {initialLoading ? (
             <div className="space-y-4">
               {Array(2).fill(0).map((_, i) => (
                 <Card key={i}>

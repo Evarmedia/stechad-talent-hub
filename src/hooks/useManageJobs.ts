@@ -21,12 +21,14 @@ export const useManageJobs = () => {
           getApplications()
         ]);
         
-        // Calculate application counts for each job
+        // Calculate application counts for each job and normalize status
         const jobsWithRealApplications = jobsData.map((job: any) => {
           const jobApplications = applicationsData.filter((app: any) => app.jobId === job.id);
           return {
             ...job,
-            applications: jobApplications.length
+            applications: jobApplications.length,
+            // Normalize status to only 'active' or 'closed'
+            status: job.status === 'Active' || job.status === 'active' ? 'active' : 'closed'
           };
         });
         

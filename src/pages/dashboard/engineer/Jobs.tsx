@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,28 +23,45 @@ const EngineerJobs = () => {
   const [jobsList, setJobsList] = useState([]);
   const [applying, setApplying] = useState<number | null>(null);
   const [userApplications, setUserApplications] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   
   const { getJobs, loading, createApplication, getApplications } = useDataContext();
   const { user } = useAuthContext();
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch jobs
-      const filters = {
-        search: search || undefined
-      };
-      const jobs = await getJobs(filters);
-      setJobsList(jobs);
-
-      // Fetch user's applications if user is logged in
-      if (user) {
-        const applications = await getApplications({ engineerId: user.id });
+    const fetchInitialData = async () => {
+      try {
+        // Fetch jobs and user applications in parallel
+        const [jobs, applications] = await Promise.all([
+          getJobs(),
+          user ? getApplications({ engineerId: user.id }) : Promise.resolve([])
+        ]);
+        
+        setJobsList(jobs);
         setUserApplications(applications);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    fetchData();
-  }, [getJobs, getApplications, search, user]);
+    fetchInitialData();
+  }, [user?.id]);
+
+  // Separate effect for search filtering to avoid refetching all data
+  useEffect(() => {
+    if (!search || initialLoading) return;
+    
+    const searchJobs = async () => {
+      const filters = { search };
+      const jobs = await getJobs(filters);
+      setJobsList(jobs);
+    };
+
+    const debounceTimer = setTimeout(searchJobs, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [search, getJobs, initialLoading]);
 
   const hasAppliedToJob = (jobId: number) => {
     return userApplications.some(app => app.jobId === jobId);
@@ -100,6 +118,8 @@ const EngineerJobs = () => {
     (job) => job.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  const isLoading = initialLoading || loading;
+
   return (
     <div className="p-8">
       <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
@@ -115,7 +135,7 @@ const EngineerJobs = () => {
         </Button>
       </div>
       <div className="grid md:grid-cols-2 gap-6">
-        {loading ? (
+        {isLoading ? (
           Array(3)
             .fill(0)
             .map((_, i) => (
