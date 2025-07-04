@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../data/mockData.js';
 
@@ -62,16 +61,9 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true);
     try {
       const updatedUser = await authAPI.updateProfile(user.id, profileData);
-      const updatedUserData = {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        name: updatedUser.name,
-        profileData: updatedUser.profileData
-      };
-      setUser(updatedUserData);
-      localStorage.setItem('stechad_user', JSON.stringify(updatedUserData));
-      return updatedUserData;
+      setUser(updatedUser);
+      localStorage.setItem('stechad_user', JSON.stringify(updatedUser));
+      return updatedUser;
     } catch (error) {
       throw error;
     } finally {

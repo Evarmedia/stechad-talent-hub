@@ -126,18 +126,39 @@ const Onboarding = () => {
     try {
       // Prepare onboarding data
       const onboardingData = {
-        ...form,
-        dateOfBirth: form.dateOfBirth ? format(form.dateOfBirth, 'MM-dd') : '',
-        cvFileName: form.cv?.name || '',
-        onboardedAt: new Date().toISOString(),
-        isOnboarded: true
+        profileData: {
+          ...user?.profileData,
+          fullName: form.fullName,
+          phoneNumber: form.phoneNumber,
+          dateOfBirth: form.dateOfBirth ? format(form.dateOfBirth, 'MM-dd') : '',
+          city: form.city,
+          country: form.country,
+          openToNearbyCities: form.openToNearbyCities,
+          languages: form.languages,
+          languageProficiency: form.languageProficiency,
+          hasDriversLicense: form.hasDriversLicense,
+          hasCar: form.hasCar,
+          isNative: form.isNative,
+          workAuthorized: form.workAuthorized,
+          specialization: form.specialization,
+          skillLevel: form.skillLevel,
+          yearsOfExperience: form.yearsOfExperience,
+          certifications: form.certifications,
+          projectTypes: form.projectTypes,
+          openToTraining: form.openToTraining,
+          refereeInfo: form.refereeInfo,
+          newsletter: form.newsletter,
+          specialPreferences: form.specialPreferences,
+          cvFileName: form.cv?.name || '',
+          isFreelancer: form.isFreelancer,
+          followsLinkedIn: form.followsLinkedIn,
+          onboardedAt: new Date().toISOString(),
+          isOnboarded: true
+        }
       };
 
       // Update user profile with onboarding data
-      await updateProfile({
-        ...user?.profileData,
-        ...onboardingData
-      });
+      await updateProfile(onboardingData);
 
       toast({ 
         title: "Onboarding Complete! 🎉", 

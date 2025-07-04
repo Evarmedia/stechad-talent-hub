@@ -86,7 +86,8 @@ export const mockUsers = [
       skills: ["React", "TypeScript", "Node.js"],
       experience: "Senior",
       availability: "Available",
-      isVetted: true
+      isVetted: true,
+      isOnboarded: true
     }
   },
   {
@@ -99,7 +100,8 @@ export const mockUsers = [
       company: "Acme Corp",
       country: "Germany",
       activeProjects: 2,
-      completedProjects: 5
+      completedProjects: 5,
+      isOnboarded: true
     }
   },
   {
@@ -109,7 +111,8 @@ export const mockUsers = [
     role: "admin",
     name: "Alex Admin",
     profileData: {
-      role: "Platform Administrator"
+      role: "Platform Administrator",
+      isOnboarded: true
     }
   }
 ];
@@ -523,7 +526,10 @@ export const authAPI = {
       password: userData.password,
       role: userData.role || 'engineer',
       name: userData.name,
-      profileData: userData.profileData || {}
+      profileData: { 
+        ...userData.profileData, 
+        isOnboarded: false
+      }
     };
     mockUsers.push(newUser);
     return {
@@ -541,11 +547,19 @@ export const authAPI = {
     if (userIndex === -1) {
       throw new Error('User not found');
     }
-    mockUsers[userIndex] = { 
+    
+    // Update the user with new profile data
+    const updatedUser = { 
       ...mockUsers[userIndex], 
       ...profileData,
-      profileData: { ...mockUsers[userIndex].profileData, ...profileData.profileData }
+      profileData: { 
+        ...mockUsers[userIndex].profileData, 
+        ...profileData.profileData 
+      }
     };
-    return mockUsers[userIndex];
+    
+    mockUsers[userIndex] = updatedUser;
+    
+    return updatedUser;
   }
 };
