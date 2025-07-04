@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Clock, CheckCircle } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -30,12 +31,30 @@ const EngineerProjects = () => {
   const [projects, setProjects] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const { getProjects } = useDataContext();
+  const { user } = useAuthContext();
 
   useEffect(() => {
     const fetchProjects = async () => {
+      if (!user) {
+        setInitialLoading(false);
+        return;
+      }
+
       try {
         const projectsData = await getProjects();
-        setProjects(projectsData);
+        
+        // Filter projects to only show those assigned to the current user
+        const userProjects = projectsData.filter(project => 
+          project.assignedTo === user.id || 
+          project.engineerId === user.id ||
+          (project.team && project.team.includes(user.id)) ||
+          (project.assignedEngineers && project.assignedEngineers.includes(user.id))
+        );
+        
+        console.log('All projects:', projectsData);
+        console.log('User projects for user', user.id, ':', userProjects);
+        
+        setProjects(userProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -44,7 +63,7 @@ const EngineerProjects = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [getProjects, user]);
 
   const currentProjects = projects.filter(project => 
     project.status === "In Progress" || project.status === "active"
@@ -83,66 +102,68 @@ const EngineerProjects = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {currentProjects.map((project) => (
-                <Card key={project.id}>
-                  <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-muted-foreground">
-                          <span className="font-medium">{project.client}</span>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{project.startDate} - {project.deadline}</span>
+              {currentProjects.length > 0 ? (
+                currentProjects.map((project) => (
+                  <Card key={project.id}>
+                    <CardHeader>
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="space-y-2">
+                          <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
+                          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-muted-foreground">
+                            <span className="font-medium">{project.client}</span>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{project.startDate} - {project.deadline}</span>
+                            </div>
                           </div>
                         </div>
+                        <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
                       </div>
-                      <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{project.description}</p>
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium">Progress</span>
-                        <span className="text-sm text-muted-foreground">{project.progress}%</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">{project.description}</p>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">Progress</span>
+                          <span className="text-sm text-muted-foreground">{project.progress}%</span>
+                        </div>
+                        <Progress value={project.progress} className="h-2" />
                       </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
 
-                    <div>
-                      <span className="text-sm font-medium">Technologies:</span>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {project.technologies?.map((tech) => (
-                          <Badge key={tech} variant="outline">{tech}</Badge>
-                        )) || (
-                          <Badge variant="outline">React</Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {project.tasks && (
-                      <div className="space-y-3">
-                        <span className="text-sm font-medium">Tasks:</span>
-                        <div className="space-y-2">
-                          {project.tasks.map((task, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-                              {getTaskIcon(task.status)}
-                              <span className={`text-sm ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
-                                {task.title}
-                              </span>
-                            </div>
-                          ))}
+                      <div>
+                        <span className="text-sm font-medium">Technologies:</span>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {project.technologies?.map((tech) => (
+                            <Badge key={tech} variant="outline">{tech}</Badge>
+                          )) || (
+                            <Badge variant="outline">React</Badge>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-              {currentProjects.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No current projects
+
+                      {project.tasks && (
+                        <div className="space-y-3">
+                          <span className="text-sm font-medium">Tasks:</span>
+                          <div className="space-y-2">
+                            {project.tasks.map((task, index) => (
+                              <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
+                                {getTaskIcon(task.status)}
+                                <span className={`text-sm ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                                  {task.title}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-lg font-medium mb-2">No projects yet...</div>
+                  <p className="text-sm">You haven't been assigned to any projects yet. Check back later!</p>
                 </div>
               )}
             </div>
@@ -164,44 +185,46 @@ const EngineerProjects = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {completedProjects.map((project) => (
-                <Card key={project.id}>
-                  <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-muted-foreground">
-                          <span className="font-medium">{project.client}</span>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>Duration: {project.startDate} - {project.deadline}</span>
+              {completedProjects.length > 0 ? (
+                completedProjects.map((project) => (
+                  <Card key={project.id}>
+                    <CardHeader>
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="space-y-2">
+                          <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
+                          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-muted-foreground">
+                            <span className="font-medium">{project.client}</span>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>Duration: {project.startDate} - {project.deadline}</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">{project.description}</p>
+                      
+                      <div>
+                        <span className="text-sm font-medium">Technologies Used:</span>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {project.technologies?.map((tech) => (
+                            <Badge key={tech} variant="outline">{tech}</Badge>
+                          )) || (
+                            <Badge variant="outline">React</Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{project.description}</p>
-                    
-                    <div>
-                      <span className="text-sm font-medium">Technologies Used:</span>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {project.technologies?.map((tech) => (
-                          <Badge key={tech} variant="outline">{tech}</Badge>
-                        )) || (
-                          <Badge variant="outline">React</Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {completedProjects.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No completed projects
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-lg font-medium mb-2">No completed projects</div>
+                  <p className="text-sm">You haven't completed any projects yet.</p>
                 </div>
               )}
             </div>
