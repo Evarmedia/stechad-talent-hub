@@ -48,7 +48,14 @@ const EngineerDashboard = () => {
         ]);
         
         setApplications(applicationsData);
-        setProjects(projectsData);
+        
+        // Filter projects to only show projects assigned to the current user
+        const userProjects = projectsData.filter(project => 
+          project.assignedTo === user?.id || 
+          project.engineerId === user?.id ||
+          (project.team && project.team.includes(user?.id))
+        );
+        setProjects(userProjects);
         
         if (user) {
           await fetchInterviews(user.id, user.role);
@@ -75,7 +82,6 @@ const EngineerDashboard = () => {
     { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" },
   ];
 
-  // Get user skills from profile or default set
   const skills = user?.profileData?.skills || ["React", "Node.js", "SQL", "AWS", "TypeScript", "Python"];
 
   return (
@@ -256,7 +262,7 @@ const EngineerDashboard = () => {
               ))}
               {activeProjects.length === 0 && (
                 <div className="col-span-2 text-center text-muted-foreground py-8">
-                  No active projects
+                  No projects yet...
                 </div>
               )}
             </div>
