@@ -31,6 +31,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     return <Navigate to="/login" replace />;
   }
 
+  // Check if engineer has completed onboarding
+  if (user.role === 'engineer' && !user.profileData?.isOnboarded) {
+    // Allow access to onboarding page itself
+    if (location.pathname === '/onboarding') {
+      return <>{children}</>;
+    }
+    // Redirect to onboarding for all other engineer routes
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // If engineer is onboarded but trying to access onboarding page, redirect to dashboard
+  if (user.role === 'engineer' && user.profileData?.isOnboarded && location.pathname === '/onboarding') {
+    return <Navigate to="/dashboard/engineer" replace />;
+  }
+
   return <>{children}</>;
 };
 

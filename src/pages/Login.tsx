@@ -44,12 +44,17 @@ const Login = () => {
       const user = await login(form.email, form.password, form.role);
       toast({ title: `Welcome ${user.name}`, description: "Login successful!" });
       
-      // Navigate based on role or return to previous page
+      // Navigate based on role and onboarding status
       if (from !== "/") {
         navigate(from, { replace: true });
       } else {
         if (form.role === "engineer") {
-          navigate("/dashboard/engineer");
+          // Check if engineer has completed onboarding
+          if (!user.profileData?.isOnboarded) {
+            navigate("/onboarding");
+          } else {
+            navigate("/dashboard/engineer");
+          }
         } else if (form.role === "pm") {
           navigate("/dashboard/pm");
         } else if (form.role === "admin") {
