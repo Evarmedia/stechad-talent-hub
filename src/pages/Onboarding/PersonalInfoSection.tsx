@@ -4,12 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { COUNTRIES } from "./constants";
 import { OnboardingFormData } from "./useOnboardingForm";
 
@@ -21,6 +15,23 @@ interface PersonalInfoSectionProps {
   handleDateChange: (date: Date | null) => void;
 }
 
+const MONTHS = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" }
+];
+
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   form,
   handleInputChange,
@@ -28,6 +39,16 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   handleRadioChange,
   handleDateChange
 }) => {
+  const handleMonthDayChange = (type: 'month' | 'day', value: string) => {
+    const currentDate = form.dateOfBirth || new Date();
+    const month = type === 'month' ? parseInt(value) : currentDate.getMonth() + 1;
+    const day = type === 'day' ? parseInt(value) : currentDate.getDate();
+    
+    // Create a new date with the selected month and day (using current year as placeholder)
+    const newDate = new Date(currentDate.getFullYear(), month - 1, day);
+    handleDateChange(newDate);
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-primary">Personal Information</h3>
@@ -58,30 +79,42 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
       <div>
         <Label className="block font-semibold text-primary mb-2">Date of Birth (Day and Month) *</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !form.dateOfBirth && "text-muted-foreground"
-              )}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Select 
+              value={form.dateOfBirth ? (form.dateOfBirth.getMonth() + 1).toString() : ""} 
+              onValueChange={(value) => handleMonthDayChange('month', value)}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {form.dateOfBirth ? format(form.dateOfBirth, "MMMM dd") : "Select date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-white border shadow-lg" align="start">
-            <Calendar
-              mode="single"
-              selected={form.dateOfBirth || undefined}
-              onSelect={handleDateChange}
-              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-              initialFocus
-              className="pointer-events-auto bg-white"
-            />
-          </PopoverContent>
-        </Popover>
+              <SelectTrigger>
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                {MONTHS.map(month => (
+                  <SelectItem key={month.value} value={month.value.toString()}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Select 
+              value={form.dateOfBirth ? form.dateOfBirth.getDate().toString() : ""} 
+              onValueChange={(value) => handleMonthDayChange('day', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select day" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                {DAYS.map(day => (
+                  <SelectItem key={day} value={day.toString()}>
+                    {day}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
