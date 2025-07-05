@@ -1,6 +1,6 @@
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, User, ClipboardList, Settings, Briefcase, FileText, Users, FolderKanban, Calendar } from "lucide-react";
+import { Home, User, ClipboardList, Settings, Briefcase, FileText, Users, FolderKanban, Calendar, MessageCircle } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 
 const engineerMenu = [
@@ -9,6 +9,7 @@ const engineerMenu = [
   { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
   { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
+  { icon: MessageCircle, label: "Messages", to: "/dashboard/engineer/messages" },
   { icon: User,    label: "Profile",   to: "/dashboard/engineer/profile" },
 ];
 
@@ -19,6 +20,7 @@ const pmMenu = [
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
   { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
+  { icon: MessageCircle, label: "Messages", to: "/dashboard/pm/messages" },
 ];
 
 const adminMenu = [
@@ -28,6 +30,7 @@ const adminMenu = [
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
   { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
+  { icon: MessageCircle, label: "Messages", to: "/admin/messages" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
 ];
 

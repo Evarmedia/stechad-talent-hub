@@ -24,7 +24,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedChatId, onChatSel
     getChatsForUser, 
     getChatById, 
     sendMessage, 
-    markMessagesAsRead 
+    markMessagesAsRead,
+    getUserName
   } = useChatContext();
   
   const [userChats, setUserChats] = useState([]);
@@ -109,10 +110,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedChatId, onChatSel
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const getOtherParticipantId = (chat) => {
+    return chat.participants.find(id => id !== user?.id);
+  };
+
   const getOtherParticipantName = (chat) => {
-    // This would typically fetch user details from your user context/API
-    const otherParticipantId = chat.participants.find(id => id !== user?.id);
-    return `User ${otherParticipantId}`;
+    const otherParticipantId = getOtherParticipantId(chat);
+    return getUserName(otherParticipantId);
   };
 
   if (loading && userChats.length === 0) {
@@ -158,7 +162,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedChatId, onChatSel
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className="text-xs">
-                            {getOtherParticipantName(chat).charAt(0)}
+                            {getOtherParticipantName(chat).split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium text-sm">

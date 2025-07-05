@@ -4,47 +4,170 @@ import { simulateDelay } from '../../data/mockData.js';
 
 const ChatContext = createContext();
 
-// Mock chat data
+// Enhanced mock chat data with realistic conversations
 const mockChats = [
   {
     id: 'chat-1',
-    participants: ['user-1', 'user-2'], // engineer and pm/admin
-    type: 'pm-engineer', // or 'admin-engineer'
-    lastMessage: 'Looking forward to the interview tomorrow',
-    lastMessageTime: new Date('2024-01-15T10:30:00'),
-    unreadCount: 2,
+    participants: ['eng-1', 'pm-1'], // engineer-1 and pm-1
+    type: 'pm-engineer',
+    lastMessage: 'Sure, I can start working on the authentication module next week',
+    lastMessageTime: new Date('2024-01-15T14:30:00'),
+    unreadCount: 1,
     messages: [
       {
         id: 'msg-1',
-        senderId: 'user-1',
-        content: 'Hi, I saw your application for the React Developer position',
+        senderId: 'pm-1',
+        content: 'Hi John! I wanted to discuss the upcoming React project with you.',
         timestamp: new Date('2024-01-15T09:00:00'),
         isRead: true
       },
       {
         id: 'msg-2',
-        senderId: 'user-2',
-        content: 'Hello! Yes, I\'m very interested in this opportunity',
+        senderId: 'eng-1',
+        content: 'Hello Sarah! I\'m excited about it. What are the main requirements?',
         timestamp: new Date('2024-01-15T09:15:00'),
         isRead: true
       },
       {
         id: 'msg-3',
-        senderId: 'user-1',
-        content: 'Great! I\'d like to schedule an interview with you',
+        senderId: 'pm-1',
+        content: 'We need to build a user authentication system and a dashboard. The timeline is 3 weeks.',
         timestamp: new Date('2024-01-15T10:00:00'),
         isRead: true
       },
       {
         id: 'msg-4',
-        senderId: 'user-2',
-        content: 'Looking forward to the interview tomorrow',
-        timestamp: new Date('2024-01-15T10:30:00'),
+        senderId: 'pm-1',
+        content: 'Can you handle the authentication module first?',
+        timestamp: new Date('2024-01-15T14:00:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-5',
+        senderId: 'eng-1',
+        content: 'Sure, I can start working on the authentication module next week',
+        timestamp: new Date('2024-01-15T14:30:00'),
         isRead: false
+      }
+    ]
+  },
+  {
+    id: 'chat-2',
+    participants: ['eng-2', 'pm-1'], // engineer-2 and pm-1
+    type: 'pm-engineer',
+    lastMessage: 'The API integration is complete and ready for testing',
+    lastMessageTime: new Date('2024-01-15T12:45:00'),
+    unreadCount: 0,
+    messages: [
+      {
+        id: 'msg-6',
+        senderId: 'pm-1',
+        content: 'Hey Mike, how\'s the API integration going?',
+        timestamp: new Date('2024-01-15T11:00:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-7',
+        senderId: 'eng-2',
+        content: 'Going well! I\'ve completed the user endpoints and working on the data endpoints now.',
+        timestamp: new Date('2024-01-15T11:30:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-8',
+        senderId: 'eng-2',
+        content: 'The API integration is complete and ready for testing',
+        timestamp: new Date('2024-01-15T12:45:00'),
+        isRead: true
+      }
+    ]
+  },
+  {
+    id: 'chat-3',
+    participants: ['eng-1', 'admin-1'], // engineer-1 and admin-1
+    type: 'admin-engineer',
+    lastMessage: 'Thanks for the clarification! I\'ll update my profile accordingly.',
+    lastMessageTime: new Date('2024-01-14T16:20:00'),
+    unreadCount: 2,
+    messages: [
+      {
+        id: 'msg-9',
+        senderId: 'admin-1',
+        content: 'Hi John, I noticed your profile needs some updates for compliance.',
+        timestamp: new Date('2024-01-14T15:00:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-10',
+        senderId: 'eng-1',
+        content: 'Hi! What specific updates do I need to make?',
+        timestamp: new Date('2024-01-14T15:30:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-11',
+        senderId: 'admin-1',
+        content: 'Please add your certifications and update your skill level for React to Expert.',
+        timestamp: new Date('2024-01-14T16:00:00'),
+        isRead: false
+      },
+      {
+        id: 'msg-12',
+        senderId: 'eng-1',
+        content: 'Thanks for the clarification! I\'ll update my profile accordingly.',
+        timestamp: new Date('2024-01-14T16:20:00'),
+        isRead: false
+      }
+    ]
+  },
+  {
+    id: 'chat-4',
+    participants: ['eng-3', 'admin-1'], // engineer-3 and admin-1
+    type: 'admin-engineer',
+    lastMessage: 'The verification process is now complete',
+    lastMessageTime: new Date('2024-01-13T10:15:00'),
+    unreadCount: 0,
+    messages: [
+      {
+        id: 'msg-13',
+        senderId: 'admin-1',
+        content: 'Welcome to STECHAD! Your account is under review.',
+        timestamp: new Date('2024-01-13T08:00:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-14',
+        senderId: 'eng-3',
+        content: 'Thank you! How long does the review process usually take?',
+        timestamp: new Date('2024-01-13T08:30:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-15',
+        senderId: 'admin-1',
+        content: 'Usually 1-2 business days. I\'ll let you know once it\'s complete.',
+        timestamp: new Date('2024-01-13T09:00:00'),
+        isRead: true
+      },
+      {
+        id: 'msg-16',
+        senderId: 'admin-1',
+        content: 'The verification process is now complete',
+        timestamp: new Date('2024-01-13T10:15:00'),
+        isRead: true
       }
     ]
   }
 ];
+
+// User mapping for display names
+const userMap = {
+  'eng-1': { name: 'John Smith', role: 'engineer' },
+  'eng-2': { name: 'Mike Johnson', role: 'engineer' },
+  'eng-3': { name: 'Lisa Wang', role: 'engineer' },
+  'pm-1': { name: 'Sarah Davis', role: 'pm' },
+  'admin-1': { name: 'Admin', role: 'admin' }
+};
 
 export const ChatProvider = ({ children }) => {
   const [chats, setChats] = useState(mockChats);
@@ -140,6 +263,10 @@ export const ChatProvider = ({ children }) => {
     return newChat;
   };
 
+  const getUserName = (userId) => {
+    return userMap[userId]?.name || `User ${userId}`;
+  };
+
   const value = {
     chats,
     loading,
@@ -147,7 +274,8 @@ export const ChatProvider = ({ children }) => {
     getChatById,
     sendMessage,
     markMessagesAsRead,
-    createChat
+    createChat,
+    getUserName
   };
 
   return (
