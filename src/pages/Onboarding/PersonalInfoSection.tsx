@@ -71,14 +71,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
               {form.dateOfBirth ? format(form.dateOfBirth, "MMMM dd") : "Select date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 bg-white border shadow-lg" align="start">
             <Calendar
               mode="single"
               selected={form.dateOfBirth || undefined}
               onSelect={handleDateChange}
               disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
               initialFocus
-              className="pointer-events-auto"
+              className="pointer-events-auto bg-white"
             />
           </PopoverContent>
         </Popover>
@@ -102,7 +102,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             <SelectTrigger>
               <SelectValue placeholder="Select country" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border shadow-lg">
               {COUNTRIES.map(country => (
                 <SelectItem key={country} value={country}>{country}</SelectItem>
               ))}
@@ -116,11 +116,11 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         <RadioGroup value={form.openToNearbyCities} onValueChange={(value) => handleRadioChange('openToNearbyCities', value)}>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="nearby-yes" />
-            <Label htmlFor="nearby-yes">Yes</Label>
+            <Label htmlFor="nearby-yes" className="cursor-pointer">Yes</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id="nearby-no" />
-            <Label htmlFor="nearby-no">No</Label>
+            <Label htmlFor="nearby-no" className="cursor-pointer">No</Label>
           </div>
         </RadioGroup>
       </div>

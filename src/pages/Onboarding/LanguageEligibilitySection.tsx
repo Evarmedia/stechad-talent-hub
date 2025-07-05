@@ -40,7 +40,7 @@ export const LanguageEligibilitySection: React.FC<LanguageEligibilitySectionProp
           <SelectTrigger>
             <SelectValue placeholder="Select proficiency level" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border shadow-lg">
             {PROFICIENCY_LEVELS.map(level => (
               <SelectItem key={level} value={level}>{level}</SelectItem>
             ))}
@@ -54,11 +54,11 @@ export const LanguageEligibilitySection: React.FC<LanguageEligibilitySectionProp
           <RadioGroup value={form.hasDriversLicense} onValueChange={(value) => handleRadioChange('hasDriversLicense', value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="license-yes" />
-              <Label htmlFor="license-yes">Yes</Label>
+              <Label htmlFor="license-yes" className="cursor-pointer">Yes</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="license-no" />
-              <Label htmlFor="license-no">No</Label>
+              <Label htmlFor="license-no" className="cursor-pointer">No</Label>
             </div>
           </RadioGroup>
         </div>
@@ -69,11 +69,11 @@ export const LanguageEligibilitySection: React.FC<LanguageEligibilitySectionProp
             <RadioGroup value={form.hasCar} onValueChange={(value) => handleRadioChange('hasCar', value)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yes" id="car-yes" />
-                <Label htmlFor="car-yes">Yes</Label>
+                <Label htmlFor="car-yes" className="cursor-pointer">Yes</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="no" id="car-no" />
-                <Label htmlFor="car-no">No</Label>
+                <Label htmlFor="car-no" className="cursor-pointer">No</Label>
               </div>
             </RadioGroup>
           </div>
@@ -86,11 +86,11 @@ export const LanguageEligibilitySection: React.FC<LanguageEligibilitySectionProp
           <RadioGroup value={form.isNative} onValueChange={(value) => handleRadioChange('isNative', value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="native-yes" />
-              <Label htmlFor="native-yes">Yes</Label>
+              <Label htmlFor="native-yes" className="cursor-pointer">Yes</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="native-no" />
-              <Label htmlFor="native-no">No</Label>
+              <Label htmlFor="native-no" className="cursor-pointer">No</Label>
             </div>
           </RadioGroup>
         </div>
@@ -100,11 +100,11 @@ export const LanguageEligibilitySection: React.FC<LanguageEligibilitySectionProp
           <RadioGroup value={form.workAuthorized} onValueChange={(value) => handleRadioChange('workAuthorized', value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="work-yes" />
-              <Label htmlFor="work-yes">Yes</Label>
+              <Label htmlFor="work-yes" className="cursor-pointer">Yes</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="work-no" />
-              <Label htmlFor="work-no">No</Label>
+              <Label htmlFor="work-no" className="cursor-pointer">No</Label>
             </div>
           </RadioGroup>
         </div>

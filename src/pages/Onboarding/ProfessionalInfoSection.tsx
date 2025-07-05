@@ -44,7 +44,7 @@ export const ProfessionalInfoSection: React.FC<ProfessionalInfoSectionProps> = (
             <SelectTrigger>
               <SelectValue placeholder="Select skill level" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border shadow-lg">
               {SKILL_LEVELS.map(level => (
                 <SelectItem key={level} value={level}>{level}</SelectItem>
               ))}
@@ -90,11 +90,11 @@ export const ProfessionalInfoSection: React.FC<ProfessionalInfoSectionProps> = (
         <RadioGroup value={form.openToTraining} onValueChange={(value) => handleRadioChange('openToTraining', value)}>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="training-yes" />
-            <Label htmlFor="training-yes">Yes</Label>
+            <Label htmlFor="training-yes" className="cursor-pointer">Yes</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id="training-no" />
-            <Label htmlFor="training-no">No</Label>
+            <Label htmlFor="training-no" className="cursor-pointer">No</Label>
           </div>
         </RadioGroup>
       </div>
@@ -104,11 +104,11 @@ export const ProfessionalInfoSection: React.FC<ProfessionalInfoSectionProps> = (
         <RadioGroup value={form.isFreelancer} onValueChange={(value) => handleRadioChange('isFreelancer', value)}>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="freelancer-yes" />
-            <Label htmlFor="freelancer-yes">Yes</Label>
+            <Label htmlFor="freelancer-yes" className="cursor-pointer">Yes</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id="freelancer-no" />
-            <Label htmlFor="freelancer-no">No</Label>
+            <Label htmlFor="freelancer-no" className="cursor-pointer">No</Label>
           </div>
         </RadioGroup>
       </div>

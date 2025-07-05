@@ -60,11 +60,11 @@ export const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
           <RadioGroup value={form.newsletter} onValueChange={(value) => handleRadioChange('newsletter', value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="newsletter-yes" />
-              <Label htmlFor="newsletter-yes">Yes</Label>
+              <Label htmlFor="newsletter-yes" className="cursor-pointer">Yes</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="newsletter-no" />
-              <Label htmlFor="newsletter-no">No</Label>
+              <Label htmlFor="newsletter-no" className="cursor-pointer">No</Label>
             </div>
           </RadioGroup>
         </div>
@@ -74,11 +74,11 @@ export const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
           <RadioGroup value={form.followsLinkedIn} onValueChange={(value) => handleRadioChange('followsLinkedIn', value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="linkedin-yes" />
-              <Label htmlFor="linkedin-yes">Yes</Label>
+              <Label htmlFor="linkedin-yes" className="cursor-pointer">Yes</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="linkedin-no" />
-              <Label htmlFor="linkedin-no">No</Label>
+              <Label htmlFor="linkedin-no" className="cursor-pointer">No</Label>
             </div>
           </RadioGroup>
         </div>
