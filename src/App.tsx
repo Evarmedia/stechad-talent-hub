@@ -39,6 +39,9 @@ import AdminProfile from "./pages/admin/Profile";
 import { InterviewProvider } from "./hooks/useInterviewContext";
 import PMInterviews from "./pages/dashboard/pm/Interviews";
 import EngineerInterviews from "./pages/dashboard/engineer/Interviews";
+import EngineerMessages from "./pages/dashboard/engineer/Messages";
+import PMMessages from "./pages/dashboard/pm/Messages";
+import AdminMessages from "./pages/admin/Messages";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +94,11 @@ const App = () => (
                       <EngineerInterviews />
                     </ProtectedRoute>
                   } />
+                  <Route path="/dashboard/engineer/messages" element={
+                    <ProtectedRoute requiredRole="engineer">
+                      <EngineerMessages />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/dashboard/engineer/profile" element={
                     <ProtectedRoute requiredRole="engineer">
                       <EngineerProfile />
@@ -128,6 +136,11 @@ const App = () => (
                       <PMInterviews />
                     </ProtectedRoute>
                   } />
+                  <Route path="/dashboard/pm/messages" element={
+                    <ProtectedRoute requiredRole="pm">
+                      <PMMessages />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/dashboard/pm/profile" element={
                     <ProtectedRoute requiredRole="pm">
                       <PMProfile />
@@ -163,6 +176,11 @@ const App = () => (
                   <Route path="/admin/engineer-vetting" element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminEngineerVetting />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/messages" element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminMessages />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/settings" element={
