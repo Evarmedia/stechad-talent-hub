@@ -4,11 +4,11 @@ import { simulateDelay } from '../../data/mockData.js';
 
 const ChatContext = createContext();
 
-// Enhanced mock chat data with realistic conversations
+// Enhanced mock chat data with realistic conversations using actual user IDs
 const mockChats = [
   {
     id: 'chat-1',
-    participants: ['eng-1', 'pm-1'], // engineer-1 and pm-1
+    participants: ['user1', 'user2'], // engineer-1 (John Smith) and pm-1 (Sarah Davis)
     type: 'pm-engineer',
     lastMessage: 'Sure, I can start working on the authentication module next week',
     lastMessageTime: new Date('2024-01-15T14:30:00'),
@@ -16,35 +16,35 @@ const mockChats = [
     messages: [
       {
         id: 'msg-1',
-        senderId: 'pm-1',
+        senderId: 'user2',
         content: 'Hi John! I wanted to discuss the upcoming React project with you.',
         timestamp: new Date('2024-01-15T09:00:00'),
         isRead: true
       },
       {
         id: 'msg-2',
-        senderId: 'eng-1',
+        senderId: 'user1',
         content: 'Hello Sarah! I\'m excited about it. What are the main requirements?',
         timestamp: new Date('2024-01-15T09:15:00'),
         isRead: true
       },
       {
         id: 'msg-3',
-        senderId: 'pm-1',
+        senderId: 'user2',
         content: 'We need to build a user authentication system and a dashboard. The timeline is 3 weeks.',
         timestamp: new Date('2024-01-15T10:00:00'),
         isRead: true
       },
       {
         id: 'msg-4',
-        senderId: 'pm-1',
+        senderId: 'user2',
         content: 'Can you handle the authentication module first?',
         timestamp: new Date('2024-01-15T14:00:00'),
         isRead: true
       },
       {
         id: 'msg-5',
-        senderId: 'eng-1',
+        senderId: 'user1',
         content: 'Sure, I can start working on the authentication module next week',
         timestamp: new Date('2024-01-15T14:30:00'),
         isRead: false
@@ -53,7 +53,7 @@ const mockChats = [
   },
   {
     id: 'chat-2',
-    participants: ['eng-2', 'pm-1'], // engineer-2 and pm-1
+    participants: ['user3', 'user2'], // engineer-2 (Mike Johnson) and pm-1 (Sarah Davis)
     type: 'pm-engineer',
     lastMessage: 'The API integration is complete and ready for testing',
     lastMessageTime: new Date('2024-01-15T12:45:00'),
@@ -61,21 +61,21 @@ const mockChats = [
     messages: [
       {
         id: 'msg-6',
-        senderId: 'pm-1',
+        senderId: 'user2',
         content: 'Hey Mike, how\'s the API integration going?',
         timestamp: new Date('2024-01-15T11:00:00'),
         isRead: true
       },
       {
         id: 'msg-7',
-        senderId: 'eng-2',
+        senderId: 'user3',
         content: 'Going well! I\'ve completed the user endpoints and working on the data endpoints now.',
         timestamp: new Date('2024-01-15T11:30:00'),
         isRead: true
       },
       {
         id: 'msg-8',
-        senderId: 'eng-2',
+        senderId: 'user3',
         content: 'The API integration is complete and ready for testing',
         timestamp: new Date('2024-01-15T12:45:00'),
         isRead: true
@@ -84,7 +84,7 @@ const mockChats = [
   },
   {
     id: 'chat-3',
-    participants: ['eng-1', 'admin-1'], // engineer-1 and admin-1
+    participants: ['user1', 'admin'], // engineer-1 (John Smith) and admin
     type: 'admin-engineer',
     lastMessage: 'Thanks for the clarification! I\'ll update my profile accordingly.',
     lastMessageTime: new Date('2024-01-14T16:20:00'),
@@ -92,28 +92,28 @@ const mockChats = [
     messages: [
       {
         id: 'msg-9',
-        senderId: 'admin-1',
+        senderId: 'admin',
         content: 'Hi John, I noticed your profile needs some updates for compliance.',
         timestamp: new Date('2024-01-14T15:00:00'),
         isRead: true
       },
       {
         id: 'msg-10',
-        senderId: 'eng-1',
+        senderId: 'user1',
         content: 'Hi! What specific updates do I need to make?',
         timestamp: new Date('2024-01-14T15:30:00'),
         isRead: true
       },
       {
         id: 'msg-11',
-        senderId: 'admin-1',
+        senderId: 'admin',
         content: 'Please add your certifications and update your skill level for React to Expert.',
         timestamp: new Date('2024-01-14T16:00:00'),
         isRead: false
       },
       {
         id: 'msg-12',
-        senderId: 'eng-1',
+        senderId: 'user1',
         content: 'Thanks for the clarification! I\'ll update my profile accordingly.',
         timestamp: new Date('2024-01-14T16:20:00'),
         isRead: false
@@ -122,7 +122,7 @@ const mockChats = [
   },
   {
     id: 'chat-4',
-    participants: ['eng-3', 'admin-1'], // engineer-3 and admin-1
+    participants: ['user4', 'admin'], // engineer-3 (Lisa Wang) and admin
     type: 'admin-engineer',
     lastMessage: 'The verification process is now complete',
     lastMessageTime: new Date('2024-01-13T10:15:00'),
@@ -130,28 +130,28 @@ const mockChats = [
     messages: [
       {
         id: 'msg-13',
-        senderId: 'admin-1',
+        senderId: 'admin',
         content: 'Welcome to STECHAD! Your account is under review.',
         timestamp: new Date('2024-01-13T08:00:00'),
         isRead: true
       },
       {
         id: 'msg-14',
-        senderId: 'eng-3',
+        senderId: 'user4',
         content: 'Thank you! How long does the review process usually take?',
         timestamp: new Date('2024-01-13T08:30:00'),
         isRead: true
       },
       {
         id: 'msg-15',
-        senderId: 'admin-1',
+        senderId: 'admin',
         content: 'Usually 1-2 business days. I\'ll let you know once it\'s complete.',
         timestamp: new Date('2024-01-13T09:00:00'),
         isRead: true
       },
       {
         id: 'msg-16',
-        senderId: 'admin-1',
+        senderId: 'admin',
         content: 'The verification process is now complete',
         timestamp: new Date('2024-01-13T10:15:00'),
         isRead: true
@@ -160,13 +160,13 @@ const mockChats = [
   }
 ];
 
-// User mapping for display names
+// User mapping for display names - matching the auth system user IDs
 const userMap = {
-  'eng-1': { name: 'John Smith', role: 'engineer' },
-  'eng-2': { name: 'Mike Johnson', role: 'engineer' },
-  'eng-3': { name: 'Lisa Wang', role: 'engineer' },
-  'pm-1': { name: 'Sarah Davis', role: 'pm' },
-  'admin-1': { name: 'Admin', role: 'admin' }
+  'user1': { name: 'John Smith', role: 'engineer' },
+  'user2': { name: 'Sarah Davis', role: 'pm' },
+  'user3': { name: 'Mike Johnson', role: 'engineer' },
+  'user4': { name: 'Lisa Wang', role: 'engineer' },
+  'admin': { name: 'Admin', role: 'admin' }
 };
 
 export const ChatProvider = ({ children }) => {
@@ -177,6 +177,8 @@ export const ChatProvider = ({ children }) => {
     setLoading(true);
     await simulateDelay();
     
+    console.log('Getting chats for user:', userId, 'with role:', userRole);
+    
     // Filter chats based on user role and participation
     const userChats = chats.filter(chat => {
       const isParticipant = chat.participants.includes(userId);
@@ -185,9 +187,11 @@ export const ChatProvider = ({ children }) => {
         (userRole === 'pm' && chat.type === 'pm-engineer') ||
         (userRole === 'admin' && chat.type === 'admin-engineer');
       
+      console.log(`Chat ${chat.id}: participant=${isParticipant}, validType=${isValidType}, type=${chat.type}`);
       return isParticipant && isValidType;
     });
     
+    console.log('Filtered chats:', userChats);
     setLoading(false);
     return userChats;
   };
