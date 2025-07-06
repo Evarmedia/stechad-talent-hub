@@ -5,7 +5,6 @@ import { JobsProvider, useJobsContext } from './contexts/JobsContext';
 import { ApplicationsProvider, useApplicationsContext } from './contexts/ApplicationsContext';
 import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext';
 import { ProjectManagersProvider, useProjectManagersContext } from './contexts/ProjectManagersContext';
-import { ChatProvider, useChatContext } from './contexts/ChatContext';
 
 const DataContext = createContext();
 
@@ -16,11 +15,9 @@ export const DataProvider = ({ children }) => {
         <ApplicationsProvider>
           <ProjectsProvider>
             <ProjectManagersProvider>
-              <ChatProvider>
-                <DataProviderInner>
-                  {children}
-                </DataProviderInner>
-              </ChatProvider>
+              <DataProviderInner>
+                {children}
+              </DataProviderInner>
             </ProjectManagersProvider>
           </ProjectsProvider>
         </ApplicationsProvider>
@@ -35,7 +32,6 @@ const DataProviderInner = ({ children }) => {
   const applicationsContext = useApplicationsContext();
   const projectsContext = useProjectsContext();
   const projectManagersContext = useProjectManagersContext();
-  const chatContext = useChatContext();
 
   const value = {
     // State
@@ -44,8 +40,7 @@ const DataProviderInner = ({ children }) => {
     applications: applicationsContext.applications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
-    chats: chatContext.chats,
-    loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading || chatContext.loading,
+    loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading,
     
     // Engineers
     getEngineers: engineersContext.getEngineers,
@@ -74,14 +69,7 @@ const DataProviderInner = ({ children }) => {
     deleteProject: projectsContext.deleteProject,
     
     // Project Managers
-    getProjectManagers: projectManagersContext.getProjectManagers,
-    
-    // Chat
-    getChatsForUser: chatContext.getChatsForUser,
-    getChatById: chatContext.getChatById,
-    sendMessage: chatContext.sendMessage,
-    markMessagesAsRead: chatContext.markMessagesAsRead,
-    createChat: chatContext.createChat
+    getProjectManagers: projectManagersContext.getProjectManagers
   };
 
   return (
