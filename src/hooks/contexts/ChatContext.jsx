@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ChatContext = createContext();
@@ -46,6 +45,16 @@ const mockChats = [
     ],
     lastMessage: { id: 'msg-10', senderId: 'admin', content: 'You can update your portfolio in the Profile section. Let me know if you need any assistance.', timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) },
     unreadCount: { '4': 0, 'admin': 1 }
+  },
+  {
+    id: 'chat-5',
+    participants: ['2', 'admin'], // pm and admin
+    messages: [
+      { id: 'msg-11', senderId: '2', content: 'Hi Admin, I wanted to discuss the hiring targets for Q1.', timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000) },
+      { id: 'msg-12', senderId: 'admin', content: 'Sure! Let\'s schedule a meeting to go over the numbers and strategy.', timestamp: new Date(Date.now() - 7 * 60 * 60 * 1000) },
+    ],
+    lastMessage: { id: 'msg-12', senderId: 'admin', content: 'Sure! Let\'s schedule a meeting to go over the numbers and strategy.', timestamp: new Date(Date.now() - 7 * 60 * 60 * 1000) },
+    unreadCount: { '2': 0, 'admin': 1 }
   }
 ];
 
@@ -79,14 +88,14 @@ export const ChatProvider = ({ children }) => {
         return otherUser.role === 'pm' || otherUser.role === 'admin';
       }
       
-      // PMs can chat with Engineers
+      // PMs can chat with Engineers and Admins
       if (userRole === 'pm') {
-        return otherUser.role === 'engineer';
+        return otherUser.role === 'engineer' || otherUser.role === 'admin';
       }
       
-      // Admins can chat with Engineers
+      // Admins can chat with Engineers and PMs
       if (userRole === 'admin') {
-        return otherUser.role === 'engineer';
+        return otherUser.role === 'engineer' || otherUser.role === 'pm';
       }
 
       return false;
@@ -102,14 +111,14 @@ export const ChatProvider = ({ children }) => {
         return user.role === 'pm' || user.role === 'admin';
       }
       
-      // PMs can message Engineers
+      // PMs can message Engineers and Admins
       if (currentUserRole === 'pm') {
-        return user.role === 'engineer';
+        return user.role === 'engineer' || user.role === 'admin';
       }
       
-      // Admins can message Engineers
+      // Admins can message Engineers and PMs
       if (currentUserRole === 'admin') {
-        return user.role === 'engineer';
+        return user.role === 'engineer' || user.role === 'pm';
       }
 
       return false;

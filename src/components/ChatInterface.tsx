@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Users, MessageSquare, User } from 'lucide-react';
+import { Search, Send, Users, MessageSquare, User, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,9 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatContext } from '@/hooks/contexts/ChatContext';
 import { useAuthContext } from '@/hooks/useAuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ChatInterface = () => {
   const { user } = useAuthContext();
+  const isMobile = useIsMobile();
   const {
     getUserChats,
     getAvailableUsers,
@@ -26,6 +27,7 @@ const ChatInterface = () => {
   const [messageInput, setMessageInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [showChatList, setShowChatList] = useState(true);
   const messagesEndRef = useRef(null);
 
   const userChats = getUserChats(user?.id, user?.role);
@@ -49,6 +51,13 @@ const ChatInterface = () => {
     }
   }, [selectedChatId, user, markAsRead]);
 
+  // Mobile: when a chat is selected, hide the chat list
+  useEffect(() => {
+    if (isMobile && selectedChatId) {
+      setShowChatList(false);
+    }
+  }, [selectedChatId, isMobile]);
+
   const handleSendMessage = () => {
     if (messageInput.trim() && selectedChatId && user) {
       sendMessage(selectedChatId, user.id, messageInput.trim());
@@ -69,6 +78,13 @@ const ChatInterface = () => {
       setSelectedChatId(chat.id);
       setShowNewChatModal(false);
       setSearchTerm('');
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowChatList(true);
+    if (isMobile) {
+      setSelectedChatId(null);
     }
   };
 
@@ -108,7 +124,11 @@ const ChatInterface = () => {
   return (
     <div className="flex h-[calc(100vh-8rem)] max-w-7xl mx-auto">
       {/* Conversations List */}
-      <div className="w-1/3 border-r bg-white">
+      <div className={`${
+        isMobile 
+          ? showChatList ? 'w-full' : 'hidden' 
+          : 'w-1/3'
+      } border-r bg-white flex flex-col`}>
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Messages</h2>
@@ -165,7 +185,7 @@ const ChatInterface = () => {
           )}
         </div>
 
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto flex-1">
           {userChats.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
@@ -186,7 +206,10 @@ const ChatInterface = () => {
                 return (
                   <div
                     key={chat.id}
-                    onClick={() => setSelectedChatId(chat.id)}
+                    onClick={() => {
+                      setSelectedChatId(chat.id);
+                      if (isMobile) setShowChatList(false);
+                    }}
                     className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${
                       isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
                     }`}
@@ -235,12 +258,26 @@ const ChatInterface = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className={`${
+        isMobile 
+          ? showChatList ? 'hidden' : 'w-full' 
+          : 'flex-1'
+      } flex flex-col bg-gray-50`}>
         {selectedChat ? (
           <>
             {/* Chat Header */}
             <div className="bg-white border-b p-4">
               <div className="flex items-center">
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBackToList}
+                    className="mr-2 p-1"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                )}
                 <Avatar className="w-10 h-10 mr-3">
                   <AvatarFallback>
                     {getChatDisplayName(selectedChat).split(' ').map(n => n[0]).join('')}
