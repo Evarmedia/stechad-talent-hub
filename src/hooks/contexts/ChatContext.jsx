@@ -178,16 +178,20 @@ export const ChatProvider = ({ children }) => {
     await simulateDelay();
     
     console.log('Getting chats for user:', userId, 'with role:', userRole);
+    console.log('User ID type:', typeof userId);
+    
+    // Convert userId to string to ensure proper comparison
+    const userIdStr = String(userId);
     
     // Filter chats based on user role and participation
     const userChats = chats.filter(chat => {
-      const isParticipant = chat.participants.includes(userId);
+      const isParticipant = chat.participants.includes(userIdStr);
       const isValidType = 
         (userRole === 'engineer' && (chat.type === 'pm-engineer' || chat.type === 'admin-engineer')) ||
         (userRole === 'pm' && chat.type === 'pm-engineer') ||
         (userRole === 'admin' && chat.type === 'admin-engineer');
       
-      console.log(`Chat ${chat.id}: participant=${isParticipant}, validType=${isValidType}, type=${chat.type}`);
+      console.log(`Chat ${chat.id}: participant=${isParticipant}, validType=${isValidType}, type=${chat.type}, participants=${JSON.stringify(chat.participants)}, userIdStr=${userIdStr}`);
       return isParticipant && isValidType;
     });
     
