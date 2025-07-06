@@ -175,8 +175,8 @@ const ChatInterface = () => {
           ) : (
             userChats
               .sort((a, b) => {
-                const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp) : new Date(0);
-                const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp) : new Date(0);
+                const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
+                const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
                 return bTime - aTime;
               })
               .map((chat) => {
