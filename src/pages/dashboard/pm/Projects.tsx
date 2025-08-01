@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import ProjectStats from "./components/ProjectStats";
-import ProjectCard from "./components/ProjectCard";
-import ProjectFilter from "./components/ProjectFilter";
-import ProjectFormDialog from "./components/ProjectFormDialog";
+import { ProjectStats } from "./components/ProjectStats";
+import { ProjectCard } from "./components/ProjectCard";
+import { ProjectFilter } from "./components/ProjectFilter";
+import { ProjectFormDialog } from "./components/ProjectFormDialog";
 import { useDataContext } from "@/hooks/useDataContext";
 
 const Projects = () => {
