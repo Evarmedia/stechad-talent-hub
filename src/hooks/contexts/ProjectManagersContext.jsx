@@ -1,18 +1,26 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { mockProjectManagers, simulateDelay } from '../../data/mockData.js';
+import apiService from '../../services/apiService.js';
 
 const ProjectManagersContext = createContext();
 
 export const ProjectManagersProvider = ({ children }) => {
-  const [projectManagers, setProjectManagers] = useState(mockProjectManagers);
+  const [projectManagers, setProjectManagers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getProjectManagers = async () => {
     setLoading(true);
-    await simulateDelay();
-    setLoading(false);
-    return projectManagers;
+    try {
+      await apiService.simulateDelay();
+      const managers = await apiService.get('projectManagers');
+      setProjectManagers(managers);
+      return managers;
+    } catch (error) {
+      console.error('Error fetching project managers:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

@@ -1,57 +1,86 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { mockApplications, simulateDelay, generateId } from '../../data/mockData.js';
+import apiService from '../../services/apiService.js';
 
 const ApplicationsContext = createContext();
 
 export const ApplicationsProvider = ({ children }) => {
-  const [applications, setApplications] = useState(mockApplications);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getApplications = async (filters = {}) => {
     setLoading(true);
-    await simulateDelay();
-    let filteredApplications = [...applications];
-    
-    if (filters.jobId) {
-      filteredApplications = filteredApplications.filter(a => a.jobId === filters.jobId);
+    try {
+      await apiService.simulateDelay();
+      let params = {};
+      
+      if (filters.jobId) {
+        params.jobId = filters.jobId;
+      }
+      if (filters.engineerId) {
+        params.engineerId = filters.engineerId;
+      }
+      if (filters.status) {
+        params.status = filters.status;
+      }
+      
+      const filteredApplications = await apiService.get('applications', null, params);
+      setApplications(filteredApplications);
+      return filteredApplications;
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-    if (filters.engineerId) {
-      filteredApplications = filteredApplications.filter(a => a.engineerId === filters.engineerId);
-    }
-    if (filters.status) {
-      filteredApplications = filteredApplications.filter(a => a.status === filters.status);
-    }
-    
-    setLoading(false);
-    return filteredApplications;
   };
 
   const createApplication = async (applicationData) => {
     setLoading(true);
-    await simulateDelay();
-    const newApplication = { 
-      ...applicationData, 
-      id: generateId(), 
-      appliedDate: new Date().toISOString().split('T')[0]
-    };
-    setApplications(prev => [newApplication, ...prev]);
-    setLoading(false);
-    return newApplication;
+    try {
+      await apiService.simulateDelay();
+      const newApplication = { 
+        ...applicationData, 
+        appliedDate: new Date().toISOString().split('T')[0]
+      };
+      const createdApplication = await apiService.post('applications', newApplication);
+      setApplications(prev => [createdApplication, ...prev]);
+      return createdApplication;
+    } catch (error) {
+      console.error('Error creating application:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateApplication = async (id, updateData) => {
     setLoading(true);
-    await simulateDelay();
-    setApplications(prev => prev.map(a => a.id === id ? { ...a, ...updateData } : a));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      const updatedApplication = await apiService.patch('applications', id, updateData);
+      setApplications(prev => prev.map(a => a.id === id ? updatedApplication : a));
+      return updatedApplication;
+    } catch (error) {
+      console.error('Error updating application:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteApplication = async (id) => {
     setLoading(true);
-    await simulateDelay();
-    setApplications(prev => prev.filter(a => a.id !== id));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      await apiService.delete('applications', id);
+      setApplications(prev => prev.filter(a => a.id !== id));
+    } catch (error) {
+      console.error('Error deleting application:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

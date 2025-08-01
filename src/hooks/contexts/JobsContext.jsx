@@ -1,62 +1,100 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { mockJobs, simulateDelay, generateId } from '../../data/mockData.js';
+import apiService from '../../services/apiService.js';
 
 const JobsContext = createContext();
 
 export const JobsProvider = ({ children }) => {
-  const [jobs, setJobs] = useState(mockJobs);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getJobs = async (filters = {}) => {
     setLoading(true);
-    await simulateDelay();
-    let filteredJobs = [...jobs];
-    
-    if (filters.remote !== undefined) {
-      filteredJobs = filteredJobs.filter(j => j.remote === filters.remote);
+    try {
+      await apiService.simulateDelay();
+      let params = {};
+      
+      if (filters.remote !== undefined) {
+        params.remote = filters.remote;
+      }
+      
+      let filteredJobs = await apiService.get('jobs', null, params);
+      
+      // Apply search and skill filtering on client side
+      if (filters.search) {
+        filteredJobs = filteredJobs.filter(j => 
+          j.title.toLowerCase().includes(filters.search.toLowerCase())
+        );
+      }
+      if (filters.skills) {
+        filteredJobs = filteredJobs.filter(j => 
+          j.skills.some(skill => filters.skills.includes(skill))
+        );
+      }
+      
+      setJobs(filteredJobs);
+      return filteredJobs;
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-    if (filters.search) {
-      filteredJobs = filteredJobs.filter(j => 
-        j.title.toLowerCase().includes(filters.search.toLowerCase())
-      );
-    }
-    if (filters.skills) {
-      filteredJobs = filteredJobs.filter(j => 
-        j.skills.some(skill => filters.skills.includes(skill))
-      );
-    }
-    
-    setLoading(false);
-    return filteredJobs;
   };
 
   const getJobById = async (id) => {
-    await simulateDelay(200);
-    return jobs.find(j => j.id === id);
+    try {
+      await apiService.simulateDelay(200);
+      return await apiService.get('jobs', id);
+    } catch (error) {
+      console.error('Error fetching job:', error);
+      throw error;
+    }
   };
 
   const createJob = async (jobData) => {
     setLoading(true);
-    await simulateDelay();
-    const newJob = { ...jobData, id: generateId(), applications: 0 };
-    setJobs(prev => [newJob, ...prev]);
-    setLoading(false);
-    return newJob;
+    try {
+      await apiService.simulateDelay();
+      const newJob = { ...jobData, applications: 0 };
+      const createdJob = await apiService.post('jobs', newJob);
+      setJobs(prev => [createdJob, ...prev]);
+      return createdJob;
+    } catch (error) {
+      console.error('Error creating job:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateJob = async (id, updateData) => {
     setLoading(true);
-    await simulateDelay();
-    setJobs(prev => prev.map(j => j.id === id ? { ...j, ...updateData } : j));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      const updatedJob = await apiService.patch('jobs', id, updateData);
+      setJobs(prev => prev.map(j => j.id === id ? updatedJob : j));
+      return updatedJob;
+    } catch (error) {
+      console.error('Error updating job:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteJob = async (id) => {
     setLoading(true);
-    await simulateDelay();
-    setJobs(prev => prev.filter(j => j.id !== id));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      await apiService.delete('jobs', id);
+      setJobs(prev => prev.filter(j => j.id !== id));
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

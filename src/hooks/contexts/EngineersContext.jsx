@@ -1,51 +1,82 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { mockEngineers, simulateDelay } from '../../data/mockData.js';
+import apiService from '../../services/apiService.js';
 
 const EngineersContext = createContext();
 
 export const EngineersProvider = ({ children }) => {
-  const [engineers, setEngineers] = useState(mockEngineers);
+  const [engineers, setEngineers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getEngineers = async (filters = {}) => {
     setLoading(true);
-    await simulateDelay();
-    let filteredEngineers = [...engineers];
-    
-    if (filters.country) {
-      filteredEngineers = filteredEngineers.filter(e => e.country === filters.country);
+    try {
+      await apiService.simulateDelay();
+      let params = {};
+      
+      if (filters.country) {
+        params.country = filters.country;
+      }
+      if (filters.isVetted !== undefined) {
+        params.isVetted = filters.isVetted;
+      }
+      
+      let filteredEngineers = await apiService.get('engineers', null, params);
+      
+      // Apply skill filtering on client side since JSON server has limited query capabilities
+      if (filters.skills) {
+        filteredEngineers = filteredEngineers.filter(e => 
+          e.skills.some(skill => filters.skills.includes(skill))
+        );
+      }
+      
+      setEngineers(filteredEngineers);
+      return filteredEngineers;
+    } catch (error) {
+      console.error('Error fetching engineers:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-    if (filters.skills) {
-      filteredEngineers = filteredEngineers.filter(e => 
-        e.skills.some(skill => filters.skills.includes(skill))
-      );
-    }
-    if (filters.isVetted !== undefined) {
-      filteredEngineers = filteredEngineers.filter(e => e.isVetted === filters.isVetted);
-    }
-    
-    setLoading(false);
-    return filteredEngineers;
   };
 
   const getEngineerById = async (id) => {
-    await simulateDelay(200);
-    return engineers.find(e => e.id === id);
+    try {
+      await apiService.simulateDelay(200);
+      return await apiService.get('engineers', id);
+    } catch (error) {
+      console.error('Error fetching engineer:', error);
+      throw error;
+    }
   };
 
   const updateEngineer = async (id, updateData) => {
     setLoading(true);
-    await simulateDelay();
-    setEngineers(prev => prev.map(e => e.id === id ? { ...e, ...updateData } : e));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      const updatedEngineer = await apiService.patch('engineers', id, updateData);
+      setEngineers(prev => prev.map(e => e.id === id ? updatedEngineer : e));
+      return updatedEngineer;
+    } catch (error) {
+      console.error('Error updating engineer:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteEngineer = async (id) => {
     setLoading(true);
-    await simulateDelay();
-    setEngineers(prev => prev.filter(e => e.id !== id));
-    setLoading(false);
+    try {
+      await apiService.simulateDelay();
+      await apiService.delete('engineers', id);
+      setEngineers(prev => prev.filter(e => e.id !== id));
+    } catch (error) {
+      console.error('Error deleting engineer:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

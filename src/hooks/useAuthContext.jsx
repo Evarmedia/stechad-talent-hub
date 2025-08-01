@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../data/mockData.js';
+import apiService from '../services/apiService.js';
 
 const AuthContext = createContext();
 
@@ -25,7 +26,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, role) => {
     setAuthLoading(true);
     try {
-      const userData = await authAPI.login(email, password, role);
+      await apiService.simulateDelay(800);
+      const userData = await apiService.login(email, password, role);
       setUser(userData);
       localStorage.setItem('stechad_user', JSON.stringify(userData));
       return userData;
@@ -39,10 +41,18 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     setAuthLoading(true);
     try {
-      const newUser = await authAPI.signup(userData);
-      setUser(newUser);
-      localStorage.setItem('stechad_user', JSON.stringify(newUser));
-      return newUser;
+      await apiService.simulateDelay(1000);
+      const newUser = await apiService.signup(userData);
+      const userResponse = {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        name: newUser.name,
+        profileData: newUser.profileData
+      };
+      setUser(userResponse);
+      localStorage.setItem('stechad_user', JSON.stringify(userResponse));
+      return userResponse;
     } catch (error) {
       throw error;
     } finally {
@@ -60,10 +70,18 @@ export const AuthProvider = ({ children }) => {
     
     setAuthLoading(true);
     try {
-      const updatedUser = await authAPI.updateProfile(user.id, profileData);
-      setUser(updatedUser);
-      localStorage.setItem('stechad_user', JSON.stringify(updatedUser));
-      return updatedUser;
+      await apiService.simulateDelay(500);
+      const updatedUser = await apiService.updateProfile(user.id, profileData);
+      const userResponse = {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        name: updatedUser.name,
+        profileData: updatedUser.profileData
+      };
+      setUser(userResponse);
+      localStorage.setItem('stechad_user', JSON.stringify(userResponse));
+      return userResponse;
     } catch (error) {
       throw error;
     } finally {
