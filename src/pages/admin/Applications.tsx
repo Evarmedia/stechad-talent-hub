@@ -35,23 +35,21 @@ const AdminApplications = () => {
   }, [getApplications]);
 
   useEffect(() => {
-    if (!isInitialLoad) {
-      let filtered = [...applicationsList];
+    let filtered = [...applicationsList];
 
-      if (searchTerm) {
-        filtered = filtered.filter(app => 
-          app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-
-      if (statusFilter !== "all") {
-        filtered = filtered.filter(app => app.status === statusFilter);
-      }
-
-      setFilteredApplications(filtered);
+    if (searchTerm) {
+      filtered = filtered.filter(app => 
+        app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  }, [applicationsList, searchTerm, statusFilter, isInitialLoad]);
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(app => app.status === statusFilter);
+    }
+
+    setFilteredApplications(filtered);
+  }, [applicationsList, searchTerm, statusFilter]);
 
   const getStatusColor = (status) => {
     switch (status) {

@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import apiService from '../../services/apiService.js';
+import apiService from '../../services/mockApiService.js';
 
 const ChatContext = createContext();
 
