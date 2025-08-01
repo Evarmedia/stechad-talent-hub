@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, FileText, Clock, Check, X } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
 
@@ -13,35 +14,44 @@ const AdminApplications = () => {
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const { getApplications, updateApplication, loading } = useDataContext();
 
   useEffect(() => {
     const fetchApplications = async () => {
-      const applications = await getApplications();
-      setApplicationsList(applications);
-      setFilteredApplications(applications);
+      try {
+        const applications = await getApplications();
+        setApplicationsList(applications);
+        setFilteredApplications(applications);
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+      } finally {
+        setIsInitialLoad(false);
+      }
     };
 
     fetchApplications();
   }, [getApplications]);
 
   useEffect(() => {
-    let filtered = [...applicationsList];
+    if (!isInitialLoad) {
+      let filtered = [...applicationsList];
 
-    if (searchTerm) {
-      filtered = filtered.filter(app => 
-        app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      if (searchTerm) {
+        filtered = filtered.filter(app => 
+          app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (statusFilter !== "all") {
+        filtered = filtered.filter(app => app.status === statusFilter);
+      }
+
+      setFilteredApplications(filtered);
     }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(app => app.status === statusFilter);
-    }
-
-    setFilteredApplications(filtered);
-  }, [applicationsList, searchTerm, statusFilter]);
+  }, [applicationsList, searchTerm, statusFilter, isInitialLoad]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -80,6 +90,53 @@ const AdminApplications = () => {
     accepted: applicationsList.filter(app => app.status === "accepted").length,
     rejected: applicationsList.filter(app => app.status === "rejected").length
   };
+
+  if (isInitialLoad || loading) {
+    return (
+      <div className="p-6">
+        <div className="mb-6">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          {Array(5).fill(0).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-8 w-12 mb-2" />
+                <Skeleton className="h-4 w-20" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 w-40" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          {Array(3).fill(0).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-6 w-48 mb-2" />
+                <Skeleton className="h-4 w-32 mb-4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -158,13 +215,7 @@ const AdminApplications = () => {
 
       {/* Applications List */}
       <div className="space-y-4">
-        {loading ? (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div>Loading applications...</div>
-            </CardContent>
-          </Card>
-        ) : filteredApplications.length === 0 ? (
+        {filteredApplications.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-gray-500">No applications found</div>

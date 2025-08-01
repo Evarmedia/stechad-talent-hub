@@ -1,164 +1,191 @@
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { ProjectCard } from "./components/ProjectCard";
-import { ProjectDetails } from "./components/ProjectDetails";
-import { ProjectFilter } from "./components/ProjectFilter";
-import { ProjectStats } from "./components/ProjectStats";
-import { ProjectFormDialog } from "./components/ProjectFormDialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import ProjectStats from "./components/ProjectStats";
+import ProjectCard from "./components/ProjectCard";
+import ProjectFilter from "./components/ProjectFilter";
+import ProjectFormDialog from "./components/ProjectFormDialog";
 import { useDataContext } from "@/hooks/useDataContext";
 
-const PMProjects = () => {
+const Projects = () => {
+  const [projects, setProjects] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
-  const [projectsList, setProjectsList] = useState([]);
-  const [currentFilters, setCurrentFilters] = useState({
-    status: "all",
-    priority: "all",
-    sortBy: "recent"
-  });
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const { getProjects, createProject, updateProject, deleteProject, loading } = useDataContext();
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const projects = await getProjects(currentFilters);
-      setProjectsList(projects);
-      if (projects.length > 0 && !selectedProject) {
-        setSelectedProject(projects[0]);
+      try {
+        const projectsData = await getProjects();
+        setProjects(projectsData);
+        setFilteredProjects(projectsData);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setIsInitialLoad(false);
       }
     };
 
     fetchProjects();
-  }, [getProjects, currentFilters, selectedProject]);
+  }, [getProjects]);
 
-  const handleFilterChange = (filterType, value) => {
-    setCurrentFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
-  };
+  useEffect(() => {
+    if (!isInitialLoad) {
+      let filtered = [...projects];
 
-  const handleCreateProject = () => {
-    setEditingProject(null);
-    setShowForm(true);
-  };
-
-  const handleEditProject = (project) => {
-    setEditingProject(project);
-    setShowForm(true);
-  };
-
-  const handleSaveProject = async (formData) => {
-    try {
-      if (editingProject) {
-        await updateProject(editingProject.id, formData);
-      } else {
-        await createProject(formData);
+      if (statusFilter !== "all") {
+        filtered = filtered.filter(project => project.status === statusFilter);
       }
-      setShowForm(false);
-      setEditingProject(null);
-      // Refresh projects list
-      const projects = await getProjects(currentFilters);
-      setProjectsList(projects);
+
+      if (priorityFilter !== "all") {
+        filtered = filtered.filter(project => project.priority === priorityFilter);
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(project =>
+          project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          project.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      setFilteredProjects(filtered);
+    }
+  }, [projects, statusFilter, priorityFilter, searchTerm, isInitialLoad]);
+
+  const handleCreateProject = async (projectData) => {
+    try {
+      const newProject = await createProject(projectData);
+      setProjects(prev => [...prev, newProject]);
+      setIsFormOpen(false);
     } catch (error) {
-      console.error('Error saving project:', error);
+      console.error('Error creating project:', error);
     }
   };
 
-  const handleDeleteProject = async (projectId) => {
+  const handleEditProject = async (id, projectData) => {
     try {
-      await deleteProject(projectId);
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(projectsList[0]);
-      }
-      // Refresh projects list
-      const projects = await getProjects(currentFilters);
-      setProjectsList(projects);
+      const updatedProject = await updateProject(id, projectData);
+      setProjects(prev => prev.map(p => p.id === id ? updatedProject : p));
+      setIsFormOpen(false);
+      setSelectedProject(null);
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  };
+
+  const handleDeleteProject = async (id) => {
+    try {
+      await deleteProject(id);
+      setProjects(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error('Error deleting project:', error);
     }
   };
 
-  const completedProjects = projectsList.filter(p => p.status === "Completed").length;
-  const inProgressProjects = projectsList.filter(p => p.status === "In Progress").length;
-  const allTasks = projectsList.flatMap(p => p.tasks || []);
-  const completedTasks = allTasks.filter(t => t.status === "completed").length;
+  if (isInitialLoad || loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {Array(4).fill(0).map((_, i) => (
+            <Card key={i} className="p-4">
+              <Skeleton className="h-6 w-20 mb-2" />
+              <Skeleton className="h-8 w-16" />
+            </Card>
+          ))}
+        </div>
+
+        <Card className="p-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array(6).fill(0).map((_, i) => (
+            <Card key={i} className="p-4">
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-1/2 mb-4" />
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Projects</h1>
-        <Button onClick={handleCreateProject}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Project
-        </Button>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-2">Project Management</h1>
+        <p className="text-gray-600">Manage and track your projects</p>
       </div>
 
-      <ProjectStats
-        completedProjects={completedProjects}
-        inProgressProjects={inProgressProjects}
-        completedTasks={completedTasks}
-        totalTasks={allTasks.length}
+      <ProjectStats projects={projects} />
+
+      <ProjectFilter
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        priorityFilter={priorityFilter}
+        setPriorityFilter={setPriorityFilter}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        onCreateNew={() => setIsFormOpen(true)}
       />
 
-      <div className="mt-8 mb-6">
-        <ProjectFilter
-          onFilterChange={handleFilterChange}
-          currentFilters={currentFilters}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-4 max-h-[600px] overflow-y-auto">
-          {loading ? (
-            <div>Loading projects...</div>
-          ) : (
-            projectsList.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                isSelected={selectedProject?.id === project.id}
-                onClick={() => setSelectedProject(project)}
-              />
-            ))
-          )}
-          {!loading && projectsList.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
-              No projects found. Create your first project to get started.
-            </div>
-          )}
-        </div>
-
-        <div className="lg:col-span-2">
-          {selectedProject ? (
-            <ProjectDetails
-              project={selectedProject}
-              onEdit={() => handleEditProject(selectedProject)}
-              onDelete={() => handleDeleteProject(selectedProject.id)}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProjects.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            <p className="text-lg mb-2">No projects found</p>
+            <p className="text-sm">Create your first project to get started</p>
+          </div>
+        ) : (
+          filteredProjects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onEdit={(project) => {
+                setSelectedProject(project);
+                setIsFormOpen(true);
+              }}
+              onDelete={handleDeleteProject}
             />
-          ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <p className="text-gray-500">Select a project to view details</p>
-            </div>
-          )}
-        </div>
+          ))
+        )}
       </div>
 
-      {showForm && (
-        <ProjectFormDialog
-          project={editingProject}
-          onSave={handleSaveProject}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingProject(null);
-          }}
-        />
-      )}
+      <ProjectFormDialog
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedProject(null);
+        }}
+        onSubmit={selectedProject ? 
+          (data) => handleEditProject(selectedProject.id, data) : 
+          handleCreateProject
+        }
+        initialData={selectedProject}
+        mode={selectedProject ? 'edit' : 'create'}
+      />
     </div>
   );
 };
 
-export default PMProjects;
+export default Projects;
