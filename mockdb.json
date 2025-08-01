@@ -42,59 +42,6 @@
       }
     }
   ],
-  "chats": [
-    {
-      "id": "chat-1",
-      "participants": ["1", "2"],
-      "messages": [
-        {
-          "id": "msg-1",
-          "senderId": "1",
-          "content": "Hi! I'm interested in the React Developer position.",
-          "timestamp": "2024-01-15T10:00:00.000Z"
-        },
-        {
-          "id": "msg-2",
-          "senderId": "2",
-          "content": "Great! Let me know if you have any questions about the role.",
-          "timestamp": "2024-01-15T10:30:00.000Z"
-        }
-      ],
-      "lastMessage": {
-        "id": "msg-2",
-        "senderId": "2",
-        "content": "Great! Let me know if you have any questions about the role.",
-        "timestamp": "2024-01-15T10:30:00.000Z"
-      },
-      "unreadCount": {
-        "1": 0,
-        "2": 0
-      }
-    }
-  ],
-  "chatUsers": [
-    {
-      "id": "1",
-      "name": "Jane Doe",
-      "email": "jane.doe@example.com",
-      "role": "engineer",
-      "avatar": ""
-    },
-    {
-      "id": "2",
-      "name": "Pat Smith",
-      "email": "pm@email.com",
-      "role": "pm",
-      "avatar": ""
-    },
-    {
-      "id": "3",
-      "name": "Alex Admin",
-      "email": "admin@email.com",
-      "role": "admin",
-      "avatar": ""
-    }
-  ],
   "engineers": [
     {
       "id": 1,

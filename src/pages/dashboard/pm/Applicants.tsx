@@ -22,21 +22,27 @@ const statusColor = (status: string) => {
 
 const Applicants = () => {
   const { jobId } = useParams();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [applicants, setApplicants] = useState([]);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [job, setJob] = useState(null);
   
-  const { getApplications, getJobById, getEngineerById, updateApplication, loading } = useDataContext();
+  const { getApplications, getJobById, getEngineerById, updateApplication } = useDataContext();
   
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        console.log('Fetching data for jobId:', jobId);
+        
         const [jobData, applicationsData] = await Promise.all([
           getJobById(parseInt(jobId || '1')),
           getApplications({ jobId: parseInt(jobId || '1') })
         ]);
+        
+        console.log('Job data:', jobData);
+        console.log('Applications data:', applicationsData);
         
         setJob(jobData);
         
@@ -45,6 +51,7 @@ const Applicants = () => {
           applicationsData.map(async (app) => {
             try {
               const engineer = await getEngineerById(app.engineerId);
+              console.log('Engineer for app:', app.id, engineer);
               
               return {
                 ...app,
@@ -66,11 +73,12 @@ const Applicants = () => {
           })
         );
         
+        console.log('Final applicants with details:', applicantsWithDetails);
         setApplicants(applicantsWithDetails);
       } catch (error) {
         console.error('Error fetching applicants:', error);
       } finally {
-        setIsInitialLoad(false);
+        setLoading(false);
       }
     };
 
@@ -97,7 +105,7 @@ const Applicants = () => {
 
   const jobTitle = job?.title || `Job ${jobId}`;
   
-  if (isInitialLoad || loading) {
+  if (loading) {
     return (
       <div className="p-2 md:p-8">
         <Card>
