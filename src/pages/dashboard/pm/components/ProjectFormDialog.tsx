@@ -19,7 +19,7 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   mode
 }) => {
   const [formData, setFormData] = useState({
-    name: initialData?.name || '',
+    title: initialData?.name || initialData?.title || '',
     description: initialData?.description || '',
     status: initialData?.status || 'Planning',
     progress: initialData?.progress || 0,
@@ -37,7 +37,12 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   });
 
   const handleSubmit = async () => {
-    await onSubmit(formData);
+    // Convert title back to name for the API
+    const submitData = {
+      ...formData,
+      name: formData.title
+    };
+    await onSubmit(submitData);
   };
 
   return (
