@@ -1,60 +1,71 @@
 
 import React from "react";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Search } from "lucide-react";
 
 interface ProjectFilterProps {
-  onFilterChange: (filterType: string, value: string) => void;
-  currentFilters: {
-    status: string;
-    priority: string;
-    sortBy: string;
-  };
+  statusFilter: string;
+  setStatusFilter: (value: string) => void;
+  priorityFilter: string;
+  setPriorityFilter: (value: string) => void;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  onCreateNew: () => void;
 }
 
-export const ProjectFilter: React.FC<ProjectFilterProps> = ({ onFilterChange, currentFilters }) => {
+export const ProjectFilter: React.FC<ProjectFilterProps> = ({
+  statusFilter,
+  setStatusFilter,
+  priorityFilter,
+  setPriorityFilter,
+  searchTerm,
+  setSearchTerm,
+  onCreateNew
+}) => {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-1 text-sm text-gray-600">
-        <Filter className="w-4 h-4" />
-        <span>Filter:</span>
+    <div className="bg-white p-4 rounded-lg border">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full md:w-40">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="Planning">Planning</SelectItem>
+            <SelectItem value="In Progress">In Progress</SelectItem>
+            <SelectItem value="Completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+          <SelectTrigger className="w-full md:w-40">
+            <SelectValue placeholder="All Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Priority</SelectItem>
+            <SelectItem value="High">High</SelectItem>
+            <SelectItem value="Medium">Medium</SelectItem>
+            <SelectItem value="Low">Low</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button onClick={onCreateNew} className="w-full md:w-auto">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Project
+        </Button>
       </div>
-      
-      <Select value={currentFilters.status} onValueChange={(value) => onFilterChange('status', value)}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="All Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value="Planning">Planning</SelectItem>
-          <SelectItem value="In Progress">In Progress</SelectItem>
-          <SelectItem value="Completed">Completed</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={currentFilters.priority} onValueChange={(value) => onFilterChange('priority', value)}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="All Priority" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Priority</SelectItem>
-          <SelectItem value="High">High</SelectItem>
-          <SelectItem value="Medium">Medium</SelectItem>
-          <SelectItem value="Low">Low</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={currentFilters.sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Sort by" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="recent">Most Recent</SelectItem>
-          <SelectItem value="deadline">Deadline</SelectItem>
-          <SelectItem value="priority">Priority</SelectItem>
-          <SelectItem value="progress">Progress</SelectItem>
-        </SelectContent>
-      </Select>
     </div>
   );
 };

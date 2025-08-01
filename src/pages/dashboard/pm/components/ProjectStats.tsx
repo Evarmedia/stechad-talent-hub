@@ -4,18 +4,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, Users, CalendarDays } from "lucide-react";
 
 interface ProjectStatsProps {
-  completedProjects: number;
-  inProgressProjects: number;
-  completedTasks: number;
-  totalTasks: number;
+  projects: Array<{
+    id: number;
+    status: string;
+    tasks?: Array<{ status: string }>;
+  }>;
 }
 
-export const ProjectStats: React.FC<ProjectStatsProps> = ({
-  completedProjects,
-  inProgressProjects,
-  completedTasks,
-  totalTasks
-}) => {
+export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
+  const completedProjects = projects.filter(p => p.status === 'Completed').length;
+  const inProgressProjects = projects.filter(p => p.status === 'In Progress').length;
+  
+  const allTasks = projects.flatMap(p => p.tasks || []);
+  const completedTasks = allTasks.filter(t => t.status === 'completed').length;
+  const totalTasks = allTasks.length;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <Card>

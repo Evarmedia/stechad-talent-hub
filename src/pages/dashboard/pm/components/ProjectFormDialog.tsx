@@ -4,25 +4,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ProjectForm } from "./ProjectForm";
 
 interface ProjectFormDialogProps {
-  project?: any;
-  onSave: (formData: any) => Promise<void>;
-  onCancel: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (formData: any) => Promise<void>;
+  initialData?: any;
+  mode: 'create' | 'edit';
 }
 
 export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
-  project,
-  onSave,
-  onCancel
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  mode
 }) => {
   const [formData, setFormData] = useState({
-    title: project?.title || '',
-    description: project?.description || '',
-    status: project?.status || 'Planning',
-    progress: project?.progress || 0,
-    deadline: project?.deadline || '',
-    priority: project?.priority || 'Medium',
-    team: project?.team || [],
-    tasks: project?.tasks || []
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    status: initialData?.status || 'Planning',
+    progress: initialData?.progress || 0,
+    deadline: initialData?.deadline || '',
+    priority: initialData?.priority || 'Medium',
+    team: initialData?.team || [],
+    tasks: initialData?.tasks || []
   });
 
   const [newTeamMember, setNewTeamMember] = useState('');
@@ -33,15 +37,15 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   });
 
   const handleSubmit = async () => {
-    await onSave(formData);
+    await onSubmit(formData);
   };
 
   return (
-    <Dialog open={true} onOpenChange={onCancel}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {project ? 'Edit Project' : 'Create New Project'}
+            {mode === 'edit' ? 'Edit Project' : 'Create New Project'}
           </DialogTitle>
         </DialogHeader>
         <ProjectForm
@@ -52,8 +56,8 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
           newTask={newTask}
           setNewTask={setNewTask}
           onSubmit={handleSubmit}
-          onCancel={onCancel}
-          isEdit={!!project}
+          onCancel={onClose}
+          isEdit={mode === 'edit'}
         />
       </DialogContent>
     </Dialog>

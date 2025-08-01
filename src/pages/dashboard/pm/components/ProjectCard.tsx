@@ -3,11 +3,12 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CalendarDays } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, Edit, Trash2, Users } from "lucide-react";
 
 interface Project {
   id: number;
-  title: string;
+  name: string;
   description?: string;
   status: string;
   progress: number;
@@ -24,16 +25,16 @@ interface Project {
 
 interface ProjectCardProps {
   project: Project;
-  isSelected: boolean;
-  onClick: () => void;
+  onEdit: (project: Project) => void;
+  onDelete: (id: number) => Promise<void>;
 }
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Completed": return "bg-green-500";
-    case "In Progress": return "bg-blue-500";
-    case "Planning": return "bg-yellow-500";
-    default: return "bg-gray-500";
+    case "Completed": return "bg-green-100 text-green-800";
+    case "In Progress": return "bg-blue-100 text-blue-800";
+    case "Planning": return "bg-yellow-100 text-yellow-800";
+    default: return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -46,36 +47,78 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick }) => {
+export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) => {
+  const completedTasks = project.tasks?.filter(task => task.status === 'completed').length || 0;
+  const totalTasks = project.tasks?.length || 0;
+
   return (
-    <div
-      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
-      }`}
-      onClick={onClick}
-    >
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-semibold">{project.title}</h3>
-        <Badge className={getPriorityColor(project.priority)}>
-          {project.priority}
-        </Badge>
-      </div>
-      <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-        <Badge className={getStatusColor(project.status)}>
-          {project.status}
-        </Badge>
-        <span className="flex items-center gap-1">
-          <CalendarDays className="w-4 h-4" />
-          {project.deadline}
-        </span>
-      </div>
-      <div className="space-y-1">
-        <div className="flex justify-between text-sm">
-          <span>Progress</span>
-          <span>{project.progress}%</span>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 truncate pr-2">
+            {project.name}
+          </h3>
+          <Badge className={getPriorityColor(project.priority)}>
+            {project.priority}
+          </Badge>
         </div>
-        <Progress value={project.progress} className="h-2" />
-      </div>
-    </div>
+        
+        {project.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+            {project.description}
+          </p>
+        )}
+        
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Badge className={getStatusColor(project.status)}>
+              {project.status}
+            </Badge>
+            <div className="flex items-center gap-1 text-sm text-gray-600">
+              <CalendarDays className="w-4 h-4" />
+              <span>{new Date(project.deadline).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Progress</span>
+              <span className="font-medium">{project.progress}%</span>
+            </div>
+            <Progress value={project.progress} className="h-2" />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-sm text-gray-600">
+              <Users className="w-4 h-4" />
+              <span>{project.team?.length || 0} members</span>
+            </div>
+            <span className="text-sm text-gray-600">
+              {completedTasks}/{totalTasks} tasks
+            </span>
+          </div>
+          
+          <div className="flex gap-2 pt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onEdit(project)}
+              className="flex-1"
+            >
+              <Edit className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onDelete(project.id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
