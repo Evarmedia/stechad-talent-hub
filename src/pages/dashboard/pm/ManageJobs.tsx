@@ -13,6 +13,7 @@ const ManageJobs = () => {
   const {
     loading,
     filteredJobs,
+    applications,
     searchTerm,
     setSearchTerm,
     statusFilter,
@@ -24,8 +25,6 @@ const ManageJobs = () => {
     handleToggleStatus,
     handleDeleteJob
   } = useManageJobs();
-
-  const { getApplicationsByJobId } = useDataContext();
 
 
   const getStatusColor = (status: string) => {

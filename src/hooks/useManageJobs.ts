@@ -80,6 +80,7 @@ export const useManageJobs = () => {
   return {
     loading,
     filteredJobs,
+    applications,
     searchTerm,
     setSearchTerm,
     statusFilter,
