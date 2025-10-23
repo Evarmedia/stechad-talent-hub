@@ -14,6 +14,7 @@ const TOTAL_STEPS = 4;
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = React.useState(1);
+  const [stepErrors, setStepErrors] = React.useState<string[]>([]);
   
   const {
     form,
@@ -37,15 +38,68 @@ const Onboarding = () => {
 
   const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
 
+  const validateStep = (step: number): string[] => {
+    const errors: string[] = [];
+
+    switch (step) {
+      case 1:
+        if (!form.fullName.trim()) errors.push("Full name is required");
+        if (!form.phoneNumber.trim()) errors.push("Phone number is required");
+        if (!form.dateOfBirth) errors.push("Date of birth is required");
+        if (!form.city.trim()) errors.push("City is required");
+        if (!form.country) errors.push("Country is required");
+        if (!form.openToNearbyCities) errors.push("Please indicate if you're open to working in nearby cities");
+        break;
+
+      case 2:
+        if (form.languages.length === 0) errors.push("At least one language is required");
+        if (!form.languageProficiency) errors.push("Language proficiency level is required");
+        if (!form.hasDriversLicense) errors.push("Please indicate if you have a driver's license");
+        if (form.hasDriversLicense === 'yes' && !form.hasCar) {
+          errors.push("Please indicate if you have a car");
+        }
+        if (!form.isNative) errors.push("Please indicate if you're a native of your country");
+        if (!form.workAuthorized) errors.push("Please indicate if you're authorized to work");
+        break;
+
+      case 3:
+        if (form.specialization.length === 0) errors.push("Area of specialization is required");
+        if (!form.skillLevel) errors.push("Skill level is required");
+        if (!form.yearsOfExperience.trim()) errors.push("Years of experience is required");
+        if (form.projectTypes.length === 0) errors.push("At least one project type is required");
+        if (!form.openToTraining) errors.push("Please indicate if you're open to training");
+        if (!form.isFreelancer) errors.push("Please indicate if you're a freelancer");
+        break;
+
+      case 4:
+        if (!form.refereeInfo.trim()) {
+          errors.push("Referee information is required");
+        } else if (!form.refereeInfo.includes(',') || !form.refereeInfo.includes('@')) {
+          errors.push("Referee info must be in format: name, referee@email.com");
+        }
+        if (!form.cv) errors.push("CV upload is required");
+        if (!form.newsletter) errors.push("Please indicate newsletter preference");
+        if (!form.followsLinkedIn) errors.push("Please indicate LinkedIn follow status");
+        break;
+    }
+
+    return errors;
+  };
+
   const handleNext = () => {
-    if (currentStep < TOTAL_STEPS) {
+    const errors = validateStep(currentStep);
+    setStepErrors(errors);
+    
+    if (errors.length === 0 && currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
+      setStepErrors([]);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setStepErrors([]);
     }
   };
 
@@ -117,6 +171,17 @@ const Onboarding = () => {
                 handleFileChange={handleFileChange}
                 handleRadioChange={handleRadioChange}
               />
+            )}
+
+            {stepErrors.length > 0 && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mt-4">
+                <p className="font-semibold text-destructive mb-2">Please complete the following:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {stepErrors.map((error, index) => (
+                    <li key={index} className="text-sm text-destructive">{error}</li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             <div className="flex justify-between gap-4 mt-6">
