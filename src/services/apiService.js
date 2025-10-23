@@ -114,7 +114,7 @@ class ApiService {
   }
 
   // Helper method to simulate delay for smooth transitions
-  async simulateDelay(ms = 500) {
+  async simulateDelay(ms = 1500) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

@@ -9,7 +9,7 @@ export const ProjectsProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const getProjects = async (filters = {}) => {
-    setLoading(true);
+    // setLoading(true);
     try {
       await apiService.simulateDelay();
       let filteredProjects = await apiService.get('projects');

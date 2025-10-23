@@ -57,6 +57,7 @@ const DataProviderInner = ({ children }) => {
     
     // Applications
     getApplications: applicationsContext.getApplications,
+    getApplicationsByJobId: applicationsContext.getApplicationsByJobId,
     createApplication: applicationsContext.createApplication,
     updateApplication: applicationsContext.updateApplication,
     deleteApplication: applicationsContext.deleteApplication,

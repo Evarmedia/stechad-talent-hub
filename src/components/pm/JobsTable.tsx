@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 interface JobsTableProps {
   loading: boolean;
   jobs: any[];
+  applications: any[];
   onViewJob: (job: any) => void;
   onToggleStatus: (job: any) => void;
   getStatusColor: (status: string) => string;

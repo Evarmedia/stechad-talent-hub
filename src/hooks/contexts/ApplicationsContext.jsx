@@ -1,6 +1,5 @@
-
-import React, { createContext, useContext, useState } from 'react';
-import apiService from '../../services/apiService.js';
+import React, { createContext, useContext, useState } from "react";
+import apiService from "../../services/apiService.js";
 
 const ApplicationsContext = createContext();
 
@@ -13,7 +12,7 @@ export const ApplicationsProvider = ({ children }) => {
     try {
       await apiService.simulateDelay();
       let params = {};
-      
+
       if (filters.jobId) {
         params.jobId = filters.jobId;
       }
@@ -23,12 +22,33 @@ export const ApplicationsProvider = ({ children }) => {
       if (filters.status) {
         params.status = filters.status;
       }
-      
-      const filteredApplications = await apiService.get('applications', null, params);
+
+      const filteredApplications = await apiService.get(
+        "applications",
+        null,
+        params
+      );
       setApplications(filteredApplications);
       return filteredApplications;
     } catch (error) {
-      console.error('Error fetching applications:', error);
+      console.error("Error fetching applications:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getApplicationsByJobId = async (jobId) => {
+    setLoading(true);
+    try {
+      await apiService.simulateDelay();
+      const applications = await apiService.get("applications", null, {
+        jobId,
+      });
+      setApplications(applications);
+      return applications;
+    } catch (error) {
+      console.error("Error fetching applications by job ID:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -39,15 +59,18 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       await apiService.simulateDelay();
-      const newApplication = { 
-        ...applicationData, 
-        appliedDate: new Date().toISOString().split('T')[0]
+      const newApplication = {
+        ...applicationData,
+        appliedDate: new Date().toISOString().split("T")[0],
       };
-      const createdApplication = await apiService.post('applications', newApplication);
-      setApplications(prev => [createdApplication, ...prev]);
+      const createdApplication = await apiService.post(
+        "applications",
+        newApplication
+      );
+      setApplications((prev) => [createdApplication, ...prev]);
       return createdApplication;
     } catch (error) {
-      console.error('Error creating application:', error);
+      console.error("Error creating application:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -58,11 +81,17 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       await apiService.simulateDelay();
-      const updatedApplication = await apiService.patch('applications', id, updateData);
-      setApplications(prev => prev.map(a => a.id === id ? updatedApplication : a));
+      const updatedApplication = await apiService.patch(
+        "applications",
+        id,
+        updateData
+      );
+      setApplications((prev) =>
+        prev.map((a) => (a.id === id ? updatedApplication : a))
+      );
       return updatedApplication;
     } catch (error) {
-      console.error('Error updating application:', error);
+      console.error("Error updating application:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -73,10 +102,10 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       await apiService.simulateDelay();
-      await apiService.delete('applications', id);
-      setApplications(prev => prev.filter(a => a.id !== id));
+      await apiService.delete("applications", id);
+      setApplications((prev) => prev.filter((a) => a.id !== id));
     } catch (error) {
-      console.error('Error deleting application:', error);
+      console.error("Error deleting application:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -87,9 +116,10 @@ export const ApplicationsProvider = ({ children }) => {
     applications,
     loading,
     getApplications,
+    getApplicationsByJobId,
     createApplication,
     updateApplication,
-    deleteApplication
+    deleteApplication,
   };
 
   return (
@@ -102,7 +132,9 @@ export const ApplicationsProvider = ({ children }) => {
 export const useApplicationsContext = () => {
   const context = useContext(ApplicationsContext);
   if (!context) {
-    throw new Error('useApplicationsContext must be used within an ApplicationsProvider');
+    throw new Error(
+      "useApplicationsContext must be used within an ApplicationsProvider"
+    );
   }
   return context;
 };

@@ -1,11 +1,11 @@
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import ScheduleInterviewDialog from "@/components/ScheduleInterviewDialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -29,63 +29,57 @@ const Applicants = () => {
   const [job, setJob] = useState(null);
   
   const { getApplications, getJobById, getEngineerById, updateApplication } = useDataContext();
-  
-  useEffect(() => {
-    const fetchData = async () => {
+  const [dataFetched, setDataFetched] = useState(false);
+
+useEffect(() => {
+  const fetchData = async () => {
+    if (!dataFetched) {
+
       try {
-        setLoading(true);
-        console.log('Fetching data for jobId:', jobId);
-        
+        // setLoading(true);
         const [jobData, applicationsData] = await Promise.all([
           getJobById(parseInt(jobId || '1')),
           getApplications({ jobId: parseInt(jobId || '1') })
         ]);
         
-        console.log('Job data:', jobData);
-        console.log('Applications data:', applicationsData);
-        
-        setJob(jobData);
-        
-        // Fetch engineer details for each application
         const applicantsWithDetails = await Promise.all(
           applicationsData.map(async (app) => {
-            try {
-              const engineer = await getEngineerById(app.engineerId);
-              console.log('Engineer for app:', app.id, engineer);
-              
-              return {
-                ...app,
-                name: engineer?.name || app.engineerName || 'Unknown',
-                experience: engineer?.experience || 'N/A',
-                skills: engineer?.skills || app.skills || [],
-                resume: `${(engineer?.name || app.engineerName || 'Unknown')?.replace(' ', '_')}_resume.pdf`
-              };
-            } catch (error) {
-              console.error('Error fetching engineer details:', error);
-              return {
-                ...app,
-                name: app.engineerName || 'Unknown',
-                experience: 'N/A',
-                skills: app.skills || [],
-                resume: 'resume.pdf'
-              };
-            }
-          })
-        );
-        
-        console.log('Final applicants with details:', applicantsWithDetails);
-        setApplicants(applicantsWithDetails);
-      } catch (error) {
-        console.error('Error fetching applicants:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (jobId) {
-      fetchData();
+          try {
+            const engineer = await getEngineerById(app.engineerId);
+            return {
+              ...app,
+              name: engineer?.name || app.engineerName || 'Unknown',
+              experience: engineer?.experience || 'N/A',
+              skills: engineer?.skills || app.skills || [],
+              resume: `${(engineer?.name || app.engineerName || 'Unknown')?.replace(' ', '_')}_resume.pdf`
+            };
+          } catch (error) {
+            return {
+              ...app,
+              name: app.engineerName || 'Unknown',
+              experience: 'N/A',
+              skills: app.skills || [],
+              resume: 'resume.pdf'
+            };
+          }
+        })
+      );
+      
+      setJob(jobData);
+      setApplicants(applicantsWithDetails);
+      console.log('Applicants:', applicantsWithDetails);
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [jobId, getApplications, getJobById, getEngineerById]);
+  };
+  
+}
+  if (jobId) {
+    fetchData();
+  }
+}, [jobId, dataFetched]);
 
   const updateApplicantStatus = async (applicationId: number, newStatus: string) => {
     try {

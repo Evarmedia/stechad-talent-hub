@@ -7,6 +7,7 @@ import { JobsHeader } from "@/components/pm/JobsHeader";
 import { JobsFilters } from "@/components/pm/JobsFilters";
 import { JobsGrid } from "@/components/pm/JobsGrid";
 import { JobsTable } from "@/components/pm/JobsTable";
+import { useDataContext } from "@/hooks/useDataContext";
 
 const ManageJobs = () => {
   const {
@@ -23,6 +24,9 @@ const ManageJobs = () => {
     handleToggleStatus,
     handleDeleteJob
   } = useManageJobs();
+
+  const { getApplicationsByJobId } = useDataContext();
+
 
   const getStatusColor = (status: string) => {
     return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
@@ -55,6 +59,7 @@ const ManageJobs = () => {
           <JobsTable
             loading={loading}
             jobs={filteredJobs}
+            applications={applications}
             onViewJob={handleViewJob}
             onToggleStatus={handleToggleStatus}
             getStatusColor={getStatusColor}

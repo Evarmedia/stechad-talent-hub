@@ -32,7 +32,7 @@ const AdminApplications = () => {
     };
 
     fetchApplications();
-  }, [getApplications]);
+  }, []); // []<-- getApplications 
 
   useEffect(() => {
     if (!isInitialLoad) {
