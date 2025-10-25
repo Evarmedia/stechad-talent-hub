@@ -115,6 +115,55 @@
         "isVetted": false,
         "isOnboarded": false
       }
+    },
+    {
+      "id": "7d8b",
+      "email": "mishakmanuel2@gmail.com",
+      "password": "password123",
+      "role": "engineer",
+      "name": "Malcolm",
+      "profileData": {
+        "country": "Ethiopia",
+        "skills": [],
+        "experience": "",
+        "availability": "Available",
+        "isVetted": false,
+        "isOnboarded": true,
+        "fullName": "Malcolm",
+        "phoneNumber": "+2348166593337",
+        "dateOfBirth": "10-20",
+        "city": "Ede",
+        "openToNearbyCities": "yes",
+        "languages": [
+          "English"
+        ],
+        "languageProficiency": "Basic",
+        "hasDriversLicense": "yes",
+        "hasCar": "yes",
+        "isNative": "no",
+        "workAuthorized": "no",
+        "specialization": [
+          "Cybersecurity",
+          "Cloud Computing"
+        ],
+        "skillLevel": "Intermediate",
+        "yearsOfExperience": "5",
+        "certifications": [
+          "Microsoft Azure",
+          "CompTIA Network+"
+        ],
+        "projectTypes": [
+          "Full-time"
+        ],
+        "openToTraining": "yes",
+        "refereeInfo": "mishak, mishakmanuel@gmail.com",
+        "newsletter": "yes",
+        "specialPreferences": "",
+        "cvFileName": "MishakCV_resFS.pdf",
+        "isFreelancer": "yes",
+        "followsLinkedIn": "no",
+        "onboardedAt": "2025-10-23T09:44:02.737Z"
+      }
     }
   ],
   "engineers": [
