@@ -1,14 +1,13 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Users, MessageSquare, User, ArrowLeft, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useChatContext } from '@/hooks/contexts/ChatContext';
-import { useAuthContext } from '@/hooks/useAuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuthContext } from '@/hooks/useAuthContext';
+import { ArrowLeft, MessageSquare, Search, Send, Users, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 const ChatInterface = () => {
   const { user } = useAuthContext();

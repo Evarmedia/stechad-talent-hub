@@ -1,11 +1,11 @@
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
 
 const EngineerSignup = () => {
   const [form, setForm] = useState({ first_name: "", email: "", password: "", confirm_password: "", googleSignIn: false });
@@ -40,7 +40,7 @@ const EngineerSignup = () => {
         email: form.email,
         password: form.password,
         confirm_password: form.confirm_password,
-        role: "engineer",
+        role: "engineer"
       });
 
       toast({ 

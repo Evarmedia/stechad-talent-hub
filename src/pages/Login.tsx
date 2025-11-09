@@ -1,11 +1,11 @@
 
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
-import { useAuthContext } from "../hooks/useAuthContext";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "", role: "engineer" });
@@ -50,11 +50,11 @@ const Login = () => {
       } else {
         if (form.role === "engineer") {
           // Check if engineer has completed onboarding
-          if (!response.data.user.engineer.is_onboarded) {
-            navigate("/onboarding");
-          } else {
+          // if (!response.data.user.engineer.is_onboarded) {
+          //   navigate("/onboarding");
+          // } else {
             navigate("/dashboard/engineer");
-          }
+          // }
         } else if (form.role === "project_manager") {
           navigate("/dashboard/pm");
         } else if (form.role === "admin") {

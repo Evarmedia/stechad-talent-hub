@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
-import { useDataContext } from "@/hooks/useDataContext";
-import { useAuthContext } from "@/hooks/useAuthContext";
 import { toast } from "@/hooks/use-toast";
-import JobsHeader from "./components/JobsHeader";
-import JobsGrid from "./components/JobsGrid";
+import { useAuthContext } from "@/hooks/useAuthContext";
+import { useDataContext } from "@/hooks/useDataContext";
+import { useEffect, useState } from "react";
 import JobDetailsModal from "./components/JobDetailsModal";
+import JobsGrid from "./components/JobsGrid";
+import JobsHeader from "./components/JobsHeader";
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");

@@ -1,14 +1,14 @@
 
-import React, { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Users, Briefcase, Clock, TrendingUp, Calendar, CheckCircle } from "lucide-react";
-import { useDataContext } from "@/hooks/useDataContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useDataContext } from "@/hooks/useDataContext";
+import { Briefcase, Calendar, Clock, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const PMDashboard = () => {
   const [loading, setLoading] = useState(true);

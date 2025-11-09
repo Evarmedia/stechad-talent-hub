@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import apiService from '../services/apiService.js';
 
 const AuthContext = createContext();
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error(response.message || 'Invalid credentials');
       }
 
-      const { user, token, refreshToken } = response.data;
+      const { token, refreshToken } = response.data;
       
       // Store tokens
       apiService.setToken(token);
@@ -53,8 +53,8 @@ export const AuthProvider = ({ children }) => {
       }
       
       // Store user data
-      setUser(user);
-      localStorage.setItem('stechad_user', JSON.stringify(user));
+      setUser(response.data.user);
+      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
       
       return response;
     } catch (error) {
@@ -84,8 +84,8 @@ export const AuthProvider = ({ children }) => {
       }
       
       // Store user data
-      setUser(user);
-      localStorage.setItem('stechad_user', JSON.stringify(user));
+      setUser(response.data.user);
+      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
       
       return response;
     } catch (error) {

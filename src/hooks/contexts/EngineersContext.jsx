@@ -22,8 +22,8 @@ export const EngineersProvider = ({ children }) => {
       if (filters.is_vetted !== undefined || filters.isVetted !== undefined) {
         params.is_vetted = filters.is_vetted || filters.isVetted;
       }
-      if (filters.is_onboarded !== undefined || filters.isOnboarded !== undefined) {
-        params.is_onboarded = filters.is_onboarded || filters.isOnboarded;
+      if (filters.is_onboarded !== undefined || filters.is_onboarded !== undefined) {
+        params.is_onboarded = filters.is_onboarded || filters.is_onboarded;
       }
       if (filters.availability) {
         params.availability = filters.availability;

@@ -1,9 +1,8 @@
 
-import React from "react";
+import STECHADLogo from "@/components/STECHADLogo";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
-import STECHADLogo from "@/components/STECHADLogo";
 
 const navRoles = [
   { name: "Engineer", path: "/dashboard/engineer" },

@@ -1,13 +1,13 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Calendar, Clock, CheckCircle } from "lucide-react";
-import { useDataContext } from "@/hooks/useDataContext";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useDataContext } from "@/hooks/useDataContext";
+import { Calendar, CheckCircle, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const getStatusColor = (status: string) => {
   switch (status) {

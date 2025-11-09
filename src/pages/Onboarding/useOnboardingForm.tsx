@@ -1,9 +1,9 @@
 
-import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { format } from "date-fns";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export interface OnboardingFormData {
   fullName: string;
