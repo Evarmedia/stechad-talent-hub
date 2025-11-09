@@ -128,51 +128,58 @@ export const useOnboardingForm = () => {
     setLoading(true);
     
     try {
-      const onboardingData = {
-        profileData: {
-          ...user?.profileData,
-          fullName: form.fullName,
-          phoneNumber: form.phoneNumber,
-          dateOfBirth: form.dateOfBirth ? format(form.dateOfBirth, 'MM-dd') : '',
-          city: form.city,
-          country: form.country,
-          openToNearbyCities: form.openToNearbyCities,
-          languages: form.languages,
-          languageProficiency: form.languageProficiency,
-          hasDriversLicense: form.hasDriversLicense,
-          hasCar: form.hasCar,
-          isNative: form.isNative,
-          workAuthorized: form.workAuthorized,
-          specialization: form.specialization,
-          skillLevel: form.skillLevel,
-          yearsOfExperience: form.yearsOfExperience,
-          certifications: form.certifications,
-          projectTypes: form.projectTypes,
-          openToTraining: form.openToTraining,
-          refereeInfo: form.refereeInfo,
-          newsletter: form.newsletter,
-          specialPreferences: form.specialPreferences,
-          cvFileName: form.cv?.name || '',
-          isFreelancer: form.isFreelancer,
-          followsLinkedIn: form.followsLinkedIn,
-          onboardedAt: new Date().toISOString(),
-          isOnboarded: true
-        }
-      };
-
-      await updateProfile(onboardingData);
-
-      toast({ 
-        title: "Onboarding Complete! 🎉", 
-        description: "Welcome aboard. Your profile has been updated successfully!" 
-      });
+      // Create FormData for file upload
+      const formData = new FormData();
       
-      navigate("/dashboard/engineer");
-    } catch (error) {
+      // Add all form fields
+      formData.append('date_of_birth', form.dateOfBirth ? format(form.dateOfBirth, 'yyyy-MM-dd') : '');
+      formData.append('open_to_nearby_cities', form.openToNearbyCities === 'yes' ? 'true' : 'false');
+      formData.append('languages', JSON.stringify(form.languages));
+      formData.append('language_proficiency', form.languageProficiency);
+      formData.append('has_drivers_license', form.hasDriversLicense === 'yes' ? 'true' : 'false');
+      formData.append('has_car', form.hasCar === 'yes' ? 'true' : 'false');
+      formData.append('is_native', form.isNative === 'yes' ? 'true' : 'false');
+      formData.append('work_authorized', form.workAuthorized === 'yes' ? 'true' : 'false');
+      formData.append('specialization', JSON.stringify(form.specialization));
+      formData.append('skill_level', form.skillLevel);
+      formData.append('years_of_experience', form.yearsOfExperience);
+      formData.append('certifications', JSON.stringify(form.certifications));
+      formData.append('project_types', JSON.stringify(form.projectTypes));
+      formData.append('open_to_training', form.openToTraining === 'yes' ? 'true' : 'false');
+      formData.append('is_freelancer', form.isFreelancer === 'yes' ? 'true' : 'false');
+      formData.append('follows_linkedin', form.followsLinkedIn === 'yes' ? 'true' : 'false');
+      formData.append('referee_info', form.refereeInfo);
+      formData.append('newsletter', form.newsletter === 'yes' ? 'true' : 'false');
+      formData.append('special_preferences', form.specialPreferences || '');
+      
+      // Add personal info that needs to be updated in user table
+      formData.append('first_name', form.fullName.split(' ')[0] || '');
+      formData.append('last_name', form.fullName.split(' ').slice(1).join(' ') || '');
+      formData.append('phone_number', form.phoneNumber);
+      formData.append('city', form.city);
+      formData.append('country', form.country);
+      
+      // Add CV file if present
+      if (form.cv) {
+        formData.append('cv', form.cv);
+      }
+
+      const response = await updateProfile(formData);
+
+      if (response.success || response.data) {
+        toast({ 
+          title: "Onboarding Complete! 🎉", 
+          description: "Welcome aboard. Your profile has been updated successfully!" 
+        });
+        
+        navigate("/dashboard/engineer");
+      }
+    } catch (error: any) {
       console.error('Onboarding error:', error);
+      const errorMessage = error.message || error.error || "Failed to complete onboarding. Please try again.";
       toast({ 
         title: "Error", 
-        description: "Failed to complete onboarding. Please try again." 
+        description: errorMessage
       });
     } finally {
       setLoading(false);

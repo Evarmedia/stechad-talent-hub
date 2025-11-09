@@ -10,28 +10,30 @@ export const ApplicationsProvider = ({ children }) => {
   const getApplications = async (filters = {}) => {
     setLoading(true);
     try {
-      
-      let params = {};
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 50
+      };
 
-      if (filters.jobId) {
-        params.jobId = filters.jobId;
+      if (filters.job_id || filters.jobId) {
+        params.job_id = filters.job_id || filters.jobId;
       }
-      if (filters.engineerId) {
-        params.engineerId = filters.engineerId;
+      if (filters.engineer_id || filters.engineerId) {
+        params.engineer_id = filters.engineer_id || filters.engineerId;
       }
       if (filters.status) {
         params.status = filters.status;
       }
 
-      const filteredApplications = await apiService.get(
-        "applications",
-        null,
-        params
-      );
-      setApplications(filteredApplications);
-      return filteredApplications;
+      const response = await apiService.get("applications", null, params);
+      const applicationsData = response.success && response.data ? 
+        response.data.applications || response.data : [];
+      
+      setApplications(applicationsData);
+      return applicationsData;
     } catch (error) {
       console.error("Error fetching applications:", error);
+      setApplications([]);
       throw error;
     } finally {
       setLoading(false);
@@ -41,33 +43,35 @@ export const ApplicationsProvider = ({ children }) => {
   const getApplicationsByJobId = async (jobId) => {
     setLoading(true);
     try {
+      const response = await apiService.get(`jobs/${jobId}/applicants`);
+      const applicationsData = response.success && response.data ? 
+        response.data.applications || response.data : [];
       
-      const applications = await apiService.get("applications", null, {
-        jobId,
-      });
-      setApplications(applications);
-      return applications;
+      setApplications(applicationsData);
+      return applicationsData;
     } catch (error) {
       console.error("Error fetching applications by job ID:", error);
+      setApplications([]);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const createApplication = async (applicationData) => {
+  const createApplication = async (jobId, applicationData = {}) => {
     setLoading(true);
     try {
-      
-      const newApplication = {
-        ...applicationData,
-        appliedDate: new Date().toISOString().split("T")[0],
-      };
-      const createdApplication = await apiService.post(
-        "applications",
-        newApplication
+      const response = await apiService.post(
+        `engineers/jobs/${jobId}/apply`,
+        applicationData
       );
-      setApplications((prev) => [createdApplication, ...prev]);
+      
+      const createdApplication = response.success && response.data ? 
+        response.data.application || response.data : null;
+      
+      if (createdApplication) {
+        setApplications((prev) => [createdApplication, ...prev]);
+      }
       return createdApplication;
     } catch (error) {
       console.error("Error creating application:", error);
@@ -80,15 +84,19 @@ export const ApplicationsProvider = ({ children }) => {
   const updateApplication = async (id, updateData) => {
     setLoading(true);
     try {
+      const response = await apiService.request(`/applications/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
       
-      const updatedApplication = await apiService.patch(
-        "applications",
-        id,
-        updateData
-      );
-      setApplications((prev) =>
-        prev.map((a) => (a.id === id ? updatedApplication : a))
-      );
+      const updatedApplication = response.success && response.data ? 
+        response.data.application || response.data : null;
+      
+      if (updatedApplication) {
+        setApplications((prev) =>
+          prev.map((a) => (a.applications_id === id || a.id === id ? updatedApplication : a))
+        );
+      }
       return updatedApplication;
     } catch (error) {
       console.error("Error updating application:", error);
@@ -101,9 +109,8 @@ export const ApplicationsProvider = ({ children }) => {
   const deleteApplication = async (id) => {
     setLoading(true);
     try {
-      
       await apiService.delete("applications", id);
-      setApplications((prev) => prev.filter((a) => a.id !== id));
+      setApplications((prev) => prev.filter((a) => a.applications_id !== id && a.id !== id));
     } catch (error) {
       console.error("Error deleting application:", error);
       throw error;

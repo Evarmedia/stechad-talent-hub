@@ -8,15 +8,27 @@ export const ProjectManagersProvider = ({ children }) => {
   const [projectManagers, setProjectManagers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const getProjectManagers = async () => {
+  const getProjectManagers = async (filters = {}) => {
     setLoading(true);
     try {
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 50
+      };
       
-      const managers = await apiService.get('projectManagers');
-      setProjectManagers(managers);
-      return managers;
+      if (filters.is_verified !== undefined) {
+        params.is_verified = filters.is_verified;
+      }
+      
+      const response = await apiService.get('admin/project-managers', null, params);
+      const managersData = response.success && response.data ? 
+        response.data.projectManagers || response.data : [];
+      
+      setProjectManagers(managersData);
+      return managersData;
     } catch (error) {
       console.error('Error fetching project managers:', error);
+      setProjectManagers([]);
       throw error;
     } finally {
       setLoading(false);

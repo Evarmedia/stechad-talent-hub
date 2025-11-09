@@ -9,41 +9,35 @@ export const ProjectsProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const getProjects = async (filters = {}) => {
-    // setLoading(true);
+    setLoading(true);
     try {
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 50
+      };
       
-      let filteredProjects = await apiService.get('projects');
-      
-      // Apply filters on client side
       if (filters.status && filters.status !== 'all') {
-        filteredProjects = filteredProjects.filter(p => p.status === filters.status);
+        params.status = filters.status;
       }
       if (filters.priority && filters.priority !== 'all') {
-        filteredProjects = filteredProjects.filter(p => p.priority === filters.priority);
+        params.priority = filters.priority;
+      }
+      if (filters.project_manager_id || filters.projectManagerId) {
+        params.project_manager_id = filters.project_manager_id || filters.projectManagerId;
+      }
+      if (filters.engineer_id || filters.engineerId) {
+        params.engineer_id = filters.engineer_id || filters.engineerId;
       }
       
-      // Sort projects
-      if (filters.sortBy) {
-        switch (filters.sortBy) {
-          case 'deadline':
-            filteredProjects.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-            break;
-          case 'priority':
-            const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-            filteredProjects.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
-            break;
-          case 'progress':
-            filteredProjects.sort((a, b) => b.progress - a.progress);
-            break;
-          default:
-            filteredProjects.sort((a, b) => b.id - a.id);
-        }
-      }
+      const response = await apiService.get('projects', null, params);
+      const projectsData = response.success && response.data ? 
+        response.data.projects || response.data : [];
       
-      setProjects(filteredProjects);
-      return filteredProjects;
+      setProjects(projectsData);
+      return projectsData;
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setProjects([]);
       throw error;
     } finally {
       setLoading(false);
@@ -52,8 +46,8 @@ export const ProjectsProvider = ({ children }) => {
 
   const getProjectById = async (id) => {
     try {
-      await apiService.simulateDelay(200);
-      return await apiService.get('projects', id);
+      const response = await apiService.get('projects', id);
+      return response.success && response.data ? response.data.project || response.data : null;
     } catch (error) {
       console.error('Error fetching project:', error);
       throw error;
@@ -63,9 +57,13 @@ export const ProjectsProvider = ({ children }) => {
   const createProject = async (projectData) => {
     setLoading(true);
     try {
+      const response = await apiService.post('projects', projectData);
+      const createdProject = response.success && response.data ? 
+        response.data.project || response.data : null;
       
-      const createdProject = await apiService.post('projects', projectData);
-      setProjects(prev => [createdProject, ...prev]);
+      if (createdProject) {
+        setProjects(prev => [createdProject, ...prev]);
+      }
       return createdProject;
     } catch (error) {
       console.error('Error creating project:', error);
@@ -78,9 +76,19 @@ export const ProjectsProvider = ({ children }) => {
   const updateProject = async (id, updateData) => {
     setLoading(true);
     try {
+      const response = await apiService.request(`/projects/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
       
-      const updatedProject = await apiService.patch('projects', id, updateData);
-      setProjects(prev => prev.map(p => p.id === id ? updatedProject : p));
+      const updatedProject = response.success && response.data ? 
+        response.data.project || response.data : null;
+      
+      if (updatedProject) {
+        setProjects(prev => prev.map(p => 
+          (p.projects_id === id || p.id === id) ? updatedProject : p
+        ));
+      }
       return updatedProject;
     } catch (error) {
       console.error('Error updating project:', error);
@@ -93,9 +101,8 @@ export const ProjectsProvider = ({ children }) => {
   const deleteProject = async (id) => {
     setLoading(true);
     try {
-      
       await apiService.delete('projects', id);
-      setProjects(prev => prev.filter(p => p.id !== id));
+      setProjects(prev => prev.filter(p => p.projects_id !== id && p.id !== id));
     } catch (error) {
       console.error('Error deleting project:', error);
       throw error;

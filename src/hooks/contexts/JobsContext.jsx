@@ -11,31 +11,41 @@ export const JobsProvider = ({ children }) => {
   const getJobs = async (filters = {}) => {
     setLoading(true);
     try {
-      
-      let params = {};
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 50
+      };
       
       if (filters.remote !== undefined) {
         params.remote = filters.remote;
       }
-      
-      let filteredJobs = await apiService.get('jobs', null, params);
-      
-      // Apply search and skill filtering on client side
+      if (filters.status) {
+        params.status = filters.status;
+      }
+      if (filters.location) {
+        params.location = filters.location;
+      }
+      if (filters.employment_type) {
+        params.employment_type = filters.employment_type;
+      }
+      if (filters.experience_level) {
+        params.experience_level = filters.experience_level;
+      }
+      if (filters.skills && Array.isArray(filters.skills)) {
+        params.skills = filters.skills.join(',');
+      }
       if (filters.search) {
-        filteredJobs = filteredJobs.filter(j => 
-          j.title.toLowerCase().includes(filters.search.toLowerCase())
-        );
-      }
-      if (filters.skills) {
-        filteredJobs = filteredJobs.filter(j => 
-          j.skills.some(skill => filters.skills.includes(skill))
-        );
+        params.search = filters.search;
       }
       
-      setJobs(filteredJobs);
-      return filteredJobs;
+      const response = await apiService.get('jobs', null, params);
+      
+      const jobsData = response.success && response.data ? response.data.jobs || response.data : [];
+      setJobs(jobsData);
+      return jobsData;
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      setJobs([]);
       throw error;
     } finally {
       setLoading(false);
@@ -44,8 +54,8 @@ export const JobsProvider = ({ children }) => {
 
   const getJobById = async (id) => {
     try {
-      await apiService.simulateDelay(200);
-      return await apiService.get('jobs', id);
+      const response = await apiService.get('jobs', id);
+      return response.success && response.data ? response.data.job || response.data : null;
     } catch (error) {
       console.error('Error fetching job:', error);
       throw error;
@@ -55,10 +65,12 @@ export const JobsProvider = ({ children }) => {
   const createJob = async (jobData) => {
     setLoading(true);
     try {
+      const response = await apiService.post('pm/jobs', jobData);
+      const createdJob = response.success && response.data ? response.data.job || response.data : null;
       
-      const newJob = { ...jobData, applications: 0 };
-      const createdJob = await apiService.post('jobs', newJob);
-      setJobs(prev => [createdJob, ...prev]);
+      if (createdJob) {
+        setJobs(prev => [createdJob, ...prev]);
+      }
       return createdJob;
     } catch (error) {
       console.error('Error creating job:', error);
@@ -71,9 +83,16 @@ export const JobsProvider = ({ children }) => {
   const updateJob = async (id, updateData) => {
     setLoading(true);
     try {
+      const response = await apiService.request(`/jobs/update/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
       
-      const updatedJob = await apiService.patch('jobs', id, updateData);
-      setJobs(prev => prev.map(j => j.id === id ? updatedJob : j));
+      const updatedJob = response.success && response.data ? response.data.job || response.data : null;
+      
+      if (updatedJob) {
+        setJobs(prev => prev.map(j => (j.jobs_id === id || j.id === id) ? updatedJob : j));
+      }
       return updatedJob;
     } catch (error) {
       console.error('Error updating job:', error);
@@ -86,9 +105,8 @@ export const JobsProvider = ({ children }) => {
   const deleteJob = async (id) => {
     setLoading(true);
     try {
-      
       await apiService.delete('jobs', id);
-      setJobs(prev => prev.filter(j => j.id !== id));
+      setJobs(prev => prev.filter(j => j.jobs_id !== id && j.id !== id));
     } catch (error) {
       console.error('Error deleting job:', error);
       throw error;

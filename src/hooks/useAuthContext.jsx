@@ -10,33 +10,55 @@ export const AuthProvider = ({ children }) => {
 
   // Check for stored user session on app load
   useEffect(() => {
-    const storedUser = localStorage.getItem('stechad_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('stechad_user');
+    const initAuth = async () => {
+      const token = apiService.getToken();
+      const storedUser = localStorage.getItem('stechad_user');
+      
+      if (token && storedUser) {
+        try {
+          // Verify token is still valid by fetching current user
+          const response = await apiService.get('auth/me');
+          if (response.success && response.data) {
+            setUser(response.data.user);
+            localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
+          }
+        } catch (error) {
+          console.error('Token validation failed:', error);
+          apiService.clearTokens();
+          localStorage.removeItem('stechad_user');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   // Direct API call for login
-  const login = async (email, password, role) => {
+  const login = async (email, password) => {
     setAuthLoading(true);
     try {
-      const response = await apiService.post('auth/login', { email, password, role });
-      if (!response) {
-        throw new Error('Invalid credentials');
+      const response = await apiService.post('auth/login', { email, password });
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Invalid credentials');
       }
-      setUser(response.data.user);
-      console.log('USER:',user)
-      console.log("response", response)
-      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
+
+      const { user, token, refreshToken } = response.data;
+      
+      // Store tokens
+      apiService.setToken(token);
+      if (refreshToken) {
+        apiService.setRefreshToken(refreshToken);
+      }
+      
+      // Store user data
+      setUser(user);
+      localStorage.setItem('stechad_user', JSON.stringify(user));
+      
       return response;
     } catch (error) {
-      console.log({"Login error": error});
+      console.error('Login error:', error);
       throw error;
     } finally {
       setAuthLoading(false);
@@ -49,14 +71,25 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await apiService.post('auth/signup', userData);
 
-      console.log("usrInfo:", userData)
-      if (!response) {
-        throw new Error('Error signing up');
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Error signing up');
       }
-      setUser(response.data.user);
-      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
+
+      const { user, token, refreshToken } = response.data;
+      
+      // Store tokens
+      apiService.setToken(token);
+      if (refreshToken) {
+        apiService.setRefreshToken(refreshToken);
+      }
+      
+      // Store user data
+      setUser(user);
+      localStorage.setItem('stechad_user', JSON.stringify(user));
+      
       return response;
     } catch (error) {
+      console.error('Signup error:', error);
       throw error;
     } finally {
       setAuthLoading(false);
@@ -64,29 +97,53 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('stechad_user');
+  const logout = async () => {
+    try {
+      await apiService.post('auth/logout', {});
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      apiService.clearTokens();
+      localStorage.removeItem('stechad_user');
+    }
   };
 
-  // Update profile function
+  // Update profile function (role-specific)
   const updateProfile = async (profileData) => {
     if (!user) throw new Error('No user logged in');
 
     setAuthLoading(true);
     try {
-      const updatedUser = await apiService.put('users', user.user_id, profileData);
-      const userResponse = {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        name: updatedUser.name,
-        profileData: updatedUser.profileData
-      };
-      setUser(userResponse);
-      localStorage.setItem('stechad_user', JSON.stringify(userResponse));
-      return userResponse;
+      let endpoint;
+      let isFormData = profileData instanceof FormData;
+      
+      // Route to correct endpoint based on role
+      if (user.role === 'engineer') {
+        endpoint = 'engineers/profile';
+      } else if (user.role === 'project_manager') {
+        endpoint = 'pm/profile';
+      } else if (user.role === 'admin') {
+        endpoint = 'admin/profile';
+      } else {
+        throw new Error('Invalid user role');
+      }
+
+      const response = await apiService.request(`/${endpoint}`, {
+        method: 'PUT',
+        body: profileData,
+      });
+
+      if (response.success && response.data) {
+        const updatedUser = response.data.user || response.data;
+        setUser(updatedUser);
+        localStorage.setItem('stechad_user', JSON.stringify(updatedUser));
+        return response;
+      }
+      
+      return response;
     } catch (error) {
+      console.error('Profile update error:', error);
       throw error;
     } finally {
       setAuthLoading(false);

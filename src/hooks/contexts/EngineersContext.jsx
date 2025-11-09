@@ -11,29 +11,33 @@ export const EngineersProvider = ({ children }) => {
   const getEngineers = async (filters = {}) => {
     setLoading(true);
     try {
-      
-      let params = {};
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 50
+      };
       
       if (filters.country) {
         params.country = filters.country;
       }
-      if (filters.isVetted !== undefined) {
-        params.isVetted = filters.isVetted;
+      if (filters.is_vetted !== undefined || filters.isVetted !== undefined) {
+        params.is_vetted = filters.is_vetted || filters.isVetted;
+      }
+      if (filters.is_onboarded !== undefined || filters.isOnboarded !== undefined) {
+        params.is_onboarded = filters.is_onboarded || filters.isOnboarded;
+      }
+      if (filters.availability) {
+        params.availability = filters.availability;
       }
       
-      let filteredEngineers = await apiService.get('engineers', null, params);
+      const response = await apiService.get('admin/engineers', null, params);
+      const engineersData = response.success && response.data ? 
+        response.data.engineers || response.data : [];
       
-      // Apply skill filtering on client side since JSON server has limited query capabilities
-      if (filters.skills) {
-        filteredEngineers = filteredEngineers.filter(e => 
-          e.skills.some(skill => filters.skills.includes(skill))
-        );
-      }
-      
-      setEngineers(filteredEngineers);
-      return filteredEngineers;
+      setEngineers(engineersData);
+      return engineersData;
     } catch (error) {
       console.error('Error fetching engineers:', error);
+      setEngineers([]);
       throw error;
     } finally {
       setLoading(false);
@@ -42,8 +46,8 @@ export const EngineersProvider = ({ children }) => {
 
   const getEngineerById = async (id) => {
     try {
-      await apiService.simulateDelay(200);
-      return await apiService.get('engineers', id);
+      const response = await apiService.get(`admin/engineers/${id}`);
+      return response.success && response.data ? response.data.engineer || response.data : null;
     } catch (error) {
       console.error('Error fetching engineer:', error);
       throw error;
@@ -53,9 +57,19 @@ export const EngineersProvider = ({ children }) => {
   const updateEngineer = async (id, updateData) => {
     setLoading(true);
     try {
+      const response = await apiService.request(`/admin/engineers/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
       
-      const updatedEngineer = await apiService.patch('engineers', id, updateData);
-      setEngineers(prev => prev.map(e => e.id === id ? updatedEngineer : e));
+      const updatedEngineer = response.success && response.data ? 
+        response.data.engineer || response.data : null;
+      
+      if (updatedEngineer) {
+        setEngineers(prev => prev.map(e => 
+          (e.engineer_id === id || e.id === id) ? updatedEngineer : e
+        ));
+      }
       return updatedEngineer;
     } catch (error) {
       console.error('Error updating engineer:', error);
@@ -68,9 +82,8 @@ export const EngineersProvider = ({ children }) => {
   const deleteEngineer = async (id) => {
     setLoading(true);
     try {
-      
-      await apiService.delete('engineers', id);
-      setEngineers(prev => prev.filter(e => e.id !== id));
+      await apiService.delete(`admin/engineers`, id);
+      setEngineers(prev => prev.filter(e => e.engineer_id !== id && e.id !== id));
     } catch (error) {
       console.error('Error deleting engineer:', error);
       throw error;
