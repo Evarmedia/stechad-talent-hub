@@ -201,24 +201,24 @@ VITE_WS_URL=ws://localhost:5000
 ### Making API Calls
 ```javascript
 // Get jobs with filters
-const jobs = await getJobs({
-  page: 1,
-  limit: 20,
-  status: 'active',
-  remote: true,
-  skills: ['React', 'TypeScript']
-});
+// const jobs = await getJobs({
+//   page: 1,
+//   limit: 20,
+//   status: 'active',
+//   remote: true,
+//   skills: ['React', 'TypeScript']
+// });
 
-// Create application
-const application = await createApplication(jobId, {
-  cover_letter: 'I am interested...',
-  proposed_rate: '$50/hr'
-});
+// // Create application
+// const application = await createApplication(jobId, {
+//   cover_letter: 'I am interested...',
+//   proposed_rate: '$50/hr'
+// });
 
-// Upload file
-const formData = new FormData();
-formData.append('avatar', file);
-await updateProfile(formData);
+// // Upload file
+// const formData = new FormData();
+// formData.append('avatar', file);
+// await updateProfile(formData);
 ```
 
 ### Using WebSocket

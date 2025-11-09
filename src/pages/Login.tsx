@@ -43,7 +43,7 @@ const Login = () => {
     try {
       const response = await login(form.email, form.password, form.role);
       toast({ title: `Welcome ${response.data.user.first_name}`, description: "Login successful!" });
-      
+
       // Navigate based on role and onboarding status
       if (from !== "/") {
         navigate(from, { replace: true });
@@ -53,7 +53,7 @@ const Login = () => {
           // if (!response.data.user.engineer.is_onboarded) {
           //   navigate("/onboarding");
           // } else {
-            navigate("/dashboard/engineer");
+          navigate("/dashboard/engineer");
           // }
         } else if (form.role === "project_manager") {
           navigate("/dashboard/pm");
@@ -62,10 +62,17 @@ const Login = () => {
         }
       }
     } catch (error) {
-      toast({ 
-        title: "Login Failed", 
-        description: error.message || "Invalid credentials" 
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials"
       });
+      if (error.status === 429 || error.isRateLimit) {
+        // Show user-friendly rate limit message
+        throw new Error('Too many login attempts. Please wait 1-2 minutes and try again.');
+      } else {
+        throw new Error(error.message || 'Login failed');
+      }
+
     }
   };
 

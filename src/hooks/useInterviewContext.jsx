@@ -34,24 +34,54 @@ export const InterviewProvider = ({ children }) => {
     }
   }, []);
 
-  // Get interviews for user
-  const fetchInterviews = useCallback(async (userId, userRole) => {
+  // Get interviews for logged in user
+  const fetchUserInterviews = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('Fetching interviews for user:', userId, 'role:', userRole);
+      
+      let interviewList = await apiService.get('interviews/me');
+      
+      // Sort by date
+      // interviewList = interviewList.data.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+      
+      console.log('Fetched interviews:', interviewList);
+      setInterviews(interviewList.data);
+      console.log("List:=>", interviewList);
+      return interviewList;
+    } catch (error) {
+      console.error('Error fetching interviews:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+    // Get interviews By Id
+  const fetchInterviewsById = useCallback(async (interviewId) => {
+    setLoading(true);
+    try {
+      console.log('Fetching interview:');
+      
+      let interview = await apiService.get('interviews', interviewId);
+      
+      console.log('Fetched interviews:', interview);
+      setInterviews(interview);
+      return interview;
+    } catch (error) {
+      console.error('Error fetching interviews:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Get All interviewsuser
+  const fetchAllInterviews = useCallback(async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching all interviews');
       
       let interviewList = await apiService.get('interviews');
-      
-      // Filter based on user role
-      if (userRole === 'engineer') {
-        interviewList = interviewList.filter(interview => 
-          interview.candidateId === userId
-        );
-      } else if (userRole === 'project_manager') {
-        interviewList = interviewList.filter(interview => 
-          interview.interviewerId === userId
-        );
-      }
       
       // Sort by date
       interviewList = interviewList.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
@@ -73,41 +103,17 @@ export const InterviewProvider = ({ children }) => {
     try {
       const updatedData = {
         ...updateData,
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
       const updatedInterview = await apiService.patch('interviews', interviewId, updatedData);
       setInterviews(prev => prev.map(interview => 
-        interview.id === interviewId 
+        interview.interviews_id === interviewId 
           ? updatedInterview
           : interview
       ));
-      return updatedInterview;
+      return updatedInterview.data;
     } catch (error) {
       console.error('Error updating interview:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Cancel interview
-  const cancelInterview = useCallback(async (interviewId, reason) => {
-    setLoading(true);
-    try {
-      const cancelData = {
-        status: 'cancelled',
-        cancellationReason: reason,
-        cancelledAt: new Date().toISOString()
-      };
-      const updatedInterview = await apiService.patch('interviews', interviewId, cancelData);
-      setInterviews(prev => prev.map(interview => 
-        interview.id === interviewId 
-          ? updatedInterview
-          : interview
-      ));
-      return updatedInterview;
-    } catch (error) {
-      console.error('Error cancelling interview:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -141,12 +147,13 @@ export const InterviewProvider = ({ children }) => {
 
   const value = {
     interviews,
+    fetchAllInterviews,
+    fetchInterviewsById,
     loading,
     scheduleInterview,
-    fetchInterviews,
+    fetchUserInterviews,
     updateInterview,
-    cancelInterview,
-    rescheduleInterview
+    rescheduleInterview // remove use updateInterview instead
   };
 
   return (

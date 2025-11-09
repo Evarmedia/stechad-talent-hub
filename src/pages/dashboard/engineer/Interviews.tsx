@@ -11,20 +11,20 @@ import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useInterviewContext } from '../../../hooks/useInterviewContext';
 
 const Interviews = () => {
-  const { interviews, loading, fetchInterviews, cancelInterview } = useInterviewContext();
+  const { interviews, loading, fetchUserInterviews, updateInterview } = useInterviewContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
 
   useEffect(() => {
     if (user) {
-      fetchInterviews(user.id, user.role);
+      fetchUserInterviews(user.user_id, user.role);
     }
-  }, [user, fetchInterviews]);
+  }, [user, fetchUserInterviews]);
 
-  const handleCancelInterview = async (interviewId: number) => {
+  const handleUpdateInterview = async (interviewId: number) => {
     try {
-      await cancelInterview(interviewId, "Cancelled by candidate");
+      await updateInterview(interviewId, {status: "cancelled"} );
       toast({
         title: "Success",
         description: "Interview cancelled successfully"
@@ -141,7 +141,7 @@ const Interviews = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleCancelInterview(interview.id)}
+                            onClick={() => handleUpdateInterview(interview.id)}
                             className="flex items-center gap-1 text-red-600 hover:text-red-700"
                           >
                             <X className="w-3 h-3" />

@@ -19,15 +19,16 @@ const Applications = () => {
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState([]);
   
-  const { getApplications } = useDataContext();
+  const { getEngineersApplication } = useDataContext();
   const { user } = useAuthContext();
 
   useEffect(() => {
     const fetchApplications = async () => {
       if (user) {
         try {
-          const applicationsData = await getApplications({ engineerId: user.id });
+          const applicationsData = await getEngineersApplication({ engineerId: user.user_id });
           setApplications(applicationsData);
+          console.log("Engineer Applications Page:", applications);
         } catch (error) {
           console.error('Error fetching applications:', error);
         } finally {
@@ -37,7 +38,7 @@ const Applications = () => {
     };
 
     fetchApplications();
-  }, [getApplications, user]);
+  }, [getEngineersApplication, user]);
 
   return (
     <div className="p-4 md:p-8">
@@ -93,8 +94,8 @@ const Applications = () => {
                   ))
                   : applications.map((app, idx) => (
                     <tr key={idx} className="border-b">
-                      <td className="p-2">{app.jobTitle}</td>
-                      <td className="p-2">{app.appliedDate}</td>
+                      <td className="p-2">{app.job_title}</td>
+                      <td className="p-2">{app.applied_at}</td>
                       <td className="p-2">
                         <Badge className={statusColor(app.status)}>{app.status}</Badge>
                       </td>

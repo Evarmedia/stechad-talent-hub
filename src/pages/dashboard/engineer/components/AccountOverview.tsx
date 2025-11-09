@@ -11,7 +11,7 @@ interface AccountOverviewProps {
 }
 
 const AccountOverview: React.FC<AccountOverviewProps> = ({ loading, user }) => {
-  const skills = user?.profileData?.skills || ["React", "Node.js", "SQL", "AWS", "TypeScript", "Python"];
+  const skills = user?.engineer?.specialization || ["React", "Node.js", "SQL", "AWS", "TypeScript", "Python"];
 
   return (
     <Card>
@@ -38,7 +38,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ loading, user }) => {
             <div className="flex justify-between text-sm">
               <span className="font-semibold">Availability:</span>
               <Badge className="bg-green-100 text-green-800">
-                {user?.profileData?.availability || "Available"}
+                {user.engineer?.availability || "Available"}
               </Badge>
             </div>
             <div className="flex justify-between text-sm">

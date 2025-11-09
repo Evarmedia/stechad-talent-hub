@@ -12,7 +12,7 @@ export const ApplicationsProvider = ({ children }) => {
     try {
       let params = {
         page: filters.page || 1,
-        limit: filters.limit || 50
+        limit: filters.limit || 10
       };
 
       if (filters.job_id || filters.jobId) {
@@ -28,6 +28,37 @@ export const ApplicationsProvider = ({ children }) => {
       const response = await apiService.get("applications", null, params);
       const applicationsData = response.success && response.data ? 
         response.data.applications || response.data : [];
+      
+      setApplications(applicationsData);
+      return applicationsData;
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      setApplications([]);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getEngineersApplication = async (filters={}) => {
+        setLoading(true);
+    try {
+      let params = {
+        page: filters.page || 1,
+        limit: filters.limit || 20
+      };
+
+      if (filters.job_id) {
+        params.job_id = filters.job_id;
+      }
+      
+      if (filters.status) {
+        params.status = filters.status;
+      }
+
+      const response = await apiService.get("engineers/applications", null, params);
+      const applicationsData = response.success && response.data ? 
+        response.data.applications : [];
       
       setApplications(applicationsData);
       return applicationsData;
@@ -123,6 +154,7 @@ export const ApplicationsProvider = ({ children }) => {
     applications,
     loading,
     getApplications,
+    getEngineersApplication,
     getApplicationsByJobId,
     createApplication,
     updateApplication,

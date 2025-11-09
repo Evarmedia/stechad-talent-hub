@@ -15,15 +15,15 @@ const EngineerDashboard = () => {
   const [applications, setApplications] = useState([]);
   const [projects, setProjects] = useState([]);
   
-  const { getApplications, getProjects } = useDataContext();
+  const { getEngineersApplication, getProjects } = useDataContext();
   const { user } = useAuthContext();
-  const { interviews, fetchInterviews } = useInterviewContext();
+  const { interviews, fetchUserInterviews } = useInterviewContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [applicationsData, projectsData] = await Promise.all([
-          getApplications({ engineerId: user?.id }),
+          getEngineersApplication(),
           getProjects()
         ]);
         
@@ -31,14 +31,14 @@ const EngineerDashboard = () => {
         
         // Filter projects to only show projects assigned to the current user
         const userProjects = projectsData.filter(project => 
-          project.assignedTo === user?.id || 
-          project.engineerId === user?.id ||
-          (project.team && project.team.includes(user?.id))
+          project.assignedTo === user?.user_id || 
+          project.engineerId === user?.user_id ||
+          (project.team && project.team.includes(user?.user_id))
         );
         setProjects(userProjects);
         
         if (user) {
-          await fetchInterviews(user.id, user.role);
+          await fetchUserInterviews(user.user_id, user.role);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -50,7 +50,7 @@ const EngineerDashboard = () => {
     if (user) {
       fetchData();
     }
-  }, [getApplications, getProjects, fetchInterviews, user]);
+  }, [getEngineersApplication, getProjects, fetchUserInterviews, user]);
 
   const activeProjects = projects.filter(p => p.status === "In Progress" || p.status === "Active");
   const scheduledInterviews = interviews.filter(i => i.status === "scheduled");

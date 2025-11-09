@@ -13,7 +13,7 @@ export const JobsProvider = ({ children }) => {
     try {
       let params = {
         page: filters.page || 1,
-        limit: filters.limit || 50
+        limit: filters.limit || 10
       };
       
       if (filters.remote !== undefined) {
