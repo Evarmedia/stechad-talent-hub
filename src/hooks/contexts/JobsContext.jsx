@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import apiService from '../../services/apiService.js';
 
 const JobsContext = createContext();
@@ -11,7 +11,7 @@ export const JobsProvider = ({ children }) => {
   const getJobs = async (filters = {}) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       let params = {};
       
       if (filters.remote !== undefined) {
@@ -55,7 +55,7 @@ export const JobsProvider = ({ children }) => {
   const createJob = async (jobData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const newJob = { ...jobData, applications: 0 };
       const createdJob = await apiService.post('jobs', newJob);
       setJobs(prev => [createdJob, ...prev]);
@@ -71,7 +71,7 @@ export const JobsProvider = ({ children }) => {
   const updateJob = async (id, updateData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const updatedJob = await apiService.patch('jobs', id, updateData);
       setJobs(prev => prev.map(j => j.id === id ? updatedJob : j));
       return updatedJob;
@@ -86,7 +86,7 @@ export const JobsProvider = ({ children }) => {
   const deleteJob = async (id) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       await apiService.delete('jobs', id);
       setJobs(prev => prev.filter(j => j.id !== id));
     } catch (error) {

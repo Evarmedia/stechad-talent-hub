@@ -32,8 +32,8 @@ const ChatInterface = () => {
   const messagesEndRef = useRef(null);
   const newChatModalRef = useRef(null);
 
-  const userChats = getUserChats(user?.id, user?.role);
-  const availableUsers = getAvailableUsers(user?.id, user?.role);
+  const userChats = getUserChats(user?.user_id, user?.role);
+  const availableUsers = getAvailableUsers(user?.user_id, user?.role);
   const selectedChat = selectedChatId ? getChatById(selectedChatId) : null;
 
   const filteredUsers = availableUsers.filter(u => 
@@ -49,7 +49,7 @@ const ChatInterface = () => {
 
   useEffect(() => {
     if (selectedChatId && user) {
-      markAsRead(selectedChatId, user.id);
+      markAsRead(selectedChatId, user.user_id);
     }
   }, [selectedChatId, user, markAsRead]);
 
@@ -80,7 +80,7 @@ const ChatInterface = () => {
   const handleSendMessage = async () => {
     if (messageInput.trim() && selectedChatId && user) {
       try {
-        await sendMessage(selectedChatId, user.id, messageInput.trim());
+        await sendMessage(selectedChatId, user.user_id, messageInput.trim());
         setMessageInput('');
       } catch (error) {
         console.error('Error sending message:', error);
@@ -98,7 +98,7 @@ const ChatInterface = () => {
   const handleUserSelect = async (selectedUserId) => {
     if (user) {
       try {
-        const chat = await createOrGetChat(user.id, selectedUserId);
+        const chat = await createOrGetChat(user.user_id, selectedUserId);
         setSelectedChatId(chat.id);
         setShowNewChatModal(false);
         setSearchTerm('');
@@ -136,14 +136,14 @@ const ChatInterface = () => {
 
   const getChatDisplayName = (chat) => {
     if (!user) return 'Unknown';
-    const otherParticipantId = chat.participants.find(id => id !== String(user.id));
+    const otherParticipantId = chat.participants.find(id => id !== String(user.user_id));
     const otherUser = getUserById(otherParticipantId);
     return otherUser ? otherUser.name : 'Unknown User';
   };
 
   const getChatDisplayRole = (chat) => {
     if (!user) return '';
-    const otherParticipantId = chat.participants.find(id => id !== String(user.id));
+    const otherParticipantId = chat.participants.find(id => id !== String(user.user_id));
     const otherUser = getUserById(otherParticipantId);
     return otherUser ? otherUser.role.toUpperCase() : '';
   };
@@ -203,8 +203,8 @@ const ChatInterface = () => {
               <div className="max-h-48 overflow-y-auto">
                 {filteredUsers.map((availableUser) => (
                   <div
-                    key={availableUser.id}
-                    onClick={() => handleUserSelect(availableUser.id)}
+                    key={availableUser.user_id}
+                    onClick={() => handleUserSelect(availableUser.user_id)}
                     className="flex items-center p-2 hover:bg-gray-50 cursor-pointer"
                   >
                     <Avatar className="w-6 h-6 mr-2">
@@ -214,7 +214,7 @@ const ChatInterface = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 truncate">{availableUser.name}</p>
+                      <p className="text-xs font-medium text-gray-900 truncate">{availableUser.first_name}</p>
                       <p className="text-xs text-gray-500">{availableUser.role.toUpperCase()}</p>
                     </div>
                   </div>
@@ -242,14 +242,14 @@ const ChatInterface = () => {
                 return bTime - aTime;
               })
               .map((chat) => {
-                const unreadCount = chat.unreadCount[String(user?.id)] || 0;
-                const isSelected = selectedChatId === chat.id;
+                const unreadCount = chat.unreadCount[String(user?.user_id)] || 0;
+                const isSelected = selectedChatId === chat.chat_id;
 
                 return (
                   <div
-                    key={chat.id}
+                    key={chat.chat_id}
                     onClick={() => {
-                      setSelectedChatId(chat.id);
+                      setSelectedChatId(chat.chat_id);
                       if (isMobile) setShowChatList(false);
                     }}
                     className={`p-3 cursor-pointer border-b border-gray-100 hover:bg-white transition-colors ${

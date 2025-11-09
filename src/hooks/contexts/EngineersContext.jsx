@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import apiService from '../../services/apiService.js';
 
 const EngineersContext = createContext();
@@ -11,7 +11,7 @@ export const EngineersProvider = ({ children }) => {
   const getEngineers = async (filters = {}) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       let params = {};
       
       if (filters.country) {
@@ -53,7 +53,7 @@ export const EngineersProvider = ({ children }) => {
   const updateEngineer = async (id, updateData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const updatedEngineer = await apiService.patch('engineers', id, updateData);
       setEngineers(prev => prev.map(e => e.id === id ? updatedEngineer : e));
       return updatedEngineer;
@@ -68,7 +68,7 @@ export const EngineersProvider = ({ children }) => {
   const deleteEngineer = async (id) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       await apiService.delete('engineers', id);
       setEngineers(prev => prev.filter(e => e.id !== id));
     } catch (error) {

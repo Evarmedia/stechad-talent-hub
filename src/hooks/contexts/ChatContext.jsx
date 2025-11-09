@@ -14,11 +14,11 @@ export const ChatProvider = ({ children }) => {
     const loadInitialData = async () => {
       try {
         const [chatsData, usersData] = await Promise.all([
-          apiService.get('chats'),
-          apiService.get('chatUsers')
+          apiService.get('chat'),
+          // apiService.get('chatUsers')
         ]);
         setChats(chatsData);
-        setUsers(usersData);
+        // setUsers(usersData);
       } catch (error) {
         console.error('Error loading chat data:', error);
       }
@@ -40,17 +40,17 @@ export const ChatProvider = ({ children }) => {
 
       // Engineers can chat with PMs and Admins
       if (userRole === 'engineer') {
-        return otherUser.role === 'pm' || otherUser.role === 'admin';
+        return otherUser.role === 'project_manager' || otherUser.role === 'admin';
       }
       
       // PMs can chat with Engineers and Admins
-      if (userRole === 'pm') {
+      if (userRole === 'project_manager') {
         return otherUser.role === 'engineer' || otherUser.role === 'admin';
       }
       
       // Admins can chat with Engineers and PMs
       if (userRole === 'admin') {
-        return otherUser.role === 'engineer' || otherUser.role === 'pm';
+        return otherUser.role === 'engineer' || otherUser.role === 'project_manager';
       }
 
       return false;
@@ -63,17 +63,17 @@ export const ChatProvider = ({ children }) => {
 
       // Engineers can message PMs and Admins
       if (currentUserRole === 'engineer') {
-        return user.role === 'pm' || user.role === 'admin';
+        return user.role === 'project_manager' || user.role === 'admin';
       }
       
       // PMs can message Engineers and Admins
-      if (currentUserRole === 'pm') {
+      if (currentUserRole === 'project_manager') {
         return user.role === 'engineer' || user.role === 'admin';
       }
       
       // Admins can message Engineers and PMs
       if (currentUserRole === 'admin') {
-        return user.role === 'engineer' || user.role === 'pm';
+        return user.role === 'engineer' || user.role === 'project_manager';
       }
 
       return false;

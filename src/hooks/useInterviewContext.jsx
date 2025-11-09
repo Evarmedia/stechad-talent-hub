@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 import apiService from '../services/apiService.js';
 
 const InterviewContext = createContext();
@@ -13,7 +13,6 @@ export const InterviewProvider = ({ children }) => {
     setLoading(true);
     try {
       console.log('Scheduling interview with data:', interviewData);
-      await apiService.simulateDelay();
       
       const newInterview = {
         ...interviewData,
@@ -40,7 +39,6 @@ export const InterviewProvider = ({ children }) => {
     setLoading(true);
     try {
       console.log('Fetching interviews for user:', userId, 'role:', userRole);
-      await apiService.simulateDelay();
       
       let interviewList = await apiService.get('interviews');
       
@@ -49,7 +47,7 @@ export const InterviewProvider = ({ children }) => {
         interviewList = interviewList.filter(interview => 
           interview.candidateId === userId
         );
-      } else if (userRole === 'pm') {
+      } else if (userRole === 'project_manager') {
         interviewList = interviewList.filter(interview => 
           interview.interviewerId === userId
         );
@@ -73,7 +71,6 @@ export const InterviewProvider = ({ children }) => {
   const updateInterview = useCallback(async (interviewId, updateData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
       const updatedData = {
         ...updateData,
         updatedAt: new Date().toISOString()
@@ -97,7 +94,6 @@ export const InterviewProvider = ({ children }) => {
   const cancelInterview = useCallback(async (interviewId, reason) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
       const cancelData = {
         status: 'cancelled',
         cancellationReason: reason,
@@ -122,7 +118,6 @@ export const InterviewProvider = ({ children }) => {
   const rescheduleInterview = useCallback(async (interviewId, newDateTime, reason) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
       const rescheduleData = {
         dateTime: newDateTime,
         status: 'rescheduled',

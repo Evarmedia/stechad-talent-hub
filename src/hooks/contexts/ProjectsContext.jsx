@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import apiService from '../../services/apiService.js';
 
 const ProjectsContext = createContext();
@@ -11,7 +11,7 @@ export const ProjectsProvider = ({ children }) => {
   const getProjects = async (filters = {}) => {
     // setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       let filteredProjects = await apiService.get('projects');
       
       // Apply filters on client side
@@ -63,7 +63,7 @@ export const ProjectsProvider = ({ children }) => {
   const createProject = async (projectData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const createdProject = await apiService.post('projects', projectData);
       setProjects(prev => [createdProject, ...prev]);
       return createdProject;
@@ -78,7 +78,7 @@ export const ProjectsProvider = ({ children }) => {
   const updateProject = async (id, updateData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const updatedProject = await apiService.patch('projects', id, updateData);
       setProjects(prev => prev.map(p => p.id === id ? updatedProject : p));
       return updatedProject;
@@ -93,7 +93,7 @@ export const ProjectsProvider = ({ children }) => {
   const deleteProject = async (id) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       await apiService.delete('projects', id);
       setProjects(prev => prev.filter(p => p.id !== id));
     } catch (error) {

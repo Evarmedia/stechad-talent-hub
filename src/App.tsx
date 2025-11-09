@@ -110,42 +110,42 @@ const App = () => (
 
                     {/* Project Manager Dashboard routes */}
                     <Route path="/dashboard/pm" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMIndex />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/post-job" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMPostJob />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/manage-jobs" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMManageJobs />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/projects" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMProjects />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/applicants/:jobId" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMApplicants />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/interviews" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMInterviews />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/messages" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMMessages />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/profile" element={
-                      <ProtectedRoute requiredRole="pm">
+                      <ProtectedRoute requiredRole="project_manager">
                         <PMProfile />
                       </ProtectedRoute>
                     } />

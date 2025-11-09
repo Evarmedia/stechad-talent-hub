@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import apiService from '../services/apiService.js';
 
@@ -23,36 +22,40 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Direct API call for login
   const login = async (email, password, role) => {
     setAuthLoading(true);
     try {
-      await apiService.simulateDelay(800);
-      const userData = await apiService.login(email, password, role);
-      setUser(userData);
-      localStorage.setItem('stechad_user', JSON.stringify(userData));
-      return userData;
+      const response = await apiService.post('auth/login', { email, password, role });
+      if (!response) {
+        throw new Error('Invalid credentials');
+      }
+      setUser(response.data.user);
+      console.log('USER:',user)
+      console.log("response", response)
+      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
+      return response;
     } catch (error) {
+      console.log({"Login error": error});
       throw error;
     } finally {
       setAuthLoading(false);
     }
   };
 
+  // Direct API call for signup
   const signup = async (userData) => {
     setAuthLoading(true);
     try {
-      await apiService.simulateDelay(1000);
-      const newUser = await apiService.signup(userData);
-      const userResponse = {
-        id: newUser.id,
-        email: newUser.email,
-        role: newUser.role,
-        name: newUser.name,
-        profileData: newUser.profileData
-      };
-      setUser(userResponse);
-      localStorage.setItem('stechad_user', JSON.stringify(userResponse));
-      return userResponse;
+      const response = await apiService.post('auth/signup', userData);
+
+      console.log("usrInfo:", userData)
+      if (!response) {
+        throw new Error('Error signing up');
+      }
+      setUser(response.data.user);
+      localStorage.setItem('stechad_user', JSON.stringify(response.data.user));
+      return response;
     } catch (error) {
       throw error;
     } finally {
@@ -60,18 +63,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
     localStorage.removeItem('stechad_user');
   };
 
+  // Update profile function
   const updateProfile = async (profileData) => {
     if (!user) throw new Error('No user logged in');
-    
+
     setAuthLoading(true);
     try {
-      await apiService.simulateDelay(500);
-      const updatedUser = await apiService.updateProfile(user.id, profileData);
+      const updatedUser = await apiService.put('users', user.user_id, profileData);
       const userResponse = {
         id: updatedUser.id,
         email: updatedUser.email,

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import apiService from '../../services/apiService.js';
 
 const ProjectManagersContext = createContext();
@@ -11,7 +11,7 @@ export const ProjectManagersProvider = ({ children }) => {
   const getProjectManagers = async () => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const managers = await apiService.get('projectManagers');
       setProjectManagers(managers);
       return managers;

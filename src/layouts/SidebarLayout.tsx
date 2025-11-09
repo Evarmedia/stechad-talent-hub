@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import STECHADLogo from "@/components/STECHADLogo";
 
-type Role = "engineer" | "pm" | "admin";
+type Role = "engineer" | "project_manager" | "admin";
 
 const sidebarMenus: Record<Role, { label: string; to: string; icon: React.ReactNode }[]> = {
   engineer: [
@@ -12,7 +12,7 @@ const sidebarMenus: Record<Role, { label: string; to: string; icon: React.ReactN
     { label: "Profile", to: "/dashboard/engineer/profile", icon: "👤" },
     { label: "Logout", to: "/logout", icon: "🚪" }
   ],
-  pm: [
+  project_manager: [
     { label: "Post Job", to: "/dashboard/pm/post-job", icon: "➕" },
     { label: "Manage Jobs", to: "/dashboard/pm/manage-jobs", icon: "🗂️" },
     { label: "Interviews", to: "/dashboard/pm/interviews", icon: "📅" },

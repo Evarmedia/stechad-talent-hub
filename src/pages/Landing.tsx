@@ -83,7 +83,7 @@ const Landing = () => {
       {/* Role-based logins */}
       <section className="max-w-3xl mx-auto mt-8 mb-4 px-4 flex flex-col md:flex-row md:justify-center gap-4 md:gap-10">
         <Link
-          to="/login?role=pm"
+          to="/login?role=project_manager"
           className="p-4 rounded-lg border border-border shadow-smooth flex-1 hover:shadow-md bg-white transition flex flex-col items-center"
         >
           <span className="text-3xl mb-2">👨‍💼</span>

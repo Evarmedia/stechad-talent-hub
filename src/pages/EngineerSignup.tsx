@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 
 const EngineerSignup = () => {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ first_name: "", email: "", password: "", confirm_password: "", googleSignIn: false });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup, authLoading } = useAuthContext();
@@ -19,10 +19,10 @@ const EngineerSignup = () => {
   };
 
   const validate = () => {
-    if (!form.name.trim()) return "Full name required";
+    if (!form.first_name.trim()) return "Full first_name required";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Valid email required";
     if (form.password.length < 6) return "Password must be at least 6 characters";
-    if (form.password !== form.confirm) return "Passwords do not match";
+    if (form.password !== form.confirm_password) return "Passwords do not match";
     return "";
   };
 
@@ -36,24 +36,18 @@ const EngineerSignup = () => {
 
     try {
       const newUser = await signup({
-        name: form.name,
+        first_name: form.first_name,
         email: form.email,
         password: form.password,
+        confirm_password: form.confirm_password,
         role: "engineer",
-        profileData: {
-          country: "",
-          skills: [],
-          experience: "",
-          availability: "Available",
-          isVetted: false
-        }
       });
 
       toast({ 
         title: "Signup Success! 🎉", 
         description: "Welcome to STECHAD. Complete your profile to get started." 
       });
-      navigate("/onboarding", { state: { name: newUser.name, email: newUser.email } });
+      navigate("/onboarding", { state: { first_name: newUser.first_name, email: newUser.email } });
     } catch (error) {
       toast({ 
         title: "Signup Failed", 
@@ -69,9 +63,9 @@ const EngineerSignup = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input
             type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
+            name="first_name"
+            placeholder="First Name"
+            value={form.first_name}
             onChange={handleChange}
             className="p-3"
             disabled={authLoading}
@@ -108,9 +102,9 @@ const EngineerSignup = () => {
           <div className="relative">
             <Input
               type={showConfirmPassword ? "text" : "password"}
-              name="confirm"
+              name="confirm_password"
               placeholder="Confirm Password"
-              value={form.confirm}
+              value={form.confirm_password}
               onChange={handleChange}
               className="p-3 pr-10"
               disabled={authLoading}

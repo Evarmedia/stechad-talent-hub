@@ -19,7 +19,7 @@ const Login = () => {
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
     const r = params.get("role");
-    if (r === "engineer" || r === "pm" || r === "admin") setForm((f) => ({ ...f, role: r }));
+    if (r === "engineer" || r === "project_manager" || r === "admin") setForm((f) => ({ ...f, role: r }));
   }, [location.search]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -41,8 +41,8 @@ const Login = () => {
     }
 
     try {
-      const user = await login(form.email, form.password, form.role);
-      toast({ title: `Welcome ${user.name}`, description: "Login successful!" });
+      const response = await login(form.email, form.password, form.role);
+      toast({ title: `Welcome ${response.data.user.first_name}`, description: "Login successful!" });
       
       // Navigate based on role and onboarding status
       if (from !== "/") {
@@ -50,12 +50,12 @@ const Login = () => {
       } else {
         if (form.role === "engineer") {
           // Check if engineer has completed onboarding
-          if (!user.profileData?.isOnboarded) {
+          if (!response.data.user.engineer.is_onboarded) {
             navigate("/onboarding");
           } else {
             navigate("/dashboard/engineer");
           }
-        } else if (form.role === "pm") {
+        } else if (form.role === "project_manager") {
           navigate("/dashboard/pm");
         } else if (form.role === "admin") {
           navigate("/admin");
@@ -82,13 +82,13 @@ const Login = () => {
             disabled={authLoading}
           >
             <option value="engineer">Engineer</option>
-            <option value="pm">Project Manager</option>
+            <option value="project_manager">Project Manager</option>
             <option value="admin">Admin (Staff Only)</option>
           </select>
           <Input
             type="email"
             name="email"
-            placeholder="Email Address"
+            placeholder="jane.doe@example.com"
             value={form.email}
             onChange={handleChange}
             className="p-3"

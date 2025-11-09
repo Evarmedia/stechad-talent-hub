@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import apiService from "../../services/apiService.js";
 
 const ApplicationsContext = createContext();
@@ -10,7 +10,7 @@ export const ApplicationsProvider = ({ children }) => {
   const getApplications = async (filters = {}) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       let params = {};
 
       if (filters.jobId) {
@@ -41,7 +41,7 @@ export const ApplicationsProvider = ({ children }) => {
   const getApplicationsByJobId = async (jobId) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const applications = await apiService.get("applications", null, {
         jobId,
       });
@@ -58,7 +58,7 @@ export const ApplicationsProvider = ({ children }) => {
   const createApplication = async (applicationData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const newApplication = {
         ...applicationData,
         appliedDate: new Date().toISOString().split("T")[0],
@@ -80,7 +80,7 @@ export const ApplicationsProvider = ({ children }) => {
   const updateApplication = async (id, updateData) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       const updatedApplication = await apiService.patch(
         "applications",
         id,
@@ -101,7 +101,7 @@ export const ApplicationsProvider = ({ children }) => {
   const deleteApplication = async (id) => {
     setLoading(true);
     try {
-      await apiService.simulateDelay();
+      
       await apiService.delete("applications", id);
       setApplications((prev) => prev.filter((a) => a.id !== id));
     } catch (error) {

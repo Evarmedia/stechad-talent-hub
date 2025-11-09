@@ -45,7 +45,7 @@ export function AppNavbar() {
       </div>
       <nav className="flex gap-4 items-center text-sm">
         <span className="text-muted-foreground hidden md:inline">
-          Welcome, {user?.name}
+          Welcome, {user?.first_name}
         </span>
         <Link to={profileRoute} className="text-primary font-medium hover:underline">
           My Account
