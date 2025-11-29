@@ -11,7 +11,6 @@ import RecentApplications from "./components/RecentApplications";
 
 
 const EngineerDashboard = () => {
-  const [applications, setApplications] = useState([]);
   const [projects, setProjects] = useState([]);
   const [recentApplications, setRecentApplications] = useState([]);
   const [recentApplicationsCount, setRecentApplicationsCount] = useState(0);
@@ -52,7 +51,6 @@ const EngineerDashboard = () => {
         totalInterviewCount={interviewCount}
         recentApplications={recentApplications.length}
       />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <AccountOverview loading={loading} user={user} />
         <RecentApplications loading={loading} applications={recentApplications} />

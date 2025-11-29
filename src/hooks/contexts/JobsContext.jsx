@@ -57,7 +57,7 @@ export const JobsProvider = ({ children }) => {
       setLoading(true);
 
       const list = await getJobs();
-      console.log("Initialized Jobs:", list);
+      // console.log("Initialized Jobs:", list);
 
       setInitialized(true);
       setLoading(false);

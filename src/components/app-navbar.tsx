@@ -3,6 +3,7 @@ import STECHADLogo from "@/components/STECHADLogo";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { useDataContext } from "@/hooks/useDataContext"
 
 const navRoles = [
   { name: "Engineer", path: "/dashboard/engineer" },
@@ -21,6 +22,7 @@ function getProfileRoute(pathname: string) {
 export function AppNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
+  const { resetEngineerState } = useDataContext();
   const navigate = useNavigate();
   
   const currentRole =
@@ -29,6 +31,7 @@ export function AppNavbar() {
 
   const handleLogout = () => {
     logout();
+    resetEngineerState();
     navigate("/login");
   };
 

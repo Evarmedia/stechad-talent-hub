@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import apiService from '../../services/apiService.js';
-// import { useAuthContext } from '../authContext';
+import { useAuthContext } from '../useAuthContext.jsx';
 
 const EngineersContext = createContext();
 
 export const EngineersProvider = ({ children }) => {
   const token = apiService.getToken(); // ensures only fetch when logged in
+  const { user } = useAuthContext();
 
   const [engineers, setEngineers] = useState([]);
   const [engrDashboardData, setEngrDashboardData] = useState(null);
@@ -19,8 +20,8 @@ export const EngineersProvider = ({ children }) => {
     try {
       const response = await apiService.get(`engineers/dashboard`);
       setEngrDashboardData(response.data);
-      // console.log('Engr Data from context', response.data);
       setLoading(false);
+      // console.log('Engr Data from context', response.data);
       return response.data;
     } catch (error) {
       console.error("Engineer dashboard fetch error:", error);
@@ -58,23 +59,32 @@ export const EngineersProvider = ({ children }) => {
   // ---------------------------
   // FETCH ALL DATA ONCE
   // ---------------------------
-  useEffect(() => {
-    /** Only run when token is present */
-    if (!token || initialized) return;
+useEffect(() => {
+  if (!token || !user || initialized) return;
 
-    const init = async () => {
-      setLoading(true);
-      await Promise.all([
-        getEngrDashboard(),
-        getEngineers()
-      ]);
-      // console.log(">>> UPDATED STATE — engrDashboardData:", engrDashboardData);
+  const init = async () => {
+    setLoading(true);
+
+    try {
+      if (user.role === "engineer") {
+        // Engineers fetch their dashboard ONLY
+        await getEngrDashboard();
+      }
+
+      if (user.role === "admin" || user.role === "project_manager") {
+        // Admins + PMs fetch engineer list ONLY
+        await getEngineers();
+      }
+    } catch (err) {
+      console.error("EngineersContext init error:", err);
+    } finally {
       setInitialized(true);
       setLoading(false);
-    };
+    }
+  };
 
-    init();
-  }, [token]);
+  init();
+}, [token, user]);
 
   // ---------------------------
   // OTHER ACTIONS
@@ -118,6 +128,13 @@ export const EngineersProvider = ({ children }) => {
     }
   };
 
+const resetEngineerState = () => {
+  setEngineers([]);
+  setEngrDashboardData(null);
+  setInitialized(false);
+};
+
+
   // ---------------------------
   // CONTEXT VALUE
   // ---------------------------
@@ -129,6 +146,7 @@ export const EngineersProvider = ({ children }) => {
     getEngineerById,
     updateEngineer,
     deleteEngineer,
+    resetEngineerState,
     refreshAll: async () => {
       setInitialized(false); // allow re-run
     }

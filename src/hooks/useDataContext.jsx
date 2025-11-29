@@ -54,6 +54,7 @@ const DataProviderInner = ({ children }) => {
     getEngineerById: engineersContext.getEngineerById,
     updateEngineer: engineersContext.updateEngineer,
     deleteEngineer: engineersContext.deleteEngineer,
+    resetEngineerState: engineersContext.resetEngineerState,
     
     // Jobs
     getJobs: jobsContext.getJobs,

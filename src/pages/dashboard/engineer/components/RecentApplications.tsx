@@ -50,15 +50,15 @@ const RecentApplications: React.FC<RecentApplicationsProps> = ({ loading, applic
         ) : (
           <div className="space-y-3">
             {applications.slice(0, 3).map((app) => (
-              <div key={app.id} className="space-y-1">
+              <div key={app.job_id} className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">{app.jobTitle}</span>
+                  <span className="font-medium text-sm">{app.job_title}</span>
                   <Badge className={getStatusColor(app.status)} variant="outline">
                     {app.status}
                   </Badge>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Applied: {app.appliedDate}</span>
+                  <span>Applied: {app.applied_at.split('T')[0]}</span>
                 </div>
               </div>
             ))}
