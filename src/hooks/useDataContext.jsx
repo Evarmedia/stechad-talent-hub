@@ -42,8 +42,10 @@ const DataProviderInner = ({ children }) => {
     // State
     engineers: engineersContext.engineers,
     engrDashboardData: engineersContext.engrDashboardData,
+    engrProjects: engineersContext.engrProjects,
     jobs: jobsContext.jobs,
     applications: applicationsContext.applications,
+    engrApplications: applicationsContext.engrApplications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
     interviews: interviewContext.interviews,
@@ -77,6 +79,7 @@ const DataProviderInner = ({ children }) => {
     createProject: projectsContext.createProject,
     updateProject: projectsContext.updateProject,
     deleteProject: projectsContext.deleteProject,
+    projectStats: projectsContext.projectStats,
     
     // Project Managers
     getProjectManagers: projectManagersContext.getProjectManagers,

@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import apiService from '../../services/apiService.js';
-import { useAuthContext } from '../useAuthContext.jsx';
+import { createContext, useContext, useState, useEffect } from "react";
+import apiService from "../../services/apiService.js";
+import { useAuthContext } from "../useAuthContext.jsx";
 
 const EngineersContext = createContext();
 
@@ -10,6 +10,7 @@ export const EngineersProvider = ({ children }) => {
 
   const [engineers, setEngineers] = useState([]);
   const [engrDashboardData, setEngrDashboardData] = useState(null);
+  const [engrProjects, setEngrProjects ] = useState([])
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false); // prevents double fetching
 
@@ -38,12 +39,16 @@ export const EngineersProvider = ({ children }) => {
         page: filters.page || 1,
         limit: filters.limit || 50,
         ...(filters.country && { country: filters.country }),
-        ...(filters.is_vetted !== undefined && { is_vetted: filters.is_vetted }),
-        ...(filters.is_onboarded !== undefined && { is_onboarded: filters.is_onboarded }),
+        ...(filters.is_vetted !== undefined && {
+          is_vetted: filters.is_vetted,
+        }),
+        ...(filters.is_onboarded !== undefined && {
+          is_onboarded: filters.is_onboarded,
+        }),
         ...(filters.availability && { availability: filters.availability }),
       };
 
-      const response = await apiService.get('engineers/all', params);
+      const response = await apiService.get("engineers/all", params);
       const engineersList = response.data?.engineers || response.data || [];
       setEngineers(engineersList);
       setLoading(false);
@@ -56,35 +61,48 @@ export const EngineersProvider = ({ children }) => {
     }
   };
 
-  // ---------------------------
-  // FETCH ALL DATA ONCE
-  // ---------------------------
-useEffect(() => {
-  if (!token || !user || initialized) return;
-
-  const init = async () => {
+  const getEngrProjects = async () => {
     setLoading(true);
-
     try {
-      if (user.role === "engineer") {
-        // Engineers fetch their dashboard ONLY
-        await getEngrDashboard();
-      }
-
-      if (user.role === "admin" || user.role === "project_manager") {
-        // Admins + PMs fetch engineer list ONLY
-        await getEngineers();
-      }
-    } catch (err) {
-      console.error("EngineersContext init error:", err);
-    } finally {
-      setInitialized(true);
+      const response = await apiService.get(`engineers/projects`);
+      setEngrProjects(response.data?.projects)
       setLoading(false);
+      return response.data.projects || [];
+    } catch (error) {
+      console.log("Error Fetching Engr Projects", error)
     }
   };
 
-  init();
-}, [token, user]);
+  // ---------------------------
+  // FETCH ALL DATA ONCE
+  // ---------------------------
+  useEffect(() => {
+    if (!token || !user || initialized) return;
+
+    const init = async () => {
+      setLoading(true);
+
+      try {
+        if (user.role === "engineer") {
+          // Engineers fetch their dashboard ONLY
+          await getEngrDashboard();
+          await getEngrProjects();
+        }
+
+        if (user.role === "admin" || user.role === "project_manager") {
+          // Admins + PMs fetch engineer list ONLY
+          await getEngineers();
+        }
+      } catch (err) {
+        console.error("EngineersContext init error:", err);
+      } finally {
+        setInitialized(true);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [token, user]);
 
   // ---------------------------
   // OTHER ACTIONS
@@ -101,14 +119,14 @@ useEffect(() => {
   const updateEngineer = async (id, updateData) => {
     try {
       const response = await apiService.request(`/admin/engineers/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(updateData),
       });
 
       const updated = response.data?.engineer || response.data;
       if (updated) {
-        setEngineers(prev =>
-          prev.map(e => (e.id === id || e.engineer_id === id ? updated : e))
+        setEngineers((prev) =>
+          prev.map((e) => (e.id === id || e.engineer_id === id ? updated : e))
         );
       }
       return updated;
@@ -120,20 +138,20 @@ useEffect(() => {
   const deleteEngineer = async (id) => {
     try {
       await apiService.delete(`admin/engineers`, id);
-      setEngineers(prev =>
-        prev.filter(e => e.id !== id && e.engineer_id !== id)
+      setEngineers((prev) =>
+        prev.filter((e) => e.id !== id && e.engineer_id !== id)
       );
     } catch (error) {
       console.error("Delete engineer error:", error);
     }
   };
 
-const resetEngineerState = () => {
-  setEngineers([]);
-  setEngrDashboardData(null);
-  setInitialized(false);
-};
-
+  const resetEngineerState = () => {
+    setEngineers([]);
+    setEngrProjects([]);
+    setEngrDashboardData(null);
+    setInitialized(false);
+  };
 
   // ---------------------------
   // CONTEXT VALUE
@@ -141,15 +159,17 @@ const resetEngineerState = () => {
   const value = {
     engineers,
     engrDashboardData,
+    engrProjects,
     loading,
     getEngineers,
     getEngineerById,
+    getEngrProjects,
     updateEngineer,
     deleteEngineer,
     resetEngineerState,
     refreshAll: async () => {
       setInitialized(false); // allow re-run
-    }
+    },
   };
 
   return (

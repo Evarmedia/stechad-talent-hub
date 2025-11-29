@@ -111,6 +111,15 @@ export const ProjectsProvider = ({ children }) => {
     }
   };
 
+  const projectStats = async () => {
+    setLoading(true);
+    try {
+      
+    } catch (error) {
+      
+    }
+  };
+
   const value = {
     projects,
     loading,
@@ -118,6 +127,7 @@ export const ProjectsProvider = ({ children }) => {
     getProjectById,
     createProject,
     updateProject,
+    projectStats,
     deleteProject
   };
 

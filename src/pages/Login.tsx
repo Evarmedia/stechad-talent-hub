@@ -42,7 +42,7 @@ const Login = () => {
 
     try {
       const response = await login(form.email, form.password, form.role);
-      toast({ title: `Welcome ${response.data.user.first_name}`, description: "Login successful!" });
+      toast({ title: `Welcome ${response.data?.user?.first_name} ${response.data?.user?.last_name}`, description: "Login successful!" });
 
       // Navigate based on role and onboarding status
       if (from !== "/") {

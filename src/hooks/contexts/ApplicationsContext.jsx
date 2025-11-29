@@ -1,18 +1,24 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import apiService from "../../services/apiService.js";
+import { useAuthContext } from "../useAuthContext.jsx";
 
 const ApplicationsContext = createContext();
 
 export const ApplicationsProvider = ({ children }) => {
+  const token = apiService.getToken();
+  const { user } = useAuthContext();
+
   const [applications, setApplications] = useState([]);
+  const [engrApplications, setEngrApplications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const getApplications = async (filters = {}) => {
     setLoading(true);
     try {
       let params = {
         page: filters.page || 1,
-        limit: filters.limit || 10
+        limit: filters.limit || 10,
       };
 
       if (filters.job_id || filters.jobId) {
@@ -26,9 +32,11 @@ export const ApplicationsProvider = ({ children }) => {
       }
 
       const response = await apiService.get("applications", params);
-      const applicationsData = response.success && response.data ? 
-        response.data.applications || response.data : [];
-      
+      const applicationsData =
+        response.success && response.data
+          ? response.data.applications || response.data
+          : [];
+
       setApplications(applicationsData);
       return applicationsData;
     } catch (error) {
@@ -40,31 +48,32 @@ export const ApplicationsProvider = ({ children }) => {
     }
   };
 
-  const getEngineersApplication = async (filters={}) => {
-        setLoading(true);
+  const getEngineersApplication = async (filters = {}) => {
+    setLoading(true);
     try {
       let params = {
-        page: filters.page || 1,
-        limit: filters.limit || 20
+        page: filters.page,
+        limit: filters.limit,
       };
 
       if (filters.job_id) {
         params.job_id = filters.job_id;
       }
-      
+
       if (filters.status) {
         params.status = filters.status;
       }
 
       const response = await apiService.get("engineers/applications", params);
-      const applicationsData = response.success && response.data ? 
-        response.data.applications : [];
-      
-      setApplications(applicationsData);
+      const applicationsData =
+      response.success && response.data ? response.data.applications : [];
+
+      setEngrApplications(applicationsData);
+      // console.log("application list from application context", applicationsData)
       return applicationsData;
     } catch (error) {
       console.error("Error fetching applications:", error);
-      setApplications([]);
+      setEngrApplications([]);
       throw error;
     } finally {
       setLoading(false);
@@ -75,9 +84,11 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await apiService.get(`jobs/${jobId}/applicants`);
-      const applicationsData = response.success && response.data ? 
-        response.data.applications || response.data : [];
-      
+      const applicationsData =
+        response.success && response.data
+          ? response.data.applications || response.data
+          : [];
+
       setApplications(applicationsData);
       return applicationsData;
     } catch (error) {
@@ -96,10 +107,12 @@ export const ApplicationsProvider = ({ children }) => {
         `engineers/jobs/${jobId}/apply`,
         applicationData
       );
-      
-      const createdApplication = response.success && response.data ? 
-        response.data.application || response.data : null;
-      
+
+      const createdApplication =
+        response.success && response.data
+          ? response.data.application || response.data
+          : null;
+
       if (createdApplication) {
         setApplications((prev) => [createdApplication, ...prev]);
       }
@@ -116,16 +129,20 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await apiService.request(`/applications/${id}/status`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(updateData),
       });
-      
-      const updatedApplication = response.success && response.data ? 
-        response.data.application || response.data : null;
-      
+
+      const updatedApplication =
+        response.success && response.data
+          ? response.data.application || response.data
+          : null;
+
       if (updatedApplication) {
         setApplications((prev) =>
-          prev.map((a) => (a.applications_id === id || a.id === id ? updatedApplication : a))
+          prev.map((a) =>
+            a.applications_id === id || a.id === id ? updatedApplication : a
+          )
         );
       }
       return updatedApplication;
@@ -141,7 +158,9 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       await apiService.delete("applications", id);
-      setApplications((prev) => prev.filter((a) => a.applications_id !== id && a.id !== id));
+      setApplications((prev) =>
+        prev.filter((a) => a.applications_id !== id && a.id !== id)
+      );
     } catch (error) {
       console.error("Error deleting application:", error);
       throw error;
@@ -150,8 +169,36 @@ export const ApplicationsProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (!token || !user || initialized) return;
+
+    const init = async () => {
+      setLoading(true);
+
+      try {
+        if (user.role === "engineer") {
+          // Engineers fetch their dashboard ONLY
+          getEngineersApplication();
+        }
+
+        if (user.role === "admin" || user.role === "project_manager") {
+          // Admins + PMs fetch engineer list ONLY
+          await getApplications();
+        }
+      } catch (err) {
+        console.error("Applications Context init error:", err);
+      } finally {
+        setInitialized(true);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [token, user]);
+
   const value = {
     applications,
+    engrApplications,
     loading,
     getApplications,
     getEngineersApplication,

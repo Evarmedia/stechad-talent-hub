@@ -11,9 +11,10 @@ import { useEffect, useState } from "react";
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "In Progress": return "bg-blue-100 text-blue-800";
-    case "Completed": return "bg-green-100 text-green-800";
-    case "On Hold": return "bg-yellow-100 text-yellow-800";
+    case "in_progress": return "bg-blue-100 text-blue-800";
+    case "completed": return "bg-green-100 text-green-800";
+    case "on_hold": return "bg-yellow-100 text-yellow-800";
+    case "cancelled": return "bg-red-600 text-white";
     default: return "bg-gray-100 text-gray-800";
   }
 };
@@ -28,49 +29,49 @@ const getTaskIcon = (status: string) => {
 };
 
 const EngineerProjects = () => {
-  const [projects, setProjects] = useState([]);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const { getProjects } = useDataContext();
+  // const [projects, setProjects] = useState([]);
+  // const [initialLoading, setInitialLoading] = useState(true);
+  const { getProjects, engrProjects, loading } = useDataContext();
   const { user } = useAuthContext();
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!user) {
-        setInitialLoading(false);
-        return;
-      }
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     if (!user) {
+  //       setInitialLoading(false);
+  //       return;
+  //     }
 
-      try {
-        const projectsData = await getProjects();
+  //     try {
+  //       const projectsData = await getProjects();
         
-        // Filter projects to only show those assigned to the current user
-        const userProjects = projectsData.filter(project => 
-          project.assignedTo === user.id || 
-          project.engineerId === user.id ||
-          (project.team && project.team.includes(user.id)) ||
-          (project.assignedEngineers && project.assignedEngineers.includes(user.id))
-        );
+  //       // Filter projects to only show those assigned to the current user
+  //       const userProjects = projectsData.filter(project => 
+  //         project.assignedTo === user.id || 
+  //         project.engineerId === user.id ||
+  //         (project.team && project.team.includes(user.id)) ||
+  //         (project.assignedEngineers && project.assignedEngineers.includes(user.id))
+  //       );
         
-        console.log('All projects:', projectsData);
-        console.log('User projects for user', user.id, ':', userProjects);
+  //       console.log('All projects:', projectsData);
+  //       console.log('User projects for user', user.id, ':', userProjects);
         
-        setProjects(userProjects);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
+  //       setProjects(userProjects);
+  //     } catch (error) {
+  //       console.error('Error fetching projects:', error);
+  //     } finally {
+  //       setInitialLoading(false);
+  //     }
+  //   };
 
-    fetchProjects();
-  }, [getProjects, user]);
+  //   fetchProjects();
+  // }, [getProjects, user]);
 
-  const currentProjects = projects.filter(project => 
-    project.status === "In Progress" || project.status === "active"
+  const currentProjects = engrProjects.filter(project => 
+    project.status === "in_progress" || project.status === "planning"
   );
   
-  const completedProjects = projects.filter(project => 
-    project.status === "Completed"
+  const completedProjects = engrProjects.filter(project => 
+    project.status === "completed"
   );
 
   return (
@@ -87,7 +88,7 @@ const EngineerProjects = () => {
         </TabsList>
 
         <TabsContent value="current" className="space-y-6">
-          {initialLoading ? (
+          {loading ? (
             <div className="space-y-4">
               {Array(2).fill(0).map((_, i) => (
                 <Card key={i}>
@@ -104,7 +105,7 @@ const EngineerProjects = () => {
             <div className="space-y-6">
               {currentProjects.length > 0 ? (
                 currentProjects.map((project) => (
-                  <Card key={project.id}>
+                  <Card key={project.projects_id}>
                     <CardHeader>
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <div className="space-y-2">
@@ -113,7 +114,7 @@ const EngineerProjects = () => {
                             <span className="font-medium">{project.client}</span>
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              <span>{project.startDate} - {project.deadline}</span>
+                              <span>{project.start_date} - {project.deadline}</span>
                             </div>
                           </div>
                         </div>
@@ -132,7 +133,7 @@ const EngineerProjects = () => {
                       </div>
 
                       <div>
-                        <span className="text-sm font-medium">Technologies:</span>
+                        <span className="text-sm font-medium">Technologies:</span> {/*  change to team or tasks? */}
                         <div className="flex flex-wrap gap-2 mt-2">
                           {project.technologies?.map((tech) => (
                             <Badge key={tech} variant="outline">{tech}</Badge>
@@ -142,15 +143,15 @@ const EngineerProjects = () => {
                         </div>
                       </div>
 
-                      {project.tasks && (
+                      {project?.tasks && (
                         <div className="space-y-3">
                           <span className="text-sm font-medium">Tasks:</span>
                           <div className="space-y-2">
-                            {project.tasks.map((task, index) => (
+                            {project?.tasks?.map((task, index) => (
                               <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-                                {getTaskIcon(task.status)}
-                                <span className={`text-sm ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
-                                  {task.title}
+                                {getTaskIcon(task?.status)}
+                                <span className={`text-sm ${task?.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                                  {task?.title}
                                 </span>
                               </div>
                             ))}
@@ -171,7 +172,7 @@ const EngineerProjects = () => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
-          {initialLoading ? (
+          {loading ? (
             <div className="space-y-4">
               {Array(2).fill(0).map((_, i) => (
                 <Card key={i}>
@@ -196,7 +197,7 @@ const EngineerProjects = () => {
                             <span className="font-medium">{project.client}</span>
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              <span>Duration: {project.startDate} - {project.deadline}</span>
+                              <span>Duration: {project.start_date} - {project.deadline}</span>
                             </div>
                           </div>
                         </div>

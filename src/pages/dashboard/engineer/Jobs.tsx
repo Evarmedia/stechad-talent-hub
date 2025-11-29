@@ -15,7 +15,7 @@ const EngineerJobs = () => {
   const { 
     jobs, 
     loading, 
-    getJobs,          // <-- REQUIRED FIX  
+    getJobs,
     createApplication, 
     getEngineersApplication 
   } = useDataContext();

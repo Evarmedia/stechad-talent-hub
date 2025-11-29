@@ -11,15 +11,16 @@ const statusColor = (status: string) => {
     case "pending": return "bg-yellow-100 text-yellow-800";
     case "reviewed": return "bg-blue-100 text-blue-800";
     case "rejected": return "bg-red-100 text-red-800";
+    case "accepted": return "bg-green 200 text-green-800"
     default: return "bg-gray-100 text-gray-800";
   }
 };
 
 const Applications = () => {
-  const [loading, setLoading] = useState(true);
-  const [applications, setApplications] = useState([]);
+  // const [loading, setLoading] = useState(true);
+  // const [applications, setApplications] = useState([]);
   
-  const { getEngineersApplication } = useDataContext();
+  const { engrApplications, loading } = useDataContext();
   const { user } = useAuthContext();
 
   // useEffect(() => {
@@ -57,16 +58,16 @@ const Applications = () => {
                     <Skeleton className="h-6 w-20" />
                   </div>
                 ))
-              : applications.map((app, idx) => (
+              : engrApplications?.map((app, idx) => (
                   <div key={idx} className="border rounded-lg p-4 space-y-3">
                     <div>
-                      <h3 className="font-medium text-base">{app.jobTitle}</h3>
-                      <p className="text-sm text-muted-foreground">Applied: {app.appliedDate}</p>
+                      <h3 className="font-medium text-base">{app.title}</h3>
+                      <p className="text-sm text-muted-foreground">Applied: {app.applied_at.split('T')[0]}</p>
                     </div>
                     <Badge className={statusColor(app.status)}>{app.status}</Badge>
                   </div>
                 ))}
-            {!loading && applications.length === 0 && (
+            {!loading && engrApplications?.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No applications found. Start applying to jobs to see them here.
               </div>
@@ -92,10 +93,10 @@ const Applications = () => {
                       <td className="p-2"><Skeleton className="h-6 w-24" /></td>
                     </tr>
                   ))
-                  : applications.map((app, idx) => (
+                  : engrApplications?.map((app, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="p-2">{app.job_title}</td>
-                      <td className="p-2">{app.applied_at}</td>
+                      <td className="p-2">{app.applied_at.split('T')[0]}</td>
                       <td className="p-2">
                         <Badge className={statusColor(app.status)}>{app.status}</Badge>
                       </td>
@@ -103,7 +104,7 @@ const Applications = () => {
                   ))}
               </tbody>
             </table>
-            {!loading && applications.length === 0 && (
+            {!loading && engrApplications?.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No applications found. Start applying to jobs to see them here.
               </div>
