@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
+import { useDataContext } from '@/hooks/useDataContext';
 import { useAuthContext } from '../hooks/useAuthContext';
-import { useInterviewContext } from '../hooks/useInterviewContext';
 
 interface ScheduleInterviewDialogProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
   jobId,
   jobTitle
 }) => {
-  const { scheduleInterview, loading } = useInterviewContext();
+  const { scheduleInterview, loading } = useDataContext();
   const { user } = useAuthContext();
   
   const [formData, setFormData] = useState({

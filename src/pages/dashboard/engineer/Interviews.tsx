@@ -7,20 +7,20 @@ import { toast } from '@/hooks/use-toast';
 import { Calendar, Edit, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
+import { useDataContext } from '@/hooks/useDataContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
-import { useInterviewContext } from '../../../hooks/useInterviewContext';
 
 const Interviews = () => {
-  const { interviews, loading, fetchUserInterviews, updateInterview } = useInterviewContext();
+  const { interviews, loading, fetchUserInterviews, updateInterview } = useDataContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserInterviews(user.user_id, user.role);
-    }
-  }, [user, fetchUserInterviews]);
+  // useEffect(() => {
+  //   if (user) {
+  //     fetchUserInterviews(user.user_id, user.role);
+  //   }
+  // }, [user, fetchUserInterviews]);
 
   const handleUpdateInterview = async (interviewId: number) => {
     try {

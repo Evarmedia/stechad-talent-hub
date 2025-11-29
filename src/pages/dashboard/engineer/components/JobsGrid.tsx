@@ -8,8 +8,8 @@ interface JobsGridProps {
   jobs: any[];
   isLoading: boolean;
   userApplications: any[];
-  applyingJobId: number | null;
-  onApply: (jobId: number, jobTitle: string) => void;
+  applyingJobId: string | null;
+  onApply: (jobId: string,) => void;
   onViewDetails: (job: any) => void;
 }
 
@@ -21,8 +21,8 @@ const JobsGrid: React.FC<JobsGridProps> = ({
   onApply,
   onViewDetails
 }) => {
-  const hasAppliedToJob = (jobId: number) => {
-    return userApplications.some(app => app.jobId === jobId);
+  const hasAppliedToJob = (jobId: string) => {
+    return userApplications.some(app => app.job_id === jobId);
   };
 
   if (isLoading) {
@@ -61,10 +61,10 @@ const JobsGrid: React.FC<JobsGridProps> = ({
     <div className="grid md:grid-cols-2 gap-6">
       {jobs.map((job) => (
         <JobCard
-          key={job.id}
+          key={job.jobs_id}
           job={job}
-          hasApplied={hasAppliedToJob(job.id)}
-          isApplying={applyingJobId === job.id}
+          hasApplied={hasAppliedToJob(job.jobs_id)}
+          isApplying={applyingJobId === job.jobs_id}
           onApply={onApply}
           onViewDetails={onViewDetails}
         />

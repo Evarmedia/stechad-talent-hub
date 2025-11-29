@@ -29,7 +29,7 @@ export const ProjectsProvider = ({ children }) => {
         params.engineer_id = filters.engineer_id || filters.engineerId;
       }
       
-      const response = await apiService.get('projects', null, params);
+      const response = await apiService.get('projects', params);
       const projectsData = response.success && response.data ? 
         response.data.projects || response.data : [];
       

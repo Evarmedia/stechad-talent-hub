@@ -13,34 +13,34 @@ export const ChatProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // Initialize WebSocket connection
-  useEffect(() => {
-    const token = apiService.getToken();
-    if (token) {
-      websocketService.connect();
+  // useEffect(() => {
+  //   const token = apiService.getToken();
+  //   if (token) {
+  //     websocketService.connect();
 
-      // Set up WebSocket listeners
-      websocketService.on('new_message', handleNewMessage);
-      websocketService.on('message_sent', handleMessageSent);
-      websocketService.on('user_typing', handleUserTyping);
-      websocketService.on('user_stopped_typing', handleUserStoppedTyping);
-      websocketService.on('messages_read', handleMessagesRead);
-      websocketService.on('user_online', handleUserOnline);
-      websocketService.on('user_offline', handleUserOffline);
-      websocketService.on('online_users', handleOnlineUsers);
+  //     // Set up WebSocket listeners
+  //     websocketService.on('new_message', handleNewMessage);
+  //     websocketService.on('message_sent', handleMessageSent);
+  //     websocketService.on('user_typing', handleUserTyping);
+  //     websocketService.on('user_stopped_typing', handleUserStoppedTyping);
+  //     websocketService.on('messages_read', handleMessagesRead);
+  //     websocketService.on('user_online', handleUserOnline);
+  //     websocketService.on('user_offline', handleUserOffline);
+  //     websocketService.on('online_users', handleOnlineUsers);
 
-      return () => {
-        websocketService.off('new_message', handleNewMessage);
-        websocketService.off('message_sent', handleMessageSent);
-        websocketService.off('user_typing', handleUserTyping);
-        websocketService.off('user_stopped_typing', handleUserStoppedTyping);
-        websocketService.off('messages_read', handleMessagesRead);
-        websocketService.off('user_online', handleUserOnline);
-        websocketService.off('user_offline', handleUserOffline);
-        websocketService.off('online_users', handleOnlineUsers);
-        websocketService.disconnect();
-      };
-    }
-  }, []);
+  //     return () => {
+  //       websocketService.off('new_message', handleNewMessage);
+  //       websocketService.off('message_sent', handleMessageSent);
+  //       websocketService.off('user_typing', handleUserTyping);
+  //       websocketService.off('user_stopped_typing', handleUserStoppedTyping);
+  //       websocketService.off('messages_read', handleMessagesRead);
+  //       websocketService.off('user_online', handleUserOnline);
+  //       websocketService.off('user_offline', handleUserOffline);
+  //       websocketService.off('online_users', handleOnlineUsers);
+  //       websocketService.disconnect();
+  //     };
+  //   }
+  // }, []);
 
   const handleNewMessage = (data) => {
     const { message, chat_id } = data;

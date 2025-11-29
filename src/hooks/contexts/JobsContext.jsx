@@ -1,63 +1,80 @@
-
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import apiService from '../../services/apiService.js';
 
 const JobsContext = createContext();
 
 export const JobsProvider = ({ children }) => {
+  const token = apiService.getToken(); // ensures only fetch when logged in
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false); // prevents double fetching
 
+  // -----------------------------------------------------
+  // FETCH JOBS
+  // -----------------------------------------------------
   const getJobs = async (filters = {}) => {
     setLoading(true);
     try {
       let params = {
-        page: filters.page || 1,
-        limit: filters.limit || 10
+        page: filters.page,
+        limit: filters.limit
       };
-      
-      if (filters.remote !== undefined) {
-        params.remote = filters.remote;
-      }
-      if (filters.status) {
-        params.status = filters.status;
-      }
-      if (filters.location) {
-        params.location = filters.location;
-      }
-      if (filters.employment_type) {
-        params.employment_type = filters.employment_type;
-      }
-      if (filters.experience_level) {
-        params.experience_level = filters.experience_level;
-      }
+
+      if (filters.remote !== undefined) params.remote = filters.remote;
+      if (filters.status) params.status = filters.status;
+      if (filters.location) params.location = filters.location;
+      if (filters.employment_type) params.employment_type = filters.employment_type;
+      if (filters.experience_level) params.experience_level = filters.experience_level;
+      if (filters.search) params.search = filters.search;
+
       if (filters.skills && Array.isArray(filters.skills)) {
-        params.skills = filters.skills.join(',');
+        params.skills = filters.skills.join(",");
       }
-      if (filters.search) {
-        params.search = filters.search;
-      }
-      
-      const response = await apiService.get('jobs', null, params);
-      
-      const jobsData = response.success && response.data ? response.data.jobs || response.data : [];
+
+      const response = await apiService.get('jobs', params );
+
+      const jobsData = response.data.jobs || [];
       setJobs(jobsData);
+
       return jobsData;
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.error("Error fetching jobs:", error);
       setJobs([]);
-      throw error;
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
+  // -----------------------------------------------------
+  // FETCH ALL JOB DATA ONCE
+  // -----------------------------------------------------
+  useEffect(() => {
+    if (!token || initialized) return;
+
+    const init = async () => {
+      setLoading(true);
+
+      const list = await getJobs();
+      console.log("Initialized Jobs:", list);
+
+      setInitialized(true);
+      setLoading(false);
+    };
+
+    init();
+  }, [token]);
+
+  // -----------------------------------------------------
+  // OTHER ACTIONS
+  // -----------------------------------------------------
   const getJobById = async (id) => {
     try {
       const response = await apiService.get('jobs', id);
-      return response.success && response.data ? response.data.job || response.data : null;
+      return response.data?.job || response.data;
     } catch (error) {
-      console.error('Error fetching job:', error);
+      console.error("Error fetching job:", error);
       throw error;
     }
   };
@@ -66,14 +83,16 @@ export const JobsProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await apiService.post('pm/jobs', jobData);
-      const createdJob = response.success && response.data ? response.data.job || response.data : null;
-      
+
+      const createdJob = response.data?.job || response.data;
+
       if (createdJob) {
         setJobs(prev => [createdJob, ...prev]);
       }
+
       return createdJob;
     } catch (error) {
-      console.error('Error creating job:', error);
+      console.error("Error creating job:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -87,15 +106,20 @@ export const JobsProvider = ({ children }) => {
         method: 'PUT',
         body: JSON.stringify(updateData),
       });
-      
-      const updatedJob = response.success && response.data ? response.data.job || response.data : null;
-      
+
+      const updatedJob = response.data?.job || response.data;
+
       if (updatedJob) {
-        setJobs(prev => prev.map(j => (j.jobs_id === id || j.id === id) ? updatedJob : j));
+        setJobs(prev =>
+          prev.map(j =>
+            j.jobs_id === id || j.id === id ? updatedJob : j
+          )
+        );
       }
+
       return updatedJob;
     } catch (error) {
-      console.error('Error updating job:', error);
+      console.error("Error updating job:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -106,15 +130,21 @@ export const JobsProvider = ({ children }) => {
     setLoading(true);
     try {
       await apiService.delete('jobs', id);
-      setJobs(prev => prev.filter(j => j.jobs_id !== id && j.id !== id));
+
+      setJobs(prev =>
+        prev.filter(j => j.jobs_id !== id && j.id !== id)
+      );
     } catch (error) {
-      console.error('Error deleting job:', error);
+      console.error("Error deleting job:", error);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
+  // -----------------------------------------------------
+  // CONTEXT VALUE
+  // -----------------------------------------------------
   const value = {
     jobs,
     loading,
@@ -122,7 +152,12 @@ export const JobsProvider = ({ children }) => {
     getJobById,
     createJob,
     updateJob,
-    deleteJob
+    deleteJob,
+
+    /** re-fetch everything manually if needed */
+    refreshAll: async () => {
+      setInitialized(false);
+    }
   };
 
   return (
@@ -135,7 +170,7 @@ export const JobsProvider = ({ children }) => {
 export const useJobsContext = () => {
   const context = useContext(JobsContext);
   if (!context) {
-    throw new Error('useJobsContext must be used within a JobsProvider');
+    throw new Error("useJobsContext must be used within a JobsProvider");
   }
   return context;
 };

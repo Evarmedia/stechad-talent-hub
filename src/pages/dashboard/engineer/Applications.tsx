@@ -22,23 +22,23 @@ const Applications = () => {
   const { getEngineersApplication } = useDataContext();
   const { user } = useAuthContext();
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (user) {
-        try {
-          const applicationsData = await getEngineersApplication({ engineerId: user.user_id });
-          setApplications(applicationsData);
-          console.log("Engineer Applications Page:", applications);
-        } catch (error) {
-          console.error('Error fetching applications:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchApplications = async () => {
+  //     if (user) {
+  //       try {
+  //         const applicationsData = await getEngineersApplication({ engineerId: user.user_id });
+  //         setApplications(applicationsData);
+  //         console.log("Engineer Applications Page:", applications);
+  //       } catch (error) {
+  //         console.error('Error fetching applications:', error);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   };
 
-    fetchApplications();
-  }, [getEngineersApplication, user]);
+  //   fetchApplications();
+  // }, [getEngineersApplication, user]);
 
   return (
     <div className="p-4 md:p-8">

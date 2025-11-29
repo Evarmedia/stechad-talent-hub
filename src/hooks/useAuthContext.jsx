@@ -109,6 +109,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await apiService.post("auth/logout", {});
+      console.clear();
+      setUser(null)
+      localStorage.clear();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

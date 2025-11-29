@@ -25,7 +25,7 @@ export const ApplicationsProvider = ({ children }) => {
         params.status = filters.status;
       }
 
-      const response = await apiService.get("applications", null, params);
+      const response = await apiService.get("applications", params);
       const applicationsData = response.success && response.data ? 
         response.data.applications || response.data : [];
       
@@ -56,7 +56,7 @@ export const ApplicationsProvider = ({ children }) => {
         params.status = filters.status;
       }
 
-      const response = await apiService.get("engineers/applications", null, params);
+      const response = await apiService.get("engineers/applications", params);
       const applicationsData = response.success && response.data ? 
         response.data.applications : [];
       

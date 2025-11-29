@@ -4,24 +4,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, User, CheckCircle, TrendingUp } from "lucide-react";
 
-interface DashboardStatsProps {
+  interface DashboardStatsProps {
   loading: boolean;
-  applications: any[];
-  scheduledInterviews: any[];
-  activeProjects: any[];
+  applications: number;
+  scheduledInterviews: number;
+  activeProjects: number;
+  totalInterviewCount: number;
+  recentApplications: number;
 }
+
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
   loading,
   applications,
   scheduledInterviews,
-  activeProjects
+  totalInterviewCount,
+  activeProjects,
+  recentApplications,
 }) => {
   const stats = [
-    { label: "Applications", value: applications.length, icon: Briefcase, change: "+3 this week" },
-    { label: "Interviews", value: scheduledInterviews.length, icon: User, change: `${scheduledInterviews.length} scheduled` },
-    { label: "Projects", value: activeProjects.length, icon: CheckCircle, change: "Active" },
-    { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" },
+    { label: "Applications", value: applications, icon: Briefcase, change: `+${recentApplications} this week` },
+    { label: "Interviews", value: totalInterviewCount, icon: User, change: `${scheduledInterviews} scheduled` },
+    { label: "Projects", value: activeProjects, icon: CheckCircle, change: "Active" },
+    { label: "Profile Views", value: 24, icon: TrendingUp, change: "+8 this month" }, // will wire up later
   ];
 
   return (

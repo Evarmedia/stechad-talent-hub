@@ -6,6 +6,8 @@ import { ApplicationsProvider, useApplicationsContext } from './contexts/Applica
 import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext';
 import { ProjectManagersProvider, useProjectManagersContext } from './contexts/ProjectManagersContext';
 
+import { InterviewProvider, useInterviewContext } from './contexts/InterviewContext'
+
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
@@ -13,6 +15,7 @@ export const DataProvider = ({ children }) => {
     <EngineersProvider>
       <JobsProvider>
         <ApplicationsProvider>
+          <InterviewProvider>
           <ProjectsProvider>
             <ProjectManagersProvider>
               <DataProviderInner>
@@ -20,6 +23,7 @@ export const DataProvider = ({ children }) => {
               </DataProviderInner>
             </ProjectManagersProvider>
           </ProjectsProvider>
+          </InterviewProvider>
         </ApplicationsProvider>
       </JobsProvider>
     </EngineersProvider>
@@ -32,15 +36,18 @@ const DataProviderInner = ({ children }) => {
   const applicationsContext = useApplicationsContext();
   const projectsContext = useProjectsContext();
   const projectManagersContext = useProjectManagersContext();
+  const interviewContext = useInterviewContext();
 
   const value = {
     // State
     engineers: engineersContext.engineers,
+    engrDashboardData: engineersContext.engrDashboardData,
     jobs: jobsContext.jobs,
     applications: applicationsContext.applications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
-    loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading,
+    interviews: interviewContext.interviews,
+    loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading || interviewContext.loading,
     
     // Engineers
     getEngineers: engineersContext.getEngineers,
@@ -71,7 +78,15 @@ const DataProviderInner = ({ children }) => {
     deleteProject: projectsContext.deleteProject,
     
     // Project Managers
-    getProjectManagers: projectManagersContext.getProjectManagers
+    getProjectManagers: projectManagersContext.getProjectManagers,
+
+    // interview
+    scheduleInterview: interviewContext.scheduleInterview,
+    fetchUserInterviews: interviewContext.fetchUserInterviews,
+    fetchInterviewsById: interviewContext.fetchInterviewsById,
+    fetchAllInterviews: interviewContext.fetchAllInterviews,
+    updateInterview: interviewContext.updateInterview,
+    rescheduleInterview: interviewContext.rescheduleInterview,
   };
 
   return (

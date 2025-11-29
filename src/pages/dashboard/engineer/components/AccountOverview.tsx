@@ -43,9 +43,9 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ loading, user }) => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="font-semibold">Profile Completion:</span>
-              <span>85%</span>
+              <span>100%</span>
             </div>
-            <Progress value={85} className="h-2" />
+            <Progress value={100} className="h-2" />
           </div>
         )}
       </CardContent>

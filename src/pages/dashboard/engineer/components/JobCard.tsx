@@ -8,7 +8,7 @@ interface JobCardProps {
   job: any;
   hasApplied: boolean;
   isApplying: boolean;
-  onApply: (jobId: number, jobTitle: string) => void;
+  onApply: (jobId: string,) => void;
   onViewDetails: (job: any) => void;
 }
 
@@ -32,7 +32,7 @@ const JobCard: React.FC<JobCardProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-3">
-          {job.skills.map((skill) => (
+          {job.skills_required.map((skill) => (
             <Badge
               key={skill}
               className="bg-primary-light text-primary rounded px-2 py-1 text-xs"
@@ -44,7 +44,7 @@ const JobCard: React.FC<JobCardProps> = ({
         <div className="flex gap-2">
           <Button 
             size="sm" 
-            onClick={() => onApply(job.id, job.title)}
+            onClick={() => onApply(job.jobs_id)}
             disabled={isApplying || hasApplied}
           >
             {isApplying 

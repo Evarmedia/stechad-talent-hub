@@ -1,104 +1,137 @@
-
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import apiService from '../../services/apiService.js';
+// import { useAuthContext } from '../authContext';
 
 const EngineersContext = createContext();
 
 export const EngineersProvider = ({ children }) => {
-  const [engineers, setEngineers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const token = apiService.getToken(); // ensures only fetch when logged in
 
+  const [engineers, setEngineers] = useState([]);
+  const [engrDashboardData, setEngrDashboardData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false); // prevents double fetching
+
+  // ---------------------------
+  // FETCH DASHBOARD
+  // ---------------------------
+  const getEngrDashboard = async () => {
+    try {
+      const response = await apiService.get(`engineers/dashboard`);
+      setEngrDashboardData(response.data);
+      // console.log('Engr Data from context', response.data);
+      setLoading(false);
+      return response.data;
+    } catch (error) {
+      console.error("Engineer dashboard fetch error:", error);
+    }
+  };
+
+  // ---------------------------
+  // FETCH ENGINEERS
+  // ---------------------------
   const getEngineers = async (filters = {}) => {
     setLoading(true);
     try {
-      let params = {
+      const params = {
         page: filters.page || 1,
-        limit: filters.limit || 50
+        limit: filters.limit || 50,
+        ...(filters.country && { country: filters.country }),
+        ...(filters.is_vetted !== undefined && { is_vetted: filters.is_vetted }),
+        ...(filters.is_onboarded !== undefined && { is_onboarded: filters.is_onboarded }),
+        ...(filters.availability && { availability: filters.availability }),
       };
-      
-      if (filters.country) {
-        params.country = filters.country;
-      }
-      if (filters.is_vetted !== undefined || filters.isVetted !== undefined) {
-        params.is_vetted = filters.is_vetted || filters.isVetted;
-      }
-      if (filters.is_onboarded !== undefined || filters.is_onboarded !== undefined) {
-        params.is_onboarded = filters.is_onboarded || filters.is_onboarded;
-      }
-      if (filters.availability) {
-        params.availability = filters.availability;
-      }
-      
-      const response = await apiService.get('admin/engineers', null, params);
-      const engineersData = response.success && response.data ? 
-        response.data.engineers || response.data : [];
-      
-      setEngineers(engineersData);
-      return engineersData;
+
+      const response = await apiService.get('engineers/all', params);
+      const engineersList = response.data?.engineers || response.data || [];
+      setEngineers(engineersList);
+      setLoading(false);
+      return engineersList;
     } catch (error) {
-      console.error('Error fetching engineers:', error);
+      console.error("Error fetching engineers:", error);
       setEngineers([]);
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
+  // ---------------------------
+  // FETCH ALL DATA ONCE
+  // ---------------------------
+  useEffect(() => {
+    /** Only run when token is present */
+    if (!token || initialized) return;
+
+    const init = async () => {
+      setLoading(true);
+      await Promise.all([
+        getEngrDashboard(),
+        getEngineers()
+      ]);
+      // console.log(">>> UPDATED STATE — engrDashboardData:", engrDashboardData);
+      setInitialized(true);
+      setLoading(false);
+    };
+
+    init();
+  }, [token]);
+
+  // ---------------------------
+  // OTHER ACTIONS
+  // ---------------------------
   const getEngineerById = async (id) => {
     try {
       const response = await apiService.get(`admin/engineers/${id}`);
-      return response.success && response.data ? response.data.engineer || response.data : null;
+      return response.data?.engineer || response.data;
     } catch (error) {
-      console.error('Error fetching engineer:', error);
-      throw error;
+      console.error("Single engineer fetch error:", error);
     }
   };
 
   const updateEngineer = async (id, updateData) => {
-    setLoading(true);
     try {
       const response = await apiService.request(`/admin/engineers/${id}`, {
         method: 'PUT',
         body: JSON.stringify(updateData),
       });
-      
-      const updatedEngineer = response.success && response.data ? 
-        response.data.engineer || response.data : null;
-      
-      if (updatedEngineer) {
-        setEngineers(prev => prev.map(e => 
-          (e.engineer_id === id || e.id === id) ? updatedEngineer : e
-        ));
+
+      const updated = response.data?.engineer || response.data;
+      if (updated) {
+        setEngineers(prev =>
+          prev.map(e => (e.id === id || e.engineer_id === id ? updated : e))
+        );
       }
-      return updatedEngineer;
+      return updated;
     } catch (error) {
-      console.error('Error updating engineer:', error);
-      throw error;
-    } finally {
-      setLoading(false);
+      console.error("Update engineer error:", error);
     }
   };
 
   const deleteEngineer = async (id) => {
-    setLoading(true);
     try {
       await apiService.delete(`admin/engineers`, id);
-      setEngineers(prev => prev.filter(e => e.engineer_id !== id && e.id !== id));
+      setEngineers(prev =>
+        prev.filter(e => e.id !== id && e.engineer_id !== id)
+      );
     } catch (error) {
-      console.error('Error deleting engineer:', error);
-      throw error;
-    } finally {
-      setLoading(false);
+      console.error("Delete engineer error:", error);
     }
   };
 
+  // ---------------------------
+  // CONTEXT VALUE
+  // ---------------------------
   const value = {
     engineers,
+    engrDashboardData,
     loading,
     getEngineers,
     getEngineerById,
     updateEngineer,
-    deleteEngineer
+    deleteEngineer,
+    refreshAll: async () => {
+      setInitialized(false); // allow re-run
+    }
   };
 
   return (
@@ -108,10 +141,4 @@ export const EngineersProvider = ({ children }) => {
   );
 };
 
-export const useEngineersContext = () => {
-  const context = useContext(EngineersContext);
-  if (!context) {
-    throw new Error('useEngineersContext must be used within an EngineersProvider');
-  }
-  return context;
-};
+export const useEngineersContext = () => useContext(EngineersContext);

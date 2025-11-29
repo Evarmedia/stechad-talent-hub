@@ -1,6 +1,6 @@
 
 import { createContext, useCallback, useContext, useState } from 'react';
-import apiService from '../services/apiService.js';
+import apiService from '../../services/apiService.js';
 
 const InterviewContext = createContext();
 

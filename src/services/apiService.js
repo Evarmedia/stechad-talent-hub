@@ -1,195 +1,196 @@
-const BASE_URL = 'http://localhost:5000/api';
+import axios from "axios";
+
+const BASE_URL = "http://localhost:5000/api";
 
 class ApiService {
   constructor() {
     this.baseURL = BASE_URL;
+
+    this.api = axios.create({
+      baseURL: this.baseURL,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    // 🔰 Inject token before every request
+    this.api.interceptors.request.use(
+      async (config) => {
+        let token = this.getToken();
+
+        // If no token, try refreshing
+        if (!token) {
+          token = await this.refreshAccessToken();
+        }
+
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Clean params BEFORE making the request
+        if (config.params) {
+          config.params = this.cleanParams(config.params);
+        }
+
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // 🔰 Response Interceptor for errors & token expiry
+    this.api.interceptors.response.use(
+      (response) => response.data,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // Token expired → refresh
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          const newToken = await this.refreshAccessToken();
+          if (newToken) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return this.api(originalRequest);
+          }
+
+          this.clearTokens();
+          window.location.href = "/login";
+        }
+
+        // Too many requests
+        if (error.response?.status === 429) {
+          return Promise.reject({
+            status: 429,
+            message: "Too many requests. Please try again later.",
+          });
+        }
+
+        // Non-JSON error fallback
+        if (!error.response) {
+          return Promise.reject({
+            message: "Network error. Check your connection.",
+          });
+        }
+
+        return Promise.reject({
+          status: error.response.status,
+          message:
+            error.response.data?.message ||
+            error.response.data?.error ||
+            "Request failed",
+        });
+      }
+    );
   }
 
+  // 🔥 Clean undefined, null, empty strings, empty arrays automatically
+  cleanParams(params) {
+    return Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => {
+        if (v === undefined || v === null || v === "") return false;
+        if (Array.isArray(v) && v.length === 0) return false;
+        return true;
+      })
+    );
+  }
+
+  // 🔐 TOKEN HANDLING
   getToken() {
-    return localStorage.getItem('stechad_token');
+    return localStorage.getItem("stechad_token");
   }
 
   getRefreshToken() {
-    return localStorage.getItem('stechad_refresh_token');
+    return localStorage.getItem("stechad_refresh_token");
   }
 
   setToken(token) {
-    localStorage.setItem('stechad_token', token);
+    localStorage.setItem("stechad_token", token);
   }
 
-  setRefreshToken(refreshToken) {
-    localStorage.setItem('stechad_refresh_token', refreshToken);
+  setRefreshToken(token) {
+    localStorage.setItem("stechad_refresh_token", token);
   }
 
   clearTokens() {
-    localStorage.removeItem('stechad_token');
-    localStorage.removeItem('stechad_refresh_token');
-    localStorage.removeItem('stechad_user');
+    localStorage.removeItem("stechad_token");
+    localStorage.removeItem("stechad_refresh_token");
+    localStorage.removeItem("stechad_user");
   }
 
+  // 🔁 Auto Refresh Token
   async refreshAccessToken() {
     const refreshToken = this.getRefreshToken();
-    if (!refreshToken) {
-      return null;
-    }
+    if (!refreshToken) return null;
 
     try {
-      const response = await fetch(`${this.baseURL}/auth/refresh-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+      const res = await axios.post(`${this.baseURL}/auth/refresh-token`, {
+        refresh_token: refreshToken,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
+      const newToken = res.data?.access_token;
+      if (newToken) {
+        this.setToken(newToken);
+        return newToken;
       }
 
-      const data = await response.json();
-      const { access_token } = data;
-      if (access_token) {
-        this.setToken(access_token);
-        return access_token;
-      }
-    } catch (error) {
-      console.error('Error refreshing token:', error);
+      return null;
+    } catch (err) {
+      console.error("Error refreshing token:", err);
       this.clearTokens();
-      window.location.href = '/login';
+      return null;
     }
-
-    return null;
   }
 
-async request(endpoint, options = {}) {
-  const url = `${this.baseURL}${endpoint}`;
-  let token = this.getToken();
-
-  // If no token is available, attempt to refresh
-  if (!token) {
-    token = await this.refreshAccessToken();
-  }
-
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
-    },
-    ...options,
-  };
-
-  // Handle FormData - remove Content-Type to let the browser set it with boundary
-  if (options.body instanceof FormData) {
-    delete config.headers['Content-Type'];
-  }
-
-  try {
-    const response = await fetch(url, config);
-
-    // Handle 429 Too Many Requests specifically
-    if (response.status === 429) {
-      const errorText = await response.text();
-      throw {
-        status: response.status,
-        message: errorText || 'Too many requests. Please try again later.',
-        isRateLimit: true
-      };
-    }
-
-    // Handle 401 Unauthorized - token might be expired
-    if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/signup') {
-      this.clearTokens();
-      window.location.href = '/login';
-      throw new Error('Session expired. Please login again.');
-    }
-
-    // Try to parse as JSON, but fall back to text if it fails
-    let data;
-    const contentType = response.headers.get('content-type');
-    
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      // If it's not JSON but we have a successful response, return the text
-      if (response.ok) {
-        return text;
-      }
-      // If it's an error and not JSON, throw with the text
-      throw {
-        status: response.status,
-        message: text || 'Request failed',
-        isNonJsonError: true
-      };
-    }
-
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        message: data.message || 'Request failed',
-        errors: data.errors || [],
-        error: data.error
-      };
-    }
-
-    return data;
-  } catch (error) {
-    console.error(`API request failed: ${url}`, error);
-    
-    // Enhance the error with more context for rate limiting
-    if (error.status === 429) {
-      error.message = 'Too many login attempts. Please wait a moment and try again.';
-    }
-    
-    throw error;
-  }
-}
-
-  // Generic CRUD operations
-  async get(resource, id = null, params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const endpoint = id
-      ? `/${resource}/${id}${queryString ? `?${queryString}` : ''}`
-      : `/${resource}${queryString ? `?${queryString}` : ''}`;
-    return this.request(endpoint);
+  // 🔧 Generic GET request with params
+  async get(resource, params = {}, id = null) {
+    const endpoint = id ? `/${resource}/${id}` : `/${resource}`;
+    return this.api.get(endpoint, { params });
   }
 
   async post(resource, data, isFormData = false) {
-    const options = {
-      method: 'POST',
-      body: isFormData ? data : JSON.stringify(data),
+    const config = {
+      headers: {},
     };
-    return this.request(`/${resource}`, options);
+
+    if (isFormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    }
+
+    return this.api.post(`/${resource}`, data, config);
   }
 
   async put(resource, id, data, isFormData = false) {
-    const options = {
-      method: 'PUT',
-      body: isFormData ? data : JSON.stringify(data),
+    const config = {
+      headers: {},
     };
-    return this.request(`/${resource}/${id}`, options);
+
+    if (isFormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    }
+
+    return this.api.put(`/${resource}/${id}`, data, config);
   }
 
   async patch(resource, id, data) {
-    return this.request(`/${resource}/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
+    return this.api.patch(`/${resource}/${id}`, data);
   }
 
   async delete(resource, id) {
-    return this.request(`/${resource}/${id}`, {
-      method: 'DELETE',
-    });
+    return this.api.delete(`/${resource}/${id}`);
   }
 
   // File upload helper
   async uploadFile(endpoint, formData) {
-    return this.request(endpoint, {
-      method: 'POST',
-      body: formData,
+    return this.api.post(endpoint, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
+  }
+
+  // Direct request (if needed)
+  async request(endpoint, options = {}) {
+    return this.api(endpoint, options);
   }
 }
 

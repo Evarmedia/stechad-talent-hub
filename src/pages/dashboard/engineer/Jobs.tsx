@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useDataContext } from "@/hooks/useDataContext";
@@ -10,48 +9,50 @@ import JobsHeader from "./components/JobsHeader";
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
   const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [jobsList, setJobsList] = useState([]);
-  const [applying, setApplying] = useState<number | null>(null);
+  const [applying, setApplying] = useState<string | null>(null);
   const [userApplications, setUserApplications] = useState([]);
-  const [initialLoading, setInitialLoading] = useState(true);
-  
-  const { getJobs, loading, createApplication, getApplications } = useDataContext();
+
+  const { 
+    jobs, 
+    loading, 
+    getJobs,          // <-- REQUIRED FIX  
+    createApplication, 
+    getEngineersApplication 
+  } = useDataContext();
+
   const { user } = useAuthContext();
 
+  // -------------------------------------------------------------
+  // FETCH USER'S APPLICATIONS ON LOGIN
+  // -------------------------------------------------------------
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [jobs, applications] = await Promise.all([
-          getJobs(),
-          user ? getApplications({ engineerId: user.id }) : Promise.resolve([])
-        ]);
-        
-        setJobsList(jobs);
-        setUserApplications(applications);
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      } finally {
-        setInitialLoading(false);
-      }
+    const loadApplications = async () => {
+      if (!user) return;
+      const apps = await getEngineersApplication();
+      setUserApplications(apps || []);
     };
 
-    fetchInitialData();
-  }, [user?.id]);
+    loadApplications();
+  }, [user?.user_id]);
 
+  // -------------------------------------------------------------
+  // SEARCH & FILTER (Debounced API call)
+  // -------------------------------------------------------------
   useEffect(() => {
-    if (!search || initialLoading) return;
-    
-    const searchJobs = async () => {
+    if (!getJobs) return;
+
+    const debounceTimer = setTimeout(() => {
       const filters = { search };
-      const jobs = await getJobs(filters);
-      setJobsList(jobs);
-    };
+      getJobs(filters);   // updates global context
+    }, 3000);
 
-    const debounceTimer = setTimeout(searchJobs, 300);
     return () => clearTimeout(debounceTimer);
-  }, [search, getJobs, initialLoading]);
+  }, [search]);
 
-  const handleApply = async (jobId: number, jobTitle: string) => {
+  // -------------------------------------------------------------
+  // APPLY TO JOB
+  // -------------------------------------------------------------
+  const handleApply = async (jobId: string) => {
     if (!user) {
       toast({
         title: "Error",
@@ -61,7 +62,7 @@ const EngineerJobs = () => {
       return;
     }
 
-    const hasApplied = userApplications.some(app => app.jobId === jobId);
+    const hasApplied = userApplications.some(a => a.job_id === jobId);
     if (hasApplied) {
       toast({
         title: "Error",
@@ -73,16 +74,11 @@ const EngineerJobs = () => {
 
     setApplying(jobId);
     try {
-      await createApplication({
-        jobId,
-        jobTitle,
-        engineerId: user.id,
-        status: "pending"
-      });
-      
-      const applications = await getApplications({ engineerId: user.id });
-      setUserApplications(applications);
-      
+      await createApplication(jobId);
+
+      const apps = await getEngineersApplication();
+      setUserApplications(apps || []);
+
       toast({
         title: "Success",
         description: "Application submitted successfully!",
@@ -98,11 +94,14 @@ const EngineerJobs = () => {
     }
   };
 
-  const filteredJobs = jobsList.filter(
-    (job) => job.title.toLowerCase().includes(search.toLowerCase())
+  // -------------------------------------------------------------
+  // LOCAL FILTER (fast UI filter after global fetch)
+  // -------------------------------------------------------------
+  const filteredJobs = jobs.filter(job =>
+    job.title?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const isLoading = initialLoading || loading;
+  const isLoading = loading;
 
   return (
     <div className="p-8">

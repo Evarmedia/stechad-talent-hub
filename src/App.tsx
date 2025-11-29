@@ -8,7 +8,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ChatProvider } from "./hooks/contexts/ChatContext";
 import { AuthProvider } from "./hooks/useAuthContext";
 import { DataProvider } from "./hooks/useDataContext";
-import { InterviewProvider } from "./hooks/useInterviewContext";
 import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import EngineerSignup from "./pages/EngineerSignup";
@@ -20,15 +19,15 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyOTP from "./pages/VerifyOTP";
-import AdminApplications from "./pages/admin/Applications";
-import AdminEngineerVetting from "./pages/admin/EngineerVetting";
-import AdminEngineers from "./pages/admin/Engineers";
-import AdminIndex from "./pages/admin/Index";
-import AdminJobs from "./pages/admin/Jobs";
-import AdminMessages from "./pages/admin/Messages";
-import AdminProfile from "./pages/admin/Profile";
-import AdminProjectManagers from "./pages/admin/ProjectManagers";
-import AdminSettings from "./pages/admin/Settings";
+import AdminApplications from "./pages/dashboard/admin/Applications";
+import AdminEngineerVetting from "./pages/dashboard/admin/EngineerVetting";
+import AdminEngineers from "./pages/dashboard/admin/Engineers";
+import AdminIndex from "./pages/dashboard/admin/Index";
+import AdminJobs from "./pages/dashboard/admin/Jobs";
+import AdminMessages from "./pages/dashboard/admin/Messages";
+import AdminProfile from "./pages/dashboard/admin/Profile";
+import AdminProjectManagers from "./pages/dashboard/admin/ProjectManagers";
+import AdminSettings from "./pages/dashboard/admin/Settings";
 import EngineerApplications from "./pages/dashboard/engineer/Applications";
 import EngineerIndex from "./pages/dashboard/engineer/Index";
 import EngineerInterviews from "./pages/dashboard/engineer/Interviews";
@@ -52,7 +51,6 @@ const App = () => (
     <AuthProvider>
       <DataProvider>
         <ChatProvider>
-          <InterviewProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -203,7 +201,6 @@ const App = () => (
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
-          </InterviewProvider>
         </ChatProvider>
       </DataProvider>
     </AuthProvider>
