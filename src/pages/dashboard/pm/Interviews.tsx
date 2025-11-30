@@ -9,12 +9,15 @@ import { Calendar, Edit, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
 import { useAuthContext } from '../../../hooks/useAuthContext';
+import CancelInterviewDialog from '@/components/CancelInterviewDialog';
 
 const Interviews = () => {
   const { interviews, loading, fetchAllInterviews, fetchUserInterviews, updateInterview } = useDataContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [interviewToCancel, setInterviewToCancel] = useState(null);
 
   // useEffect(() => {
   //   if (user) {
@@ -172,6 +175,34 @@ const Interviews = () => {
           interview={selectedInterview}
         />
       )}
+            {/* Cancel Dialog */}
+            {interviewToCancel && (
+              <CancelInterviewDialog
+                isOpen={cancelDialogOpen}
+                onClose={() => {
+                  setCancelDialogOpen(false);
+                  setInterviewToCancel(null);
+                }}
+                onConfirm={async () => {
+                  try {
+                    await updateInterview(interviewToCancel.interviews_id, { status: "cancelled" });
+      
+                    toast({
+                      title: "Success",
+                      description: "Interview cancelled successfully"
+                    });
+      
+                    setCancelDialogOpen(false);
+                    setInterviewToCancel(null);
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to cancel interview"
+                    });
+                  }
+                }}
+              />
+            )}
     </div>
   );
 };

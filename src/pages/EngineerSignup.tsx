@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const EngineerSignup = () => {
-  const [form, setForm] = useState({ first_name: "", email: "", password: "", confirm_password: "", googleSignIn: false });
+  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm_password: "", googleSignIn: false, referral_code: "", });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup, authLoading } = useAuthContext();
@@ -19,7 +19,8 @@ const EngineerSignup = () => {
   };
 
   const validate = () => {
-    if (!form.first_name.trim()) return "Full first_name required";
+    if (!form.first_name.trim()) return "First Name required";
+    if (!form.last_name.trim()) return "First Name required";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Valid email required";
     if (form.password.length < 6) return "Password must be at least 6 characters";
     if (form.password !== form.confirm_password) return "Passwords do not match";
@@ -37,21 +38,22 @@ const EngineerSignup = () => {
     try {
       const newUser = await signup({
         first_name: form.first_name,
+        last_name: form.last_name,
         email: form.email,
         password: form.password,
         confirm_password: form.confirm_password,
         role: "engineer"
       });
 
-      toast({ 
-        title: "Signup Success! 🎉", 
-        description: "Welcome to STECHAD. Complete your profile to get started." 
+      toast({
+        title: "Signup Success! 🎉",
+        description: "Welcome to STECHAD. Complete your profile to get started."
       });
       navigate("/onboarding", { state: { first_name: newUser.first_name, email: newUser.email } });
     } catch (error) {
-      toast({ 
-        title: "Signup Failed", 
-        description: error.message || "An error occurred during signup" 
+      toast({
+        title: "Signup Failed",
+        description: error.message || "An error occurred during signup"
       });
     }
   };
@@ -70,6 +72,15 @@ const EngineerSignup = () => {
             className="p-3"
             disabled={authLoading}
             autoFocus
+          /> 
+          <Input
+            type="text"
+            name="last_name"
+            placeholder="Last Name"
+            value={form.last_name}
+            onChange={handleChange}
+            className="p-3"
+            disabled={authLoading}
           />
           <Input
             type="email"
@@ -118,6 +129,15 @@ const EngineerSignup = () => {
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+            <Input
+            type="text"
+            name="referral"
+            placeholder="Referral Code(Optional)"
+            value={form.referral_code}
+            onChange={handleChange}
+            className="p-3"
+            disabled={authLoading}
+          />
           {/* Social signup */}
           <div className="flex gap-3 justify-center pt-1">
             <button

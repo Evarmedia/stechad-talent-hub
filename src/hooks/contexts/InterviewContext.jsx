@@ -51,7 +51,7 @@ export const InterviewProvider = ({ children }) => {
       // Sort by date
       const sortedInterviews = interviewList.data.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
       setInterviews(sortedInterviews);
-      console.log("Interview List from Context:=>", sortedInterviews);
+      // console.log("Interview List from Context:=>", sortedInterviews);
       return sortedInterviews;
     } catch (error) {
       console.error('Error fetching interviews:', error);

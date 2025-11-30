@@ -93,10 +93,10 @@ const Interviews = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {interviews.map((interview, i) => {
+              {interviews.map((interview) => {
                 const { date, time } = formatDateTime(interview.date_time);
                 return (
-                  <div key={i} className="border rounded-lg p-4">
+                  <div key={interview.interviews_id} className="border rounded-lg p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -135,7 +135,7 @@ const Interviews = () => {
 
                       {interview.status === 'scheduled' && (
                         <div className="flex gap-2">
-                          <Button
+                          {/* <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleReschedule(interview)}
@@ -143,7 +143,7 @@ const Interviews = () => {
                           >
                             <Edit className="w-3 h-3" />
                             Reschedule
-                          </Button>
+                          </Button> */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -168,7 +168,7 @@ const Interviews = () => {
       </Card>
 
       {/* Reschedule Dialog */}
-      {selectedInterview && (
+      {/* {selectedInterview && (user.role !== 'engineer') && (
         <RescheduleInterviewDialog
           isOpen={rescheduleDialogOpen}
           onClose={() => {
@@ -177,7 +177,7 @@ const Interviews = () => {
           }}
           interview={selectedInterview}
         />
-      )}
+      )} */}
       {/* Cancel Dialog */}
       {interviewToCancel && (
         <CancelInterviewDialog
