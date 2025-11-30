@@ -1,6 +1,12 @@
-
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,7 +26,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
   interview
 }) => {
   const { rescheduleInterview, loading } = useDataContext();
-  
+
   const [formData, setFormData] = useState({
     dateTime: '',
     reason: ''
@@ -28,7 +34,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.dateTime) {
       toast({ title: "Error", description: "Please select a new date and time" });
       return;
@@ -36,22 +42,22 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
 
     try {
       await rescheduleInterview(
-        interview.id, 
+        interview.interviews_id,
         new Date(formData.dateTime).toISOString(),
         formData.reason
       );
-      
-      toast({ 
-        title: "Success", 
-        description: "Interview rescheduled successfully!" 
+
+      toast({
+        title: "Success",
+        description: "Interview rescheduled successfully!"
       });
-      
+
       onClose();
       setFormData({ dateTime: '', reason: '' });
     } catch (error) {
-      toast({ 
-        title: "Error", 
-        description: error.message || "Failed to reschedule interview" 
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reschedule interview"
       });
     }
   };
@@ -66,27 +72,30 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Reschedule Interview</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to reschedule the interview.
+          </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Candidate</Label>
-            <Input 
-              value={`${interview.candidateName} - ${interview.jobTitle}`} 
-              disabled 
+            <Input
+              value={`${interview.candidate_name} - ${interview.job_title}`}
+              disabled
               className="bg-gray-50"
             />
           </div>
-          
+
           <div>
             <Label>Current Date & Time</Label>
-            <Input 
-              value={new Date(interview.dateTime).toLocaleString()} 
-              disabled 
+            <Input
+              value={new Date(interview.date_time).toLocaleString()}
+              disabled
               className="bg-gray-50"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="dateTime">New Date & Time *</Label>
             <Input
@@ -99,7 +108,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
               min={new Date().toISOString().slice(0, 16)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="reason">Reason for Rescheduling (Optional)</Label>
             <Textarea
@@ -111,10 +120,10 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
               rows={3}
             />
           </div>
-          
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Close
             </Button>
             <Button type="submit" disabled={loading}>
               {loading ? "Rescheduling..." : "Reschedule"}

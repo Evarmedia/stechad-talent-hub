@@ -22,7 +22,7 @@ function getProfileRoute(pathname: string) {
 export function AppNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
-  const { resetEngineerState } = useDataContext();
+  const { resetEngineerState, resetJobs, resetInterview } = useDataContext();
   const navigate = useNavigate();
   
   const currentRole =
@@ -32,6 +32,8 @@ export function AppNavbar() {
   const handleLogout = () => {
     logout();
     resetEngineerState();
+    resetJobs();
+    resetInterview();
     navigate("/login");
   };
 

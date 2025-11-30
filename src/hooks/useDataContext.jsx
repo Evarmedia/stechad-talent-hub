@@ -49,6 +49,7 @@ const DataProviderInner = ({ children }) => {
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
     interviews: interviewContext.interviews,
+    allInterviews: interviewContext.allInterviews,
     loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading || interviewContext.loading,
     
     // Engineers
@@ -64,6 +65,7 @@ const DataProviderInner = ({ children }) => {
     createJob: jobsContext.createJob,
     updateJob: jobsContext.updateJob,
     deleteJob: jobsContext.deleteJob,
+    resetJobs: jobsContext.resetJobs,
     
     // Applications
     getApplications: applicationsContext.getApplications,
@@ -91,6 +93,7 @@ const DataProviderInner = ({ children }) => {
     fetchAllInterviews: interviewContext.fetchAllInterviews,
     updateInterview: interviewContext.updateInterview,
     rescheduleInterview: interviewContext.rescheduleInterview,
+    resetInterview: interviewContext.resetInterview,
   };
 
   return (

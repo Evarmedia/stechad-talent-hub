@@ -151,6 +151,7 @@ export const EngineersProvider = ({ children }) => {
     setEngrProjects([]);
     setEngrDashboardData(null);
     setInitialized(false);
+    setLoading(false);
   };
 
   // ---------------------------

@@ -7,14 +7,20 @@ import { toast } from '@/hooks/use-toast';
 import { Calendar, Edit, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
+import CancelInterviewDialog from '@/components/CancelInterviewDialog';
 import { useDataContext } from '@/hooks/useDataContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 
 const Interviews = () => {
-  const { interviews, loading, fetchUserInterviews, updateInterview } = useDataContext();
+  const { interviews = [], loading, updateInterview } = useDataContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [interviewToCancel, setInterviewToCancel] = useState(null);
+
+
+  // console.log('from interview page', interviews);
 
   // useEffect(() => {
   //   if (user) {
@@ -24,7 +30,7 @@ const Interviews = () => {
 
   const handleUpdateInterview = async (interviewId: number) => {
     try {
-      await updateInterview(interviewId, {status: "cancelled"} );
+      await updateInterview(interviewId, { status: "cancelled" });
       toast({
         title: "Success",
         description: "Interview cancelled successfully"
@@ -87,20 +93,20 @@ const Interviews = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {interviews.map((interview) => {
-                const { date, time } = formatDateTime(interview.dateTime);
+              {interviews.map((interview, i) => {
+                const { date, time } = formatDateTime(interview.date_time);
                 return (
-                  <div key={interview.id} className="border rounded-lg p-4">
+                  <div key={i} className="border rounded-lg p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-lg">{interview.jobTitle}</h3>
+                          <h3 className="font-medium text-lg">Role: {interview.job_title}</h3>
                           <Badge className={getStatusColor(interview.status)}>
                             {interview.status}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">
-                          <strong>Interviewer:</strong> {interview.interviewerEmail}
+                          <strong>Interviewer:</strong> {interview.interviewer_email}
                         </p>
                         <p className="text-sm text-muted-foreground mb-1">
                           <strong>Date:</strong> {date} at {time}
@@ -108,15 +114,15 @@ const Interviews = () => {
                         <p className="text-sm text-muted-foreground mb-1">
                           <strong>Duration:</strong> {interview.duration} minutes
                         </p>
-                        {interview.zoomLink && interview.status === 'scheduled' && (
+                        {interview.zoom_link && interview.status === 'scheduled' && (
                           <div className="mt-2">
-                            <a 
-                              href={interview.zoomLink}
+                            <a
+                              href={interview.zoom_link}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
                             >
-                              Join Zoom Meeting
+                              Join Zoom/Google Meeting
                             </a>
                           </div>
                         )}
@@ -126,7 +132,7 @@ const Interviews = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {interview.status === 'scheduled' && (
                         <div className="flex gap-2">
                           <Button
@@ -141,7 +147,10 @@ const Interviews = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleUpdateInterview(interview.id)}
+                            onClick={() => {
+                              setInterviewToCancel(interview);
+                              setCancelDialogOpen(true);
+                            }}
                             className="flex items-center gap-1 text-red-600 hover:text-red-700"
                           >
                             <X className="w-3 h-3" />
@@ -169,6 +178,35 @@ const Interviews = () => {
           interview={selectedInterview}
         />
       )}
+      {/* Cancel Dialog */}
+      {interviewToCancel && (
+        <CancelInterviewDialog
+          isOpen={cancelDialogOpen}
+          onClose={() => {
+            setCancelDialogOpen(false);
+            setInterviewToCancel(null);
+          }}
+          onConfirm={async () => {
+            try {
+              await updateInterview(interviewToCancel.interviews_id, { status: "cancelled" });
+
+              toast({
+                title: "Success",
+                description: "Interview cancelled successfully"
+              });
+
+              setCancelDialogOpen(false);
+              setInterviewToCancel(null);
+            } catch (error) {
+              toast({
+                title: "Error",
+                description: "Failed to cancel interview"
+              });
+            }
+          }}
+        />
+      )}
+
     </div>
   );
 };

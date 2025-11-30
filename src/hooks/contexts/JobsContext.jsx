@@ -142,6 +142,12 @@ export const JobsProvider = ({ children }) => {
     }
   };
 
+  const resetJobs = async () => {
+    setJobs([]);
+    setInitialized(false);
+    setLoading(false)
+  };
+
   // -----------------------------------------------------
   // CONTEXT VALUE
   // -----------------------------------------------------
@@ -153,7 +159,7 @@ export const JobsProvider = ({ children }) => {
     createJob,
     updateJob,
     deleteJob,
-
+    resetJobs,
     /** re-fetch everything manually if needed */
     refreshAll: async () => {
       setInitialized(false);
