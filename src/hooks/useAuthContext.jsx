@@ -4,6 +4,7 @@ import apiService from "../services/apiService.js";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);
@@ -12,22 +13,33 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const token = apiService.getToken();
-      const storedUser = localStorage.getItem("stechad_user");
+      // const storedUser = localStorage.getItem("stechad_user");
+      const params = new URLSearchParams(window.location.search);
+      const googleToken = params.get("token");
 
-      if (token && storedUser) {
+      if (googleToken) {
+        apiService.setToken(googleToken);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+
+      const finalToken = googleToken || token;
+
+      if (finalToken) {
         try {
           // Verify token is still valid by fetching current user
           const response = await apiService.get("auth/me");
           if (response.success && response.data) {
-            setUser(response.data.user);
-            localStorage.setItem(
-              "stechad_user",
-              JSON.stringify(response.data.user)
-            );
+            // Support both response shapes:
+            // - { success: true, data: { user fields... } }
+            // - { success: true, data: { user: {...}, token, ... } }
+            const userObj = response.data.user || response.data;
+            setUser(userObj);
+            localStorage.setItem("stechad_user", JSON.stringify(userObj));
           }
         } catch (error) {
           console.error("Token validation failed:", error);
           apiService.clearTokens();
+          setUser(null);
           localStorage.removeItem("stechad_user");
         }
       }
@@ -36,6 +48,14 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
   }, []);
+
+  // --------------------------
+  // GOOGLE LOGIN (REDIRECT FLOW)
+  // --------------------------
+  const googleLogin = () => {
+    // Redirect browser to backend
+    window.location.href = "http://localhost:5000/api/auth/google";
+  };
 
   // Direct API call for login
   const login = async (email, password) => {
@@ -110,7 +130,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await apiService.post("auth/logout", {});
       console.clear();
-      setUser(null)
+      setUser(null);
       localStorage.clear();
     } catch (error) {
       console.error("Logout error:", error);
@@ -180,6 +200,7 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     isAuthenticated,
     hasRole,
+    googleLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

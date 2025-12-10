@@ -43,6 +43,7 @@ import PMMessages from "./pages/dashboard/pm/Messages";
 import PMPostJob from "./pages/dashboard/pm/PostJob";
 import PMProfile from "./pages/dashboard/pm/Profile";
 import PMProjects from "./pages/dashboard/pm/Projects";
+import GoogleAuthHandler from "./pages/GoogleAuthHandler";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
                     <Route path="/verify-otp" element={<VerifyOTP />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/google-auth" element={<GoogleAuthHandler />} />
                   </Route>
 
                   {/* Dashboard Layout for all roles */}

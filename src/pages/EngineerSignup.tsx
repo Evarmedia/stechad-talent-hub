@@ -7,11 +7,12 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
+
 const EngineerSignup = () => {
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm_password: "", googleSignIn: false, referral_code: "", });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signup, authLoading } = useAuthContext();
+  const { signup, authLoading, googleLogin } = useAuthContext();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,8 +145,9 @@ const EngineerSignup = () => {
               type="button"
               className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
               disabled={authLoading}
+              onClick={googleLogin}
             >
-              <img src="https://www.citypng.com/public/uploads/preview/google-logo-icon-gsuite-hd-701751694791470gzbayltphh.png" alt="Google" className="w-5 h-5 mr-2" />
+              <img src="https://img.icons8.com/external-those-icons-flat-those-icons/96/external-Google-logos-and-brands-those-icons-flat-those-icons.png" alt="Google" className="w-5 h-5 mr-2" />
               Google
             </button>
             <button
