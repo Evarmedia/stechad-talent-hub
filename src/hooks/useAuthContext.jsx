@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../services/apiService.js";
+import { toast } from "@/hooks/use-toast";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);
@@ -141,6 +141,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendOtp = async (email, purpose = "password_reset") => {
+    // password_reset or email_verification
+    try {
+      await apiService.post("auth/send-otp", { email, purpose });
+      return true;
+    } catch (error) {
+      console.log("Send OTP error:", error);
+    }
+  };
+
+  const resetPassword = async (payload) => {
+    setLoading(true);
+    try {
+      await apiService.post("auth/reset-password", payload);
+      toast({
+        title: "Success",
+        description: "Password reset successful! Please log in.",
+      });
+      setLoading(false);
+    } catch (error) {
+      console.log("resetPasword Error:", error);
+      toast({
+        title: "Error resetting password",
+        description: error?.message || "Error resetting password",
+        variant: "destructive",
+      });
+
+      setLoading(false);
+    }
+  };
+
   // Update profile function (role-specific)
   const updateProfile = async (profileData) => {
     if (!user) throw new Error("No user logged in");
@@ -190,6 +221,10 @@ export const AuthProvider = ({ children }) => {
     return user && user.role === role;
   };
 
+  const isOnboarded = () => {
+    return user?.engineer?.is_onboarded === true;
+  };
+
   const value = {
     user,
     loading,
@@ -200,7 +235,10 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     isAuthenticated,
     hasRole,
+    isOnboarded,
     googleLogin,
+    sendOtp,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

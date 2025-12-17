@@ -4,6 +4,7 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import apiService from "../../services/apiService.js";
 
 export interface OnboardingFormData {
   fullName: string;
@@ -128,58 +129,170 @@ export const useOnboardingForm = () => {
     setLoading(true);
     
     try {
-      // Create FormData for file upload
+      console.log('🟢 [ONBOARDING] ========== STEP 1: Starting FormData construction ==========');
       const formData = new FormData();
       
-      // Add all form fields
-      formData.append('date_of_birth', form.dateOfBirth ? format(form.dateOfBirth, 'yyyy-MM-dd') : '');
+      // STEP 1: Date of birth
+      if (form.dateOfBirth) {
+        const dobString = format(form.dateOfBirth, 'yyyy-MM-dd');
+        formData.append('date_of_birth', dobString);
+        console.log('  ✓ date_of_birth:', dobString);
+      }
+      
+      // STEP 2: Location & mobility
       formData.append('open_to_nearby_cities', form.openToNearbyCities === 'yes' ? 'true' : 'false');
-      formData.append('languages', JSON.stringify(form.languages));
-      formData.append('language_proficiency', form.languageProficiency);
+      console.log('  ✓ open_to_nearby_cities:', form.openToNearbyCities === 'yes' ? 'true' : 'false');
+      
+      // STEP 3: Languages (always send, even if empty)
+      formData.append('languages', JSON.stringify(form.languages || []));
+      console.log('  ✓ languages:', form.languages);
+      
+      // STEP 4: Language proficiency 🔴 CRITICAL: Convert to lowercase for ENUM
+      if (form.languageProficiency) {
+        const proficiencyLowercase = form.languageProficiency.toLowerCase();
+        formData.append('language_proficiency', proficiencyLowercase);
+        console.log('  ✓ language_proficiency: "' + form.languageProficiency + '" → "' + proficiencyLowercase + '" (converted to lowercase)');
+      }
+      
+      // STEP 5: Documentation
       formData.append('has_drivers_license', form.hasDriversLicense === 'yes' ? 'true' : 'false');
+      console.log('  ✓ has_drivers_license:', form.hasDriversLicense === 'yes' ? 'true' : 'false');
+      
       formData.append('has_car', form.hasCar === 'yes' ? 'true' : 'false');
+      console.log('  ✓ has_car:', form.hasCar === 'yes' ? 'true' : 'false');
+      
+      // STEP 6: Residency & work authorization
       formData.append('is_native', form.isNative === 'yes' ? 'true' : 'false');
+      console.log('  ✓ is_native:', form.isNative === 'yes' ? 'true' : 'false');
+      
       formData.append('work_authorized', form.workAuthorized === 'yes' ? 'true' : 'false');
-      formData.append('specialization', JSON.stringify(form.specialization));
-      formData.append('skill_level', form.skillLevel);
-      formData.append('years_of_experience', form.yearsOfExperience);
-      formData.append('certifications', JSON.stringify(form.certifications));
-      formData.append('project_types', JSON.stringify(form.projectTypes));
+      console.log('  ✓ work_authorized:', form.workAuthorized === 'yes' ? 'true' : 'false');
+      
+      // STEP 7: Professional specialization (always send, even if empty)
+      formData.append('specialization', JSON.stringify(form.specialization || []));
+      console.log('  ✓ specialization:', form.specialization);
+      
+      // STEP 8: Skill level 🔴 CRITICAL: Convert to lowercase for ENUM
+      if (form.skillLevel) {
+        const skillLevelLowercase = form.skillLevel.toLowerCase();
+        formData.append('skill_level', skillLevelLowercase);
+        console.log('  ✓ skill_level: "' + form.skillLevel + '" → "' + skillLevelLowercase + '" (converted to lowercase)');
+      }
+      
+      // STEP 9: Experience
+      if (form.yearsOfExperience) {
+        formData.append('years_of_experience', form.yearsOfExperience);
+        console.log('  ✓ years_of_experience:', form.yearsOfExperience);
+      }
+      
+      // STEP 10: Certifications (always send, even if empty)
+      formData.append('certifications', JSON.stringify(form.certifications || []));
+      console.log('  ✓ certifications:', form.certifications);
+      
+      // STEP 11: Project types (always send, even if empty)
+      formData.append('project_types', JSON.stringify(form.projectTypes || []));
+      console.log('  ✓ project_types:', form.projectTypes);
+      
+      // STEP 12: Preferences
       formData.append('open_to_training', form.openToTraining === 'yes' ? 'true' : 'false');
+      console.log('  ✓ open_to_training:', form.openToTraining === 'yes' ? 'true' : 'false');
+      
       formData.append('is_freelancer', form.isFreelancer === 'yes' ? 'true' : 'false');
+      console.log('  ✓ is_freelancer:', form.isFreelancer === 'yes' ? 'true' : 'false');
+      
       formData.append('follows_linkedin', form.followsLinkedIn === 'yes' ? 'true' : 'false');
-      formData.append('referee_info', form.refereeInfo);
+      console.log('  ✓ follows_linkedin:', form.followsLinkedIn === 'yes' ? 'true' : 'false');
+      
+      // STEP 13: Referee info
+      if (form.refereeInfo) {
+        formData.append('referee_info', form.refereeInfo);
+        console.log('  ✓ referee_info:', form.refereeInfo);
+      }
+      
+      // STEP 14: Newsletter
       formData.append('newsletter', form.newsletter === 'yes' ? 'true' : 'false');
-      formData.append('special_preferences', form.specialPreferences || '');
+      console.log('  ✓ newsletter:', form.newsletter === 'yes' ? 'true' : 'false');
       
-      // Add personal info that needs to be updated in user table
-      formData.append('first_name', form.fullName.split(' ')[0] || '');
-      formData.append('last_name', form.fullName.split(' ').slice(1).join(' ') || '');
-      formData.append('phone_number', form.phoneNumber);
-      formData.append('city', form.city);
-      formData.append('country', form.country);
+      // STEP 15: Special preferences
+      if (form.specialPreferences) {
+        formData.append('special_preferences', form.specialPreferences);
+        console.log('  ✓ special_preferences:', form.specialPreferences);
+      }
       
-      // Add CV file if present
+      // STEP 16: CV file
       if (form.cv) {
-        formData.append('cv', form.cv);
+        formData.append('cv_file', form.cv);
+        console.log('  ✓ cv_file:', form.cv.name);
       }
 
-      const response = await updateProfile(formData);
+      // STEP 17: Personal info fields (will be used to update user profile)
+      console.log('🟢 [ONBOARDING] ========== STEP 2: Adding personal info fields ==========');
+      const nameParts = form.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      if (firstName) {
+        formData.append('first_name', firstName);
+        console.log('  ✓ first_name:', firstName);
+      }
+      if (lastName) {
+        formData.append('last_name', lastName);
+        console.log('  ✓ last_name:', lastName);
+      }
+      if (form.phoneNumber) {
+        formData.append('phone_number', form.phoneNumber);
+        console.log('  ✓ phone_number:', form.phoneNumber);
+      }
+      if (form.city) {
+        formData.append('city', form.city);
+        console.log('  ✓ city:', form.city);
+      }
+      if (form.country) {
+        formData.append('country', form.country);
+        console.log('  ✓ country:', form.country);
+      }
 
-      if (response.success || response.data) {
+      // STEP 18: Submit to backend
+      console.log('🟢 [ONBOARDING] ========== STEP 3: Sending PUT request to /engineers/onboarding ==========');
+      const response = await apiService.putNoId('engineers/onboarding', formData, true);
+      console.log('🟢 [ONBOARDING] ✅ SUCCESS Response received:', response);
+
+      if (response.success) {
+        console.log('🟢 [ONBOARDING] ========== STEP 4: Updating localStorage with is_onboarded=true ==========');
+        
+        // Update user state with is_onboarded flag
+        if (user) {
+          const updatedUser = {
+            ...user,
+            engineer: {
+              ...user.engineer,
+              is_onboarded: true,
+            }
+          };
+          localStorage.setItem('stechad_user', JSON.stringify(updatedUser));
+          console.log('  ✓ localStorage updated:', updatedUser);
+        }
+        
         toast({ 
           title: "Onboarding Complete! 🎉", 
           description: "Welcome aboard. Your profile has been updated successfully!" 
         });
         
+        console.log('🟢 [ONBOARDING] ========== STEP 5: Redirecting to /dashboard/engineer ==========');
         navigate("/dashboard/engineer");
       }
     } catch (error: any) {
-      console.error('Onboarding error:', error);
-      const errorMessage = error.message || error.error || "Failed to complete onboarding. Please try again.";
+      console.error('🔴 [ONBOARDING] ❌ ERROR during submission:');
+      console.error('  Error object:', error);
+      console.error('  Error status:', error?.status);
+      console.error('  Error message:', error?.message);
+      console.error('  Response data:', error?.response?.data);
+      
+      const errorMessage = error.message || error.error || error.response?.data?.error || "Failed to complete onboarding. Please try again.";
       toast({ 
         title: "Error", 
-        description: errorMessage
+        description: errorMessage,
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);

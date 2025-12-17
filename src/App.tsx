@@ -12,6 +12,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import EngineerSignup from "./pages/EngineerSignup";
 import ForgotPassword from "./pages/ForgotPassword";
+import GoogleAuthHandler from "./pages/GoogleAuthHandler";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -43,7 +44,6 @@ import PMMessages from "./pages/dashboard/pm/Messages";
 import PMPostJob from "./pages/dashboard/pm/PostJob";
 import PMProfile from "./pages/dashboard/pm/Profile";
 import PMProjects from "./pages/dashboard/pm/Projects";
-import GoogleAuthHandler from "./pages/GoogleAuthHandler";
 
 const queryClient = new QueryClient();
 
@@ -65,7 +65,11 @@ const App = () => (
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/verify-otp" element={<VerifyOTP />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/onboarding" element={
+                      <ProtectedRoute requiredRole="engineer">
+                        <Onboarding />
+                      </ProtectedRoute>
+                    } />
                     <Route path="/google-auth" element={<GoogleAuthHandler />} />
                   </Route>
 

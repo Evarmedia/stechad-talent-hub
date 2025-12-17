@@ -152,8 +152,9 @@ class ApiService {
       headers: {},
     };
 
+    // Don't manually set Content-Type for FormData; let axios handle it
     if (isFormData) {
-      config.headers["Content-Type"] = "multipart/form-data";
+      // axios will automatically set Content-Type: multipart/form-data with boundary
     }
 
     return this.api.post(`/${resource}`, data, config);
@@ -164,11 +165,26 @@ class ApiService {
       headers: {},
     };
 
+    // Don't manually set Content-Type for FormData; let axios handle it
     if (isFormData) {
-      config.headers["Content-Type"] = "multipart/form-data";
+      // axios will automatically set Content-Type: multipart/form-data with boundary
     }
 
     return this.api.put(`/${resource}/${id}`, data, config);
+  }
+
+  async putNoId(resource, data, isFormData = false) {
+    const config = {
+      headers: {},
+    };
+
+    // Don't manually set Content-Type for FormData; let axios handle it
+    if (isFormData) {
+      // axios will automatically set Content-Type: multipart/form-data with boundary
+      // so we don't set it here
+    }
+
+    return this.api.put(`/${resource}`, data, config);
   }
 
   async patch(resource, id, data) {

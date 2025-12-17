@@ -1,14 +1,14 @@
 
-import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useOnboardingForm } from "./Onboarding/useOnboardingForm";
-import { PersonalInfoSection } from "./Onboarding/PersonalInfoSection";
-import { LanguageEligibilitySection } from "./Onboarding/LanguageEligibilitySection";
-import { ProfessionalInfoSection } from "./Onboarding/ProfessionalInfoSection";
-import { AdditionalInfoSection } from "./Onboarding/AdditionalInfoSection";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
+import { AdditionalInfoSection } from "./Onboarding/AdditionalInfoSection";
+import { LanguageEligibilitySection } from "./Onboarding/LanguageEligibilitySection";
+import { PersonalInfoSection } from "./Onboarding/PersonalInfoSection";
+import { ProfessionalInfoSection } from "./Onboarding/ProfessionalInfoSection";
+import { useOnboardingForm } from "./Onboarding/useOnboardingForm";
 
 const TOTAL_STEPS = 4;
 
@@ -31,8 +31,12 @@ const Onboarding = () => {
   } = useOnboardingForm();
 
   React.useEffect(() => {
-    if (user?.name) {
-      setForm(f => ({ ...f, fullName: user.name }));
+    if (user) {
+      // Construct full name from first_name and last_name
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      if (fullName) {
+        setForm(f => ({ ...f, fullName }));
+      }
     }
   }, [user, setForm]);
 

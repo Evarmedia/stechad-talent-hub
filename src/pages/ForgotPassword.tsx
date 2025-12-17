@@ -2,27 +2,28 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const ForgotPassword = () => {
+  const { sendOtp } = useAuthContext();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       toast({ title: "Invalid Email", description: "Please enter a valid email." });
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Verification Code Sent",
-        description: "A 6-digit verification code has been sent to your email.",
-      });
-      navigate("/verify-otp");
-    }, 1200);
+    await sendOtp(email);
+    setLoading(false);
+    toast({
+      title: "Verification Code Sent",
+      description: "A 6-digit verification code has been sent to your email.",
+    });
+    navigate("/reset-password");
   };
 
   return (
