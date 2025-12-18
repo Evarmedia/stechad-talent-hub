@@ -8,10 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, FileText, Loader2, X } from "lucide-react";
+import { Camera, FileText, Loader2, X, ZoomIn } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuthContext } from "../../../hooks/useAuthContext";
+
+// Utility function to extract filename from object path
+const extractFilename = (objectPath: string): string => {
+  if (!objectPath) return "Resume";
+  const parts = objectPath.split("__");
+  return parts[parts.length - 1];
+};
 
 interface ProfileFormData {
   first_name: string;
@@ -36,6 +43,9 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showCVModal, setShowCVModal] = useState(false);
+  const [cvUrl, setCvUrl] = useState<string>("");
 
   // Initialize form data from user object
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -79,6 +89,11 @@ const Profile = () => {
       if (user.avatar_url) {
         setAvatarPreview(user.avatar_url);
       }
+      
+      // Set CV URL if available
+      if (user.engineer?.cv_url) {
+        setCvUrl(user.engineer.cv_url);
+      }
     }
   }, [user]);
 
@@ -106,8 +121,8 @@ const Profile = () => {
       }
 
       // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size must be less than 5MB");
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image size must be less than 2MB");
         return;
       }
 
@@ -134,8 +149,8 @@ const Profile = () => {
       }
 
       // Validate file size (10MB max for documents)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("File size must be less than 10MB");
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("File size must be less than 2MB");
         return;
       }
 
@@ -203,15 +218,15 @@ const Profile = () => {
         profileData.append("cv_file", formData.cv_file);
       }
 
-      // Log FormData for debugging
-      console.log("📝 Submitting profile update with FormData:");
-      for (const [key, value] of profileData.entries()) {
-        if (value instanceof File) {
-          console.log(`  ${key}: File - ${value.name} (${value.size} bytes)`);
-        } else {
-          console.log(`  ${key}: ${value}`);
-        }
-      }
+      // // Log FormData for debugging
+      // console.log("📝 Submitting profile update with FormData:");
+      // for (const [key, value] of profileData.entries()) {
+      //   if (value instanceof File) {
+      //     console.log(`  ${key}: File - ${value.name} (${value.size} bytes)`);
+      //   } else {
+      //     console.log(`  ${key}: ${value}`);
+      //   }
+      // }
 
       // Call backend update
       const response = await updateProfile(profileData);
@@ -262,6 +277,108 @@ const Profile = () => {
     setIsEditing(false);
   };
 
+  // Avatar Modal Component
+  const AvatarModal = () => (
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      onClick={() => setShowAvatarModal(false)}
+    >
+      <div
+        className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setShowAvatarModal(false)}
+          className="absolute top-4 right-4 bg-slate-900 text-white p-2 rounded-full hover:bg-slate-700 transition z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Modal content */}
+        <div className="p-8 flex flex-col items-center justify-center">
+          <img
+            src={avatarPreview}
+            alt="Profile Avatar"
+            className="w-full max-w-md rounded-lg object-cover shadow-lg"
+          />
+          <p className="mt-6 text-slate-600 text-center">
+            {formData.first_name} {formData.last_name}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // CV Modal Component
+  const CVModal = () => (
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+      onClick={() => setShowCVModal(false)}
+    >
+      <div
+        className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setShowCVModal(false)}
+          className="absolute top-4 right-4 bg-slate-900 text-white p-2 rounded-full hover:bg-slate-700 transition z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Header */}
+        <div className="bg-slate-100 px-6 py-4 border-b">
+          <h3 className="text-lg font-semibold text-slate-900">
+            {extractFilename(formData.cv_name)}
+          </h3>
+        </div>
+
+        {/* PDF Viewer */}
+        <div className="flex-1 overflow-auto">
+          {cvUrl && (
+            <iframe
+              src={`${cvUrl}#toolbar=0`}
+              className="w-full h-full min-h-[500px]"
+              title="CV Document"
+            />
+          )}
+        </div>
+
+        {/* Footer with download option */}
+        <div className="bg-slate-100 px-6 py-4 border-t flex justify-between items-center">
+          <p className="text-sm text-slate-600">
+            {extractFilename(formData.cv_name)}
+          </p>
+          {cvUrl && (
+            <a
+              href={cvUrl}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
+            >
+              Download
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Prevent body scroll when modals are open
+  React.useEffect(() => {
+    if (showAvatarModal || showCVModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showAvatarModal, showCVModal]);
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -289,14 +406,26 @@ const Profile = () => {
                 <div className="flex flex-col items-center">
                   {/* Avatar Image */}
                   <div className="relative w-48 h-48 mb-6">
-                    <img
-                      src={
-                        avatarPreview ||
-                        `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random&size=200`
-                      }
-                      alt="Profile Avatar"
-                      className="w-full h-full rounded-lg object-cover shadow-lg border-4 border-primary/10"
-                    />
+                    <button
+                      onClick={() => setShowAvatarModal(true)}
+                      className="relative w-full h-full group cursor-pointer"
+                      type="button"
+                    >
+                      <img
+                        src={
+                          avatarPreview ||
+                          `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random&size=200`
+                        }
+                        alt="Profile Avatar"
+                        className="w-full h-full rounded-lg object-cover shadow-lg border-4 border-primary/10 group-hover:opacity-75 transition"
+                      />
+                      {/* Zoom icon overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <div className="bg-black/50 text-white p-3 rounded-full">
+                          <ZoomIn className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </button>
                     {isEditing && (
                       <label className="absolute bottom-2 right-2 bg-primary text-white p-3 rounded-lg cursor-pointer hover:bg-primary/90 transition shadow-lg">
                         <Camera className="w-5 h-5" />
@@ -577,16 +706,20 @@ const Profile = () => {
                         ) : (
                           <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
                             <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-green-900 truncate">
-                                {formData.cv_file?.name || formData.cv_name || "Resume uploaded"}
+                            <button
+                              type="button"
+                              onClick={() => setShowCVModal(true)}
+                              className="flex-1 min-w-0 text-left hover:opacity-75 transition"
+                            >
+                              <p className="text-sm font-medium text-green-900 truncate hover:text-green-700 underline cursor-pointer">
+                                {extractFilename(formData.cv_file?.name || formData.cv_name || "Resume")}
                               </p>
                               {formData.cv_file && (
                                 <p className="text-xs text-green-700">
                                   {(formData.cv_file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
                               )}
-                            </div>
+                            </button>
                             {isEditing && (
                               <button
                                 type="button"
@@ -649,6 +782,10 @@ const Profile = () => {
           </div>
         </form>
       </div>
+
+      {/* Modals */}
+      {showAvatarModal && <AvatarModal />}
+      {showCVModal && <CVModal />}
     </div>
   );
 };
