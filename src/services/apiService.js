@@ -27,6 +27,11 @@ class ApiService {
           config.headers.Authorization = `Bearer ${token}`;
         }
 
+        // Handle FormData: don't set Content-Type, let axios handle it
+        if (config.data instanceof FormData) {
+          delete config.headers["Content-Type"];
+        }
+
         // Clean params BEFORE making the request
         if (config.params) {
           config.params = this.cleanParams(config.params);

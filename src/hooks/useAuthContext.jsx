@@ -1,6 +1,6 @@
+import { toast } from "@/hooks/use-toast";
 import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../services/apiService.js";
-import { toast } from "@/hooks/use-toast";
 
 const AuthContext = createContext();
 
@@ -192,21 +192,39 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Invalid user role");
       }
 
+      console.log("🔄 [updateProfile] Sending profile update to:", endpoint);
+      console.log("🔄 [updateProfile] Is FormData:", isFormData);
+
       const response = await apiService.request(`/${endpoint}`, {
         method: "PUT",
-        body: profileData,
+        data: profileData,
       });
 
+      console.log("✅ [updateProfile] Response received:", response);
+
       if (response.success && response.data) {
-        const updatedUser = response.data.user || response.data;
+        const updatedUser = response.data.user;
+        console.log("✅ [updateProfile] Updated user object:", updatedUser);
+        
+        // Update auth context
         setUser(updatedUser);
         localStorage.setItem("stechad_user", JSON.stringify(updatedUser));
+        
+        // Update tokens if they were returned
+        if (response.data.token) {
+          localStorage.setItem("stechad_token", response.data.token);
+          console.log("✅ [updateProfile] Token updated");
+        }
+        if (response.data.refreshToken) {
+          localStorage.setItem("stechad_refresh_token", response.data.refreshToken);
+        }
+        
         return response;
       }
 
       return response;
     } catch (error) {
-      console.error("Profile update error:", error);
+      console.error("❌ [updateProfile] Error:", error);
       throw error;
     } finally {
       setAuthLoading(false);
