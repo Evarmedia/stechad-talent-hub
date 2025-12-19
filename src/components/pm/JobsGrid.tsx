@@ -44,7 +44,7 @@ export const JobsGrid = ({
   return (
     <div className="md:hidden space-y-4">
       {jobs.map((job) => (
-        <div key={job.id} className="border rounded-lg p-4 space-y-3">
+        <div key={job.jobs_id} className="border rounded-lg p-4 space-y-3">
           <div>
             <h3 className="font-medium text-base">{job.title}</h3>
             <p className="text-sm text-muted-foreground">{job.company}</p>
@@ -56,12 +56,12 @@ export const JobsGrid = ({
               <span>{job.location}</span>
             </div>
             <div>
-              <span className="font-medium">Posted: </span>
-              <span>{job.postedDate}</span>
+              <span className="font-medium">Posted: GRID-</span>
+              <span>{job.posted_at.split("T")[0]}</span>
             </div>
             <div>
               <span className="font-medium">Applications: </span>
-              <span>{job.applications}</span>
+              <span>{job.applications_count}</span>
             </div>
           </div>
 
@@ -75,7 +75,7 @@ export const JobsGrid = ({
                 Details
               </Button>
               <Button size="sm" variant="outline" asChild>
-                <Link to={`/dashboard/pm/applicants/${job.id}`}>
+                <Link to={`/dashboard/pm/applicants/${job.jobs_id}`}>
                   View Apps
                 </Link>
               </Button>

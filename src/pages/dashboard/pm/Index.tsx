@@ -11,45 +11,45 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const PMDashboard = () => {
-  const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [applications, setApplications] = useState([]);
+  // const [loading, setLoading] = useState(true);
+  const { pmDashboardData, loading } = useDataContext();
+  // const [jobs, setJobs] = useState([]);
+  // const [projects, setProjects] = useState([]);
+  // const [applications, setApplications] = useState([]);
+  const [activeProjectsCount, setActiveProjectsCount] = useState(0);
+  const [totalApplicationsCount, setTotalApplicationsCount] = useState(0);
+  const [totalJobsCount, setTotalJobsCount] = useState(0);
+  const [totalProjectsCount, setTotalProjectsCount] = useState(0);
+  const [recentApplications, setRecentApplications] = useState([]);
+  const [activeProjects, setActiveProjects] = useState([]);
+  const [recentJobs, setRecentJobs] = useState([]);
+
   
-  const { getJobs, getProjects, getApplications } = useDataContext();
   const { user } = useAuthContext();
-
+  
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [jobsData, projectsData, applicationsData] = await Promise.all([
-          getJobs(),
-          getProjects(),
-          getApplications()
-        ]);
-        
-        setJobs(jobsData);
-        setProjects(projectsData);
-        setApplications(applicationsData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [getJobs, getProjects, getApplications]);
-
-  const activeJobs = jobs.filter(job => job.status === 'active').length;
-  const totalApplications = applications.length;
-  const totalProjects = projects.length;
-  const completedProjects = projects.filter(p => p.status === 'Completed').length;
+    if (pmDashboardData) {
+      setActiveProjectsCount(pmDashboardData.statistics.activeProjectsCount);
+      setTotalApplicationsCount(pmDashboardData.statistics.totalApplicationsCount);
+      setTotalJobsCount(pmDashboardData.statistics.totalJobsCount);
+      setTotalProjectsCount(pmDashboardData.statistics.totalProjectsCount);
+      setRecentApplications(pmDashboardData.recentApplications);
+      setActiveProjects(pmDashboardData.activeProjects);
+      setRecentJobs(pmDashboardData.recentJobs);
+    }
+  }, []);
+  
+  // console.log("recentJobs state:", recentJobs);
+  // console.log("pmDashboardData:", pmDashboardData);
+  // const activeJobs = jobs.filter(job => job.status === 'active').length;
+  // const totalApplications = applications.length;
+  // const totalProjects = projects.length;
+  // const completedProjects = projects.filter(p => p.status === 'Completed').length;
 
   const stats = [
-    { label: "Active Jobs", value: activeJobs, icon: Briefcase, change: "+1 this week" },
-    { label: "Total Applicants", value: totalApplications, icon: Users, change: "+5 new" },
-    { label: "Projects", value: totalProjects, icon: Clock, change: `${completedProjects} completed` },
+    { label: "Active Jobs", value: totalJobsCount, icon: Briefcase, change: `+${recentJobs.length} this week` },
+    { label: "Total Applicantions", value: totalApplicationsCount, icon: Users, change: `+${recentApplications.length} new` },
+    { label: "Projects", value: activeProjectsCount, icon: Clock, change: `${totalProjectsCount} completed` },
     { label: "Success Rate", value: "94%", icon: TrendingUp, change: "+2%" },
   ];
 
@@ -131,8 +131,8 @@ const PMDashboard = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {jobs.slice(0, 3).map((job) => (
-                  <div key={job.id} className="space-y-1">
+                  {recentJobs.map((job) => (
+                  <div key={job.jobs_id} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{job.title}</span>
                       <Badge className={getStatusColor(job.status)} variant="outline">
@@ -140,11 +140,16 @@ const PMDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Posted: {job.postedDate}</span>
-                      <span>{job.applications} applicants</span>
+                        <span>Posted: {job.posted_at.split("T")[0]}</span>
+                        <span>{job.applications_count} applicants</span>
                     </div>
                   </div>
                 ))}
+                  {recentJobs.length === 0 && (
+                    <div className="col-span-2 text-center text-muted-foreground py-8">
+                      No Active Jobs yet...
+                    </div>
+                  )}
               </div>
             )}
           </CardContent>
@@ -176,7 +181,7 @@ const PMDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {projects.slice(0, 3).map((project, idx) => (
+                  {activeProjects.slice(0, 3).map((project, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{project.title}</span>
@@ -197,6 +202,11 @@ const PMDashboard = () => {
                     </div>
                   </div>
                 ))}
+                  {activeProjects.length === 0 && (
+                    <div className="col-span-2 text-center text-muted-foreground py-8">
+                      No projects yet...
+                    </div>
+                  )}
               </div>
             )}
           </CardContent>
@@ -240,7 +250,7 @@ const PMDashboard = () => {
             ) : (
               <div className="flex gap-4 flex-wrap">
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/dashboard/pm/applicants/1">View Applicants</Link>
+                  <Link to="/dashboard/pm/applicant/">View Applicants</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/dashboard/pm/manage-jobs">Manage Jobs</Link>

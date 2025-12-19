@@ -48,6 +48,7 @@ const DataProviderInner = ({ children }) => {
     engrApplications: applicationsContext.engrApplications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
+    pmDashboardData: projectManagersContext.pmDashboardData,
     interviews: interviewContext.interviews,
     allInterviews: interviewContext.allInterviews,
     loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading || interviewContext.loading,
@@ -84,7 +85,8 @@ const DataProviderInner = ({ children }) => {
     projectStats: projectsContext.projectStats,
     
     // Project Managers
-    getProjectManagers: projectManagersContext.getProjectManagers,
+    // getProjectManagers: projectManagersContext.getProjectManagers,
+    getPmDashboard: projectManagersContext.getPmDashboardData,
 
     // interview
     scheduleInterview: interviewContext.scheduleInterview,

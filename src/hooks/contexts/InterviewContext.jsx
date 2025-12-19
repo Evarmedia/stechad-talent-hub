@@ -89,11 +89,11 @@ export const InterviewProvider = ({ children }) => {
       let interviewList = await apiService.get('interviews');
       
       // Sort by date
-      interviewList = interviewList.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+      interviewList = interviewList?.data.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
       
       console.log('Fetched interviews:', interviewList);
-      setAllInterviews(interviewList.data);
-      return interviewList.data;
+      setAllInterviews(interviewList);
+      return interviewList;
     } catch (error) {
       console.error('Error fetching interviews:', error);
       throw error;

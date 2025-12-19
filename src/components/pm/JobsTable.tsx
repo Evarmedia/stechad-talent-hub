@@ -71,7 +71,7 @@ export const JobsTable = ({
         </thead>
         <tbody>
           {jobs.map((job) => (
-            <tr key={job.id} className="border-b hover:bg-gray-50">
+            <tr key={job.jobs_id} className="border-b hover:bg-gray-50">
               <td className="p-3">
                 <div>
                   <span className="font-medium">{job.title}</span>
@@ -82,10 +82,10 @@ export const JobsTable = ({
               <td className="p-3 text-sm">{job.location}</td>
               <td className="p-3 text-center">
                 <Link 
-                  to={`/dashboard/pm/applicants/${job.id}`}
+                  to={`/dashboard/pm/applicants/${job.jobs_id}`}
                   className="text-primary hover:underline"
                 >
-                  {job.applications}
+                  {job.applications_count}
                 </Link>
               </td>
               <td className="p-3">
@@ -93,7 +93,7 @@ export const JobsTable = ({
                   {job.status}
                 </Badge>
               </td>
-              <td className="p-3 text-sm text-muted-foreground">{job.postedDate}</td>
+              <td className="p-3 text-sm text-muted-foreground">{job.posted_at.split("T")[0]}</td>
               <td className="p-3">
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => onViewJob(job)}>

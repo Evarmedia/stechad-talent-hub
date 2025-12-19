@@ -4,26 +4,26 @@ import { useDataContext } from "@/hooks/useDataContext";
 
 export const useManageJobs = () => {
   const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState<any[]>([]);
+  // const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const { getJobs, getApplications, updateJob, deleteJob } = useDataContext();
+  const { jobs, getJobs, getApplications, updateJob, deleteJob } = useDataContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [jobsData, applicationsData] = await Promise.all([
-          getJobs(),
+        const [applicationsData] = await Promise.all([
+          // getJobs(),
           getApplications()
         ]);
         
         // Calculate application counts for each job and normalize status
-        const jobsWithRealApplications = jobsData.map((job: any) => {
-          const jobApplications = applicationsData.filter((app: any) => app.jobId === job.id);
+        const jobsWithRealApplications = jobs.map((job: any) => {
+          const jobApplications = applicationsData.filter((app: any) => app.jobId === job.job_id);
           return {
             ...job,
             applications: jobApplications.length,
@@ -32,7 +32,7 @@ export const useManageJobs = () => {
           };
         });
         
-        setJobs(jobsWithRealApplications);
+        // setJobs(jobsWithRealApplications);
         setApplications(applicationsData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -42,7 +42,7 @@ export const useManageJobs = () => {
     };
 
     fetchData();
-  }, [getJobs, getApplications]);
+  }, [getApplications]);
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,8 +59,8 @@ export const useManageJobs = () => {
   const handleToggleStatus = async (job: any) => {
     try {
       const newStatus = job.status === "active" ? "closed" : "active";
-      await updateJob(job.id, { status: newStatus });
-      setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: newStatus } : j));
+      await updateJob(job.jobs_id, { status: newStatus });
+      // setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: newStatus } : j));
     } catch (error) {
       console.error('Error updating job status:', error);
     }
@@ -70,7 +70,7 @@ export const useManageJobs = () => {
     if (window.confirm('Are you sure you want to delete this job?')) {
       try {
         await deleteJob(jobId);
-        setJobs(prev => prev.filter(j => j.id !== jobId));
+        // setJobs(prev => prev.filter(j => j.id !== jobId));
       } catch (error) {
         console.error('Error deleting job:', error);
       }
