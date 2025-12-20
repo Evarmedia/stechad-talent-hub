@@ -85,7 +85,7 @@ useEffect(() => {
     try {
       await updateApplication(applicationId, { status: newStatus });
       setApplicants(prev => prev.map(app => 
-        app.id === applicationId ? { ...app, status: newStatus } : app
+        app.applications_id === applicationId ? { ...app, status: newStatus } : app
       ));
     } catch (error) {
       console.error('Error updating application status:', error);

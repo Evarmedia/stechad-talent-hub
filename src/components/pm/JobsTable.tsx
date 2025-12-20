@@ -101,7 +101,7 @@ export const JobsTable = ({
                     Details
                   </Button>
                   <Button size="sm" variant="outline" asChild>
-                    <Link to={`/dashboard/pm/applicants/${job.id}`}>
+                    <Link to={`/dashboard/pm/applicants/${job.jobs_id}`}>
                       View Apps
                     </Link>
                   </Button>

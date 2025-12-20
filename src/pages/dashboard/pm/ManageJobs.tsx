@@ -1,34 +1,56 @@
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
-import { useManageJobs } from "@/hooks/useManageJobs";
-import { JobsHeader } from "@/components/pm/JobsHeader";
 import { JobsFilters } from "@/components/pm/JobsFilters";
 import { JobsGrid } from "@/components/pm/JobsGrid";
+import { JobsHeader } from "@/components/pm/JobsHeader";
 import { JobsTable } from "@/components/pm/JobsTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDataContext } from "@/hooks/useDataContext";
+import { useState } from "react";
 
 const ManageJobs = () => {
-  const {
-    loading,
-    filteredJobs,
-    applications,
-    searchTerm,
-    setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    selectedJob,
-    isDetailsOpen,
-    setIsDetailsOpen,
-    handleViewJob,
-    handleToggleStatus,
-    handleDeleteJob
-  } = useManageJobs();
+  const { jobs, applications, loading, updateJob, deleteJob } = useDataContext();
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  // Filter jobs based on search and status
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         job.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const jobStatus = job.status === 'Active' || job.status === 'active' ? 'active' : 'closed';
+    const matchesStatus = statusFilter === "all" || jobStatus === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusColor = (status: string) => {
     return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
+  };
+
+  const handleViewJob = (job: any) => {
+    setSelectedJob(job);
+    setIsDetailsOpen(true);
+  };
+
+  const handleToggleStatus = async (job: any) => {
+    try {
+      const newStatus = job.status === "active" || job.status === "Active" ? "closed" : "active";
+      await updateJob(job.jobs_id, { status: newStatus });
+    } catch (error) {
+      console.error('Error updating job status:', error);
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    if (window.confirm('Are you sure you want to delete this job?')) {
+      try {
+        await deleteJob(jobId);
+      } catch (error) {
+        console.error('Error deleting job:', error);
+      }
+    }
   };
 
   return (

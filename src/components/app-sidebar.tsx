@@ -19,7 +19,8 @@ const pmMenu = [
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
-  { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
+  // { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
+  { icon: Users, label: "Applicantions", to: "/dashboard/pm/applicantions" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
   { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
 ];
