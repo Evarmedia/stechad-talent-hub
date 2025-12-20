@@ -56,11 +56,11 @@ export const JobsGrid = ({
               <span>{job.location}</span>
             </div>
             <div>
-              <span className="font-medium">Posted: GRID-</span>
+              <span className="font-medium">Posted:</span>
               <span>{job.posted_at.split("T")[0]}</span>
             </div>
             <div>
-              <span className="font-medium">Applications: </span>
+              <span className="font-medium">Application: </span>
               <span>{job.applications_count}</span>
             </div>
           </div>

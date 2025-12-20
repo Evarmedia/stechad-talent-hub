@@ -250,7 +250,7 @@ const PMDashboard = () => {
             ) : (
               <div className="flex gap-4 flex-wrap">
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/dashboard/pm/applicant/">View Applicants</Link>
+                  <Link to="/dashboard/pm/applications/">View Applicants</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/dashboard/pm/manage-jobs">Manage Jobs</Link>

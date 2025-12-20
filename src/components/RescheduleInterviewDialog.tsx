@@ -25,26 +25,37 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
   onClose,
   interview
 }) => {
-  const { rescheduleInterview, loading } = useDataContext();
+  const { updateInterview, loading } = useDataContext();
 
   const [formData, setFormData] = useState({
-    dateTime: '',
-    reason: ''
+    date_time: '',
+    duration: 30,
+    status: 'rescheduled',
+    zoom_link: '',
+    phone_number: '',
+    notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.dateTime) {
+    if (!formData.date_time) {
       toast({ title: "Error", description: "Please select a new date and time" });
       return;
     }
 
     try {
-      await rescheduleInterview(
+      const interviewData = {
+        date_time: new Date(formData.date_time).toISOString(),
+        duration: formData.duration,
+        status: 'rescheduled',
+        zoom_link: formData.zoom_link,
+        phone_number: formData.phone_number,
+        notes: formData.notes
+      };
+      await updateInterview(
         interview.interviews_id,
-        new Date(formData.dateTime).toISOString(),
-        formData.reason
+        interviewData
       );
 
       toast({
@@ -53,7 +64,14 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
       });
 
       onClose();
-      setFormData({ dateTime: '', reason: '' });
+      setFormData({
+        date_time: '',
+        duration: 30,
+        status: '',
+        zoom_link: '',
+        phone_number: '',
+        notes: '' 
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -100,9 +118,9 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
             <Label htmlFor="dateTime">New Date & Time *</Label>
             <Input
               id="dateTime"
-              name="dateTime"
+              name="date_time"
               type="datetime-local"
-              value={formData.dateTime}
+              value={formData.date_time}
               onChange={handleChange}
               required
               min={new Date().toISOString().slice(0, 16)}
@@ -113,8 +131,8 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
             <Label htmlFor="reason">Reason for Rescheduling (Optional)</Label>
             <Textarea
               id="reason"
-              name="reason"
-              value={formData.reason}
+              name="notes"
+              value={formData.notes}
               onChange={handleChange}
               placeholder="Please provide a reason for rescheduling..."
               rows={3}

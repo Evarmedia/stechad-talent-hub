@@ -84,14 +84,14 @@ export const InterviewProvider = ({ children }) => {
   const fetchAllInterviews = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('Fetching all interviews');
+      // console.log('Fetching all interviews');
       
       let interviewList = await apiService.get('interviews');
       
       // Sort by date
       interviewList = interviewList?.data.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
       
-      console.log('Fetched interviews:', interviewList);
+      // console.log('Fetched interviews:', interviewList);
       setAllInterviews(interviewList);
       return interviewList;
     } catch (error) {
@@ -138,28 +138,28 @@ export const InterviewProvider = ({ children }) => {
 
 
   // Reschedule interview
-  const rescheduleInterview = useCallback(async (interviewId, newDateTime, reason) => {
-    setLoading(true);
-    try {
-      const rescheduleData = {
-        date_time: newDateTime,
-        status: 'rescheduled',
-        rescheduleReason: reason,
-      };
-      const updatedInterview = await apiService.patch('interviews', interviewId, rescheduleData);
-      setInterviews(prev => prev.map(interview => 
-        interview.interviews_id === interviewId 
-          ? updatedInterview
-          : interview
-      ));
-      return updatedInterview;
-    } catch (error) {
-      console.error('Error rescheduling interview:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const rescheduleInterview = useCallback(async (interviewId, newDateTime, reason) => {
+  //   setLoading(true);
+  //   try {
+  //     const rescheduleData = {
+  //       date_time: newDateTime,
+  //       status: 'rescheduled',
+  //       rescheduleReason: reason,
+  //     };
+  //     const updatedInterview = await apiService.patch('interviews', interviewId, rescheduleData);
+  //     setInterviews(prev => prev.map(interview => 
+  //       interview.interviews_id === interviewId 
+  //         ? updatedInterview
+  //         : interview
+  //     ));
+  //     return updatedInterview;
+  //   } catch (error) {
+  //     console.error('Error rescheduling interview:', error);
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
     // ---------------------------
     // FETCH ALL DATA ONCE
@@ -204,7 +204,7 @@ export const InterviewProvider = ({ children }) => {
     scheduleInterview,
     fetchUserInterviews,
     updateInterview,
-    rescheduleInterview, // remove use updateInterview instead
+    // rescheduleInterview, // remove use updateInterview instead
     resetInterview,
   };
 

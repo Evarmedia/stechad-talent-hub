@@ -28,25 +28,25 @@ const Interviews = () => {
   //   }
   // }, [user, fetchUserInterviews]);
 
-  const handleUpdateInterview = async (interviewId: number) => {
-    try {
-      await updateInterview(interviewId, { status: "cancelled" });
-      toast({
-        title: "Success",
-        description: "Interview cancelled successfully"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to cancel interview"
-      });
-    }
-  };
+  // const handleUpdateInterview = async (interviewId: number) => {
+  //   try {
+  //     await updateInterview(interviewId, { status: "cancelled" });
+  //     toast({
+  //       title: "Success",
+  //       description: "Interview cancelled successfully"
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to cancel interview"
+  //     });
+  //   }
+  // };
 
-  const handleReschedule = (interview: any) => {
-    setSelectedInterview(interview);
-    setRescheduleDialogOpen(true);
-  };
+  // const handleReschedule = (interview: any) => {
+  //   setSelectedInterview(interview);
+  //   setRescheduleDialogOpen(true);
+  // };
 
   const getStatusColor = (status: string) => {
     switch (status) {

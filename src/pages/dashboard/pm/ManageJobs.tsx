@@ -69,13 +69,13 @@ const ManageJobs = () => {
           <CardTitle>Your Jobs ({filteredJobs.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <JobsGrid
+          {/* <JobsGrid
             loading={loading}
             jobs={filteredJobs}
             onViewJob={handleViewJob}
             onToggleStatus={handleToggleStatus}
             getStatusColor={getStatusColor}
-          />
+          /> */}
 
           <JobsTable
             loading={loading}

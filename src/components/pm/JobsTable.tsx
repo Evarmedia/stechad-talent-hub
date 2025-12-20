@@ -34,7 +34,7 @@ export const JobsTable = ({
               <th className="p-3 text-sm font-medium text-muted-foreground">Applications</th>
               <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
               <th className="p-3 text-sm font-medium text-muted-foreground">Posted</th>
-              <th className="p-3"></th>
+              <th className="p-3 text-sm font-medium text-muted-foreground">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +66,7 @@ export const JobsTable = ({
             <th className="p-3 text-sm font-medium text-muted-foreground">Applications</th>
             <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
             <th className="p-3 text-sm font-medium text-muted-foreground">Posted</th>
-            <th className="p-3"></th>
+            <th className="p-3 text-sm font-medium text-muted-foreground">Actions</th>
           </tr>
         </thead>
         <tbody>

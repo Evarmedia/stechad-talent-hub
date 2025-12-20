@@ -11,20 +11,18 @@ import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const statusColor = (status: string) => {
-  switch (status) {
-    case "pending": return "bg-yellow-500 text-white";
-    case "reviewed": return "bg-blue-500 text-white";
-    case "Shortlisted": return "bg-green-500 text-white";
-    case "Rejected": return "bg-red-500 text-white";
-    case "Hired": return "bg-purple-500 text-white";
-    case "accepted": return "bg-green-500 text-white";
-    case "rejected": return "bg-red-500 text-white";
-    default: return "bg-gray-500 text-white";
-  }
+    switch (status) {
+        case "pending": return "bg-yellow-500 text-white";
+        case "reviewed": return "bg-blue-500 text-white";
+        case "shortlisted": return "bg-green-300 text-black";
+        case "rejected": return "bg-red-500 text-white";
+        case "accepted": return "bg-green-500 text-black";
+        default: return "bg-gray-500 text-white";
+    }
 };
 
 const Applications = () => {
-  const { applications, loading, getApplications, updateApplication, jobs } = useDataContext();
+  const { applications, loading, getApplications, updateApplication, jobs, } = useDataContext();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -58,6 +56,11 @@ const Applications = () => {
       // Convert to lowercase for backend (backend expects: pending, reviewed, shortlisted, accepted, rejected)
       const lowerCaseStatus = newStatus.toLowerCase();
       await updateApplication(applicationId, { status: lowerCaseStatus });
+      
+      // IMPORTANT: Refetch after update to ensure UI syncs with server state
+      // This ensures the component immediately sees the status change and Schedule button shows/hides
+      await getApplications();
+      
       toast({
         title: "Success",
         description: `Application marked as ${newStatus}`,
@@ -136,9 +139,9 @@ const Applications = () => {
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
               <option value="reviewed">Reviewed</option>
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Hired">Hired</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="rejected">Rejected</option>
+              <option value="accepted">Accepted</option>
             </select>
           </div>
         </div>
@@ -180,7 +183,7 @@ const Applications = () => {
                     variant="outline"
                     className="text-xs"
                     disabled={updatingId === app.applications_id}
-                    onClick={() => updateApplicationStatus(app.applications_id, "Shortlisted")}
+                    onClick={() => updateApplicationStatus(app.applications_id, "shortlisted")}
                   >
                     {updatingId === app.applications_id ? "..." : "Shortlist"}
                   </Button>
@@ -189,7 +192,7 @@ const Applications = () => {
                     variant="outline"
                     className="text-xs"
                     disabled={updatingId === app.applications_id}
-                    onClick={() => updateApplicationStatus(app.applications_id, "Rejected")}
+                    onClick={() => updateApplicationStatus(app.applications_id, "rejected")}
                   >
                     {updatingId === app.applications_id ? "..." : "Reject"}
                   </Button>
@@ -198,9 +201,9 @@ const Applications = () => {
                     variant="outline"
                     className="text-xs"
                     disabled={updatingId === app.applications_id}
-                    onClick={() => updateApplicationStatus(app.applications_id, "Hired")}
+                    onClick={() => updateApplicationStatus(app.applications_id, "accepted")}
                   >
-                    {updatingId === app.applications_id ? "..." : "Hire"}
+                    {updatingId === app.applications_id ? "..." : "Accept"}
                   </Button>
                   {app.status === "shortlisted" && (
                     <Button
@@ -267,7 +270,7 @@ const Applications = () => {
                             variant="outline"
                             className="text-xs"
                             disabled={updatingId === app.applications_id}
-                            onClick={() => updateApplicationStatus(app.applications_id, "Shortlisted")}
+                            onClick={() => updateApplicationStatus(app.applications_id, "shortlisted")}
                           >
                             {updatingId === app.applications_id ? "..." : "Shortlist"}
                           </Button>
@@ -276,7 +279,7 @@ const Applications = () => {
                             variant="outline"
                             className="text-xs"
                             disabled={updatingId === app.applications_id}
-                            onClick={() => updateApplicationStatus(app.applications_id, "Rejected")}
+                            onClick={() => updateApplicationStatus(app.applications_id, "rejected")}
                           >
                             {updatingId === app.applications_id ? "..." : "Reject"}
                           </Button>
@@ -285,9 +288,9 @@ const Applications = () => {
                             variant="outline"
                             className="text-xs bg-green-50 hover:bg-green-100"
                             disabled={updatingId === app.applications_id}
-                            onClick={() => updateApplicationStatus(app.applications_id, "Hired")}
+                            onClick={() => updateApplicationStatus(app.applications_id, "accepted")}
                           >
-                            {updatingId === app.applications_id ? "..." : "Hire"}
+                            {updatingId === app.applications_id ? "..." : "Accept"}
                           </Button>
                           {app.status === "shortlisted" && (
                             <Button
@@ -337,7 +340,7 @@ const Applications = () => {
             setSelectedApplicant(null);
           }}
           applicant={selectedApplicant}
-          jobId={selectedApplicant?.job?.jobs_id}
+        //   jobId={selectedApplicant?.job?.jobs_id}
           jobTitle={selectedApplicant?.job?.title}
         />
       )}

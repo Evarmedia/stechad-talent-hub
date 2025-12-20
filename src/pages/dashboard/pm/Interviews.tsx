@@ -91,22 +91,22 @@ const Interviews = () => {
           ) : (
             <div className="space-y-4">
               {interviews.map((interview) => {
-                const { date, time } = formatDateTime(interview.dateTime);
+                const { date, time } = formatDateTime(interview.date_time);
                 return (
-                  <div key={interview.id} className="border rounded-lg p-4">
+                  <div key={interview.interviews_id} className="border rounded-lg p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-lg">{interview.candidateName}</h3>
+                          <h3 className="font-medium text-lg">{interview.candidate_name}</h3>
                           <Badge className={getStatusColor(interview.status)}>
                             {interview.status}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">
-                          <strong>Job:</strong> {interview.jobTitle}
+                          <strong>Job:</strong> {interview.job_title}
                         </p>
                         <p className="text-sm text-muted-foreground mb-1">
-                          <strong>Email:</strong> {interview.candidateEmail}
+                          <strong>Email:</strong> {interview.candidate_email}
                         </p>
                         <p className="text-sm text-muted-foreground mb-1">
                           <strong>Date:</strong> {date} at {time}
@@ -114,15 +114,15 @@ const Interviews = () => {
                         <p className="text-sm text-muted-foreground mb-1">
                           <strong>Duration:</strong> {interview.duration} minutes
                         </p>
-                        {interview.phoneNumber && (
+                        {interview.phone_number && (
                           <p className="text-sm text-muted-foreground mb-1">
-                            <strong>Phone:</strong> {interview.phoneNumber}
+                            <strong>Phone:</strong> {interview.phone_number}
                           </p>
                         )}
-                        {interview.zoomLink && interview.status === 'scheduled' && (
+                        {interview.zoom_link && interview.status === 'scheduled' ? (
                           <div className="mt-2">
                             <a 
-                              href={interview.zoomLink}
+                              href={interview.zoom_link}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
@@ -130,7 +130,11 @@ const Interviews = () => {
                               Join Zoom Meeting
                             </a>
                           </div>
-                        )}
+                        ) : (<div className="mt-2">
+                          <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                            Zoom link will be provided by Project Manager
+                          </span>
+                          </div>)}
                       </div>
                       
                       {interview.status === 'scheduled' && (
@@ -147,7 +151,10 @@ const Interviews = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleUpdateInterview(interview.id)}
+                            onClick={() => {
+                              setInterviewToCancel(interview);
+                              setCancelDialogOpen(true);
+                            }}
                             className="flex items-center gap-1 text-red-600 hover:text-red-700"
                           >
                             <X className="w-3 h-3" />

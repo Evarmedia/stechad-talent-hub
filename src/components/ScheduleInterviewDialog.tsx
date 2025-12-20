@@ -9,55 +9,139 @@ import { useDataContext } from '@/hooks/useDataContext';
 import React, { useState } from 'react';
 import { useAuthContext } from '../hooks/useAuthContext';
 
+interface Engineer {
+  engineer_id: string;
+  user_id: string;
+  date_of_birth: string;
+  open_to_nearby_cities: boolean;
+  languages: string[];
+  language_proficiency: string;
+  has_drivers_license: boolean;
+  has_car: boolean;
+  is_native: boolean;
+  work_authorized: boolean;
+  specialization: string[];
+  skill_level: string;
+  years_of_experience: number;
+  certifications: string[];
+  project_types: string[];
+  open_to_training: boolean;
+  is_freelancer: boolean;
+  follows_linkedin: boolean;
+  referee_info: string;
+  newsletter: boolean;
+  special_preferences: string;
+  cv_object_name: string;
+  is_vetted: boolean;
+  vetted_by?: string | null;
+  vetted_at?: string | null;
+  availability: string;
+  status: string;
+  is_onboarded: boolean;
+  onboarded_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Applicant {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  engineer?: Engineer;
+}
+
+interface ApplicantData {
+  // When passed from Applicants page (full application)
+  applicant?: Applicant;
+  applications_id?: string;
+  engineer_id?: string;
+  job_id?: string;
+  job_title?: string;
+  status?: string;
+  applied_at?: string;
+  // When passed from profile dialog (direct applicant object)
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  engineer?: Engineer;
+}
+
 interface ScheduleInterviewDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  applicant: {
-    name: string;
-    email: string;
-    id: number;
-  };
-  jobId: string;
+  applicant: ApplicantData;
+  // jobId: string;
   jobTitle: string;
+}
+
+interface FormData {
+  engineer_id: string;
+  job_id: string;
+  date_time: string;
+  duration: number;
+  zoom_link: string;
+  phone_number: string;
+  notes: string;
 }
 
 const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
   isOpen,
   onClose,
   applicant,
-  jobId,
+  // jobId,
   jobTitle
 }) => {
-  const { scheduleInterview, loading } = useDataContext();
+  const { scheduleInterview, loading, interviews } = useDataContext();
   const { user } = useAuthContext();
   
+  // Handle both data structures - full application or direct applicant
+  const getApplicantData = () => {
+    // If applicant has nested 'applicant' property, use that (from Applicants page)
+    if (applicant.applicant) {
+      return {
+        firstName: applicant.applicant.first_name || '',
+        lastName: applicant.applicant.last_name || '',
+        email: applicant.applicant.email || '',
+        engineerId: applicant.applicant.engineer?.engineer_id || applicant.engineer_id || '',
+      };
+    }
+    // Otherwise, applicant is the direct object (from profile dialog)
+    return {
+      firstName: applicant.first_name || '',
+      lastName: applicant.last_name || '',
+      email: applicant.email || '',
+      engineerId: applicant.engineer?.engineer_id || applicant.engineer_id || '',
+    };
+  };
+
+  const applicantData = getApplicantData();
+  
   const [formData, setFormData] = useState({
-    dateTime: '',
-    duration: 60,
-    phoneNumber: '',
+    engineer_id: applicantData.engineerId,
+    job_id: applicant.job_id || '',
+    date_time: '',
+    duration: 30,
+    zoom_link: '',
+    phone_number: '',
     notes: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.dateTime) {
+    if (!formData.date_time) {
       toast({ title: "Error", description: "Please select a date and time" });
       return;
     }
 
     try {
       const interviewData = {
-        candidateName: applicant.name,
-        candidateEmail: applicant.email,
-        candidateId: applicant.id,
-        interviewerEmail: user?.email,
-        interviewerId: user?.id,
-        jobId: jobId,
-        jobTitle: jobTitle,
-        dateTime: new Date(formData.dateTime).toISOString(),
+        engineer_id: applicantData.engineerId,
+        job_id: applicant.job_id || '',
+        date_time: new Date(formData.date_time).toISOString(),
         duration: formData.duration,
-        phoneNumber: formData.phoneNumber,
+        zoom_link: formData.zoom_link,
+        phone_number: formData.phone_number,
         notes: formData.notes
       };
 
@@ -70,9 +154,12 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
       
       onClose();
       setFormData({
-        dateTime: '',
-        duration: 60,
-        phoneNumber: '',
+        engineer_id: '',
+        job_id: '',
+        date_time: '',
+        duration: 30,
+        zoom_link: '',
+        phone_number: '',
         notes: ''
       });
     } catch (error) {
@@ -101,10 +188,18 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Candidate</Label>
+            <Label>Candidate Name</Label>
             <Input 
-              value={`${applicant.name} (${applicant.email})`} 
+              value={`${applicantData.firstName} ${applicantData.lastName}`} 
               disabled 
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <Label>Candidate Email</Label>
+            <Input
+              value={applicantData.email}
+              disabled
               className="bg-gray-50"
             />
           </div>
@@ -119,12 +214,12 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
           </div>
           
           <div>
-            <Label htmlFor="dateTime">Date & Time *</Label>
+            <Label htmlFor="date_time">Date & Time *</Label>
             <Input
-              id="dateTime"
-              name="dateTime"
+              id="date_time"
+              name="date_time"
               type="datetime-local"
-              value={formData.dateTime}
+              value={formData.date_time}
               onChange={handleChange}
               required
               min={new Date().toISOString().slice(0, 16)}
@@ -145,12 +240,23 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
           </div>
           
           <div>
+            <Label htmlFor="notes">Zoom/Conference Link (Optional)</Label>
+            <Input
+              id="notes"
+              name="notes"
+              value={formData.zoom_link}
+              onChange={handleChange}
+              placeholder="Add zoom link here"
+            />
+          </div>
+
+          <div>
             <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
             <Input
               id="phoneNumber"
-              name="phoneNumber"
+              name="phone_number"
               type="tel"
-              value={formData.phoneNumber}
+              value={formData.phone_number}
               onChange={handleChange}
               placeholder="+1234567890"
             />

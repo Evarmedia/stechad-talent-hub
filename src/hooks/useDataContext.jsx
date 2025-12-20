@@ -95,7 +95,7 @@ const DataProviderInner = ({ children }) => {
     fetchInterviewsById: interviewContext.fetchInterviewsById,
     fetchAllInterviews: interviewContext.fetchAllInterviews,
     updateInterview: interviewContext.updateInterview,
-    rescheduleInterview: interviewContext.rescheduleInterview,
+    // rescheduleInterview: interviewContext.rescheduleInterview,
     resetInterview: interviewContext.resetInterview,
   };
 
