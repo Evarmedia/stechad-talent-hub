@@ -1,12 +1,12 @@
 
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
+import { ApplicationsProvider, useApplicationsContext } from './contexts/ApplicationsContext';
 import { EngineersProvider, useEngineersContext } from './contexts/EngineersContext';
 import { JobsProvider, useJobsContext } from './contexts/JobsContext';
-import { ApplicationsProvider, useApplicationsContext } from './contexts/ApplicationsContext';
-import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext';
 import { ProjectManagersProvider, useProjectManagersContext } from './contexts/ProjectManagersContext';
+import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext';
 
-import { InterviewProvider, useInterviewContext } from './contexts/InterviewContext'
+import { InterviewProvider, useInterviewContext } from './contexts/InterviewContext';
 
 const DataContext = createContext();
 
@@ -45,6 +45,7 @@ const DataProviderInner = ({ children }) => {
     engrProjects: engineersContext.engrProjects,
     jobs: jobsContext.jobs,
     applications: applicationsContext.applications,
+    jobApplications: applicationsContext.jobApplications,
     engrApplications: applicationsContext.engrApplications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,

@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
 import { useDataContext } from '@/hooks/useDataContext';
+import React, { useState } from 'react';
 import { useAuthContext } from '../hooks/useAuthContext';
 
 interface ScheduleInterviewDialogProps {
@@ -17,7 +17,7 @@ interface ScheduleInterviewDialogProps {
     email: string;
     id: number;
   };
-  jobId: number;
+  jobId: string;
   jobTitle: string;
 }
 

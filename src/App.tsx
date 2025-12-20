@@ -37,6 +37,7 @@ import EngineerMessages from "./pages/dashboard/engineer/Messages";
 import EngineerProfile from "./pages/dashboard/engineer/Profile";
 import EngineerProjects from "./pages/dashboard/engineer/Projects";
 import PMApplicants from "./pages/dashboard/pm/Applicants";
+import PMApplications from "./pages/dashboard/pm/Applications";
 import PMIndex from "./pages/dashboard/pm/Index";
 import PMInterviews from "./pages/dashboard/pm/Interviews";
 import PMManageJobs from "./pages/dashboard/pm/ManageJobs";
@@ -138,6 +139,11 @@ const App = () => (
                         <PMApplicants />
                       </ProtectedRoute>
                     } />
+                  <Route path="/dashboard/pm/applications" element={
+                    <ProtectedRoute requiredRole="project_manager">
+                      <PMApplications />
+                    </ProtectedRoute>
+                  } />
                     <Route path="/dashboard/pm/interviews" element={
                       <ProtectedRoute requiredRole="project_manager">
                         <PMInterviews />

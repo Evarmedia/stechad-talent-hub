@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
 
@@ -9,6 +9,7 @@ export const ApplicationsProvider = ({ children }) => {
   const { user } = useAuthContext();
 
   const [applications, setApplications] = useState([]);
+  const [jobApplications, setJobApplications] = useState([]);
   const [engrApplications, setEngrApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -16,10 +17,7 @@ export const ApplicationsProvider = ({ children }) => {
   const getApplications = async (filters = {}) => {
     setLoading(true);
     try {
-      let params = {
-        page: filters.page || 1,
-        limit: filters.limit || 10,
-      };
+      const params = {};
 
       if (filters.job_id || filters.jobId) {
         params.job_id = filters.job_id || filters.jobId;
@@ -29,6 +27,12 @@ export const ApplicationsProvider = ({ children }) => {
       }
       if (filters.status) {
         params.status = filters.status;
+      }
+      if (filters.page) {
+        params.page = filters.page;
+      }
+      if (filters.limit) {
+        params.limit = filters.limit;
       }
 
       const response = await apiService.get("applications", params);
@@ -51,17 +55,19 @@ export const ApplicationsProvider = ({ children }) => {
   const getEngineersApplication = async (filters = {}) => {
     setLoading(true);
     try {
-      let params = {
-        page: filters.page,
-        limit: filters.limit,
-      };
+      const params = {};
 
       if (filters.job_id) {
         params.job_id = filters.job_id;
       }
-
       if (filters.status) {
         params.status = filters.status;
+      }
+      if (filters.page) {
+        params.page = filters.page;
+      }
+      if (filters.limit) {
+        params.limit = filters.limit;
       }
 
       const response = await apiService.get("engineers/applications", params);
@@ -69,7 +75,6 @@ export const ApplicationsProvider = ({ children }) => {
       response.success && response.data ? response.data.applications : [];
 
       setEngrApplications(applicationsData);
-      // console.log("application list from application context", applicationsData)
       return applicationsData;
     } catch (error) {
       console.error("Error fetching applications:", error);
@@ -80,20 +85,31 @@ export const ApplicationsProvider = ({ children }) => {
     }
   };
 
-  const getApplicationsByJobId = async (jobId) => {
+  const getApplicationsByJobId = async (jobId, filters = {}) => {
     setLoading(true);
     try {
-      const response = await apiService.get(`jobs/${jobId}/applicants`);
+      const params = {};
+      if (filters.status) {
+        params.status = filters.status;
+      }
+      if (filters.page) {
+        params.page = filters.page;
+      }
+      if (filters.limit) {
+        params.limit = filters.limit;
+      }
+
+      const response = await apiService.get(`jobs/${jobId}/applicants`, params);
       const applicationsData =
         response.success && response.data
           ? response.data.applications || response.data
           : [];
 
-      setApplications(applicationsData);
+      setJobApplications(applicationsData);
       return applicationsData;
     } catch (error) {
       console.error("Error fetching applications by job ID:", error);
-      setApplications([]);
+      setJobApplications([]);
       throw error;
     } finally {
       setLoading(false);
@@ -128,24 +144,29 @@ export const ApplicationsProvider = ({ children }) => {
   const updateApplication = async (id, updateData) => {
     setLoading(true);
     try {
-      const response = await apiService.request(`/applications/${id}/status`, {
-        method: "PUT",
-        body: JSON.stringify(updateData),
-      });
+      const response = await apiService.api.put(`/applications/${id}/status`, updateData);
 
-      const updatedApplication =
-        response.success && response.data
-          ? response.data.application || response.data
-          : null;
-
-      if (updatedApplication) {
+      // The backend returns { success: true, data: { ... } }
+      if (response.data && response.data.success) {
+        // Update both applications and jobApplications with the new status
+        const updatedData = { status: updateData.status };
+        
+        // Update applications state - preserve all existing data
         setApplications((prev) =>
           prev.map((a) =>
-            a.applications_id === id || a.id === id ? updatedApplication : a
+            a.applications_id === id ? { ...a, ...updatedData } : a
           )
         );
+        
+        // Also update jobApplications state - preserve all existing data
+        setJobApplications((prev) =>
+          prev.map((a) =>
+            a.applications_id === id ? { ...a, ...updatedData } : a
+          )
+        );
+        
+        return updatedData;
       }
-      return updatedApplication;
     } catch (error) {
       console.error("Error updating application:", error);
       throw error;
@@ -198,6 +219,7 @@ export const ApplicationsProvider = ({ children }) => {
 
   const value = {
     applications,
+    jobApplications,
     engrApplications,
     loading,
     getApplications,
