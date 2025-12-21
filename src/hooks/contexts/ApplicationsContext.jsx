@@ -217,6 +217,14 @@ export const ApplicationsProvider = ({ children }) => {
     init();
   }, [token, user]);
 
+  const resetApplicationState = () => {
+    setApplications([]);
+    setJobApplications([]);
+    setEngrApplications([]);
+    setLoading(false);
+    setInitialized(false);
+  }
+
   const value = {
     applications,
     jobApplications,
@@ -228,6 +236,7 @@ export const ApplicationsProvider = ({ children }) => {
     createApplication,
     updateApplication,
     deleteApplication,
+    resetApplicationState,
   };
 
   return (

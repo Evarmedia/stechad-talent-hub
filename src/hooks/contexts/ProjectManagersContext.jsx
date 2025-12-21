@@ -100,11 +100,19 @@ export const ProjectManagersProvider = ({ children }) => {
     init();
   }, [token, user, initialized]);
 
+  const resetPMsState = () => {
+    setProjectManagers([]);
+    setPmDashboardData(null);
+    setLoading(false);
+    setInitialized(false);
+  };
+
   const value = {
     projectManagers,
     loading,
     pmDashboardData,
     getPmDashboard,
+    resetPMsState,
   };
 
   return (

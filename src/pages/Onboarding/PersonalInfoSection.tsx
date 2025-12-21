@@ -71,7 +71,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             name="phoneNumber"
             value={form.phoneNumber}
             onChange={handleInputChange}
-            placeholder="+234 xxx xxx xxxx"
+            placeholder="+44 xxx xxx xxxx"
             required
           />
         </div>

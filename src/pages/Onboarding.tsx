@@ -216,7 +216,7 @@ const Onboarding = () => {
                   type="submit"
                   disabled={loading}
                   size="lg"
-                  className="w-48"
+                  className="w-48 text-white"
                 >
                   {loading ? "Submitting..." : "Complete Onboarding"}
                 </Button>

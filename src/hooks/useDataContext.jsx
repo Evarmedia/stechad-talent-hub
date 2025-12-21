@@ -8,6 +8,8 @@ import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext
 
 import { InterviewProvider, useInterviewContext } from './contexts/InterviewContext';
 
+import { NotificationsProvider, useNotificationsContext } from './contexts/NotificationsContext';
+
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
@@ -18,9 +20,11 @@ export const DataProvider = ({ children }) => {
           <InterviewProvider>
           <ProjectsProvider>
             <ProjectManagersProvider>
+              <NotificationsProvider>
               <DataProviderInner>
                 {children}
               </DataProviderInner>
+              </NotificationsProvider>
             </ProjectManagersProvider>
           </ProjectsProvider>
           </InterviewProvider>
@@ -37,6 +41,7 @@ const DataProviderInner = ({ children }) => {
   const projectsContext = useProjectsContext();
   const projectManagersContext = useProjectManagersContext();
   const interviewContext = useInterviewContext();
+  const notificationContext = useNotificationsContext();
 
   const value = {
     // State
@@ -67,7 +72,7 @@ const DataProviderInner = ({ children }) => {
     createJob: jobsContext.createJob,
     updateJob: jobsContext.updateJob,
     deleteJob: jobsContext.deleteJob,
-    resetJobs: jobsContext.resetJobs,
+    resetJobsState: jobsContext.resetJobsState,
     
     // Applications
     getApplications: applicationsContext.getApplications,
@@ -76,6 +81,7 @@ const DataProviderInner = ({ children }) => {
     createApplication: applicationsContext.createApplication,
     updateApplication: applicationsContext.updateApplication,
     deleteApplication: applicationsContext.deleteApplication,
+    resetApplicationState: applicationsContext.resetApplicationState,
     
     // Projects
     getProjects: projectsContext.getProjects,
@@ -84,10 +90,12 @@ const DataProviderInner = ({ children }) => {
     updateProject: projectsContext.updateProject,
     deleteProject: projectsContext.deleteProject,
     projectStats: projectsContext.projectStats,
+    resetProjectsState: projectsContext.resetProjectsState,
     
     // Project Managers
     // getProjectManagers: projectManagersContext.getProjectManagers,
     getPmDashboard: projectManagersContext.getPmDashboardData,
+    resetPMsState: projectManagersContext.resetPMsState,
 
     // interview
     scheduleInterview: interviewContext.scheduleInterview,
@@ -96,7 +104,15 @@ const DataProviderInner = ({ children }) => {
     fetchAllInterviews: interviewContext.fetchAllInterviews,
     updateInterview: interviewContext.updateInterview,
     // rescheduleInterview: interviewContext.rescheduleInterview,
-    resetInterview: interviewContext.resetInterview,
+    resetInterviewState: interviewContext.resetInterviewState,
+
+    // Notification
+    getNotifications: notificationContext.getNotifications,
+    markAsRead: notificationContext.markAsRead,
+    markAllAsRead: notificationContext.markAllAsRead,
+    notifications: notificationContext.notifications,
+    unreadCount: notificationContext.unreadCount,
+    resetNotificationState: notificationContext.resetNotificationState,
   };
 
   return (

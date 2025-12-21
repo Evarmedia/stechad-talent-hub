@@ -57,6 +57,11 @@ export const AuthProvider = ({ children }) => {
     window.location.href = "http://localhost:5000/api/auth/google";
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("stechad_user", JSON.stringify(updatedUser));
+  };
+
   // Direct API call for login
   const login = async (email, password) => {
     setAuthLoading(true);
@@ -245,6 +250,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    updateUser,
     loading,
     authLoading,
     login,

@@ -22,7 +22,7 @@ function getProfileRoute(pathname: string) {
 export function AppNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
-  const { resetEngineerState, resetJobs, resetInterview } = useDataContext();
+  const { resetEngineerState, resetJobsState, resetApplicationState, resetPMsState, resetInterviewState, resetNotificationState } = useDataContext();
   const navigate = useNavigate();
   
   const currentRole =
@@ -32,10 +32,15 @@ export function AppNavbar() {
   const handleLogout = () => {
     logout();
     resetEngineerState();
-    resetJobs();
-    resetInterview();
+    resetJobsState();
+    resetApplicationState();
+    resetPMsState();
+    resetInterviewState();
+    resetNotificationState();
     navigate("/login");
   };
+
+  // if (!user) return handleLogout();
 
   return (
     <header className="w-full shadow-sm sticky top-0 z-40 bg-white flex items-center justify-between h-[56px] px-4 md:px-8">
@@ -54,9 +59,11 @@ export function AppNavbar() {
         <Link to={profileRoute} className="text-primary font-medium hover:underline">
           My Account
         </Link>
-        <button onClick={handleLogout} className="hover:underline text-muted-foreground">
+        
+        { user ? (<button onClick={handleLogout} className="hover:underline text-muted-foreground">
           Logout
-        </button>
+        </button>) : (<></>)}
+
       </nav>
     </header>
   );

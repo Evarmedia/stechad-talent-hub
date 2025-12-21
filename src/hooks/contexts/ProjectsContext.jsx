@@ -120,6 +120,11 @@ export const ProjectsProvider = ({ children }) => {
     }
   };
 
+  const resetProjectsState = () => {
+    setProjects([]);
+    setLoading(false);
+  };
+
   const value = {
     projects,
     loading,
@@ -128,7 +133,8 @@ export const ProjectsProvider = ({ children }) => {
     createProject,
     updateProject,
     projectStats,
-    deleteProject
+    deleteProject,
+    resetProjectsState,
   };
 
   return (
