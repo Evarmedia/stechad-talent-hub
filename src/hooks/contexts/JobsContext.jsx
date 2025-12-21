@@ -92,10 +92,13 @@ export const JobsProvider = ({ children }) => {
 
   const createJob = async (jobData) => {
     setLoading(true);
+    console.log("Job Data to be Created", jobData)
     try {
       const response = await apiService.post("pm/jobs", jobData);
 
       const createdJob = response.data?.job || response.data;
+
+      console.log("Created Job Response", createdJob);
 
       if (createdJob) {
         setJobs((prev) => [createdJob, ...prev]);
@@ -113,11 +116,10 @@ export const JobsProvider = ({ children }) => {
   const updateJob = async (id, updateData) => {
     setLoading(true);
     try {
-      const response = await apiService.request(`/jobs/update/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(updateData),
-      });
+      
+      const response = await apiService.put(`jobs/update`, id, updateData);
 
+      // console.log("Response from updating",response.data);
       const updatedJob = response.data?.job || response.data;
 
       if (updatedJob) {

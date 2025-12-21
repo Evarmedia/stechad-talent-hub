@@ -42,7 +42,7 @@ const EngineerJobs = () => {
     if (!getJobs) return;
 
     const debounceTimer = setTimeout(() => {
-      const filters = { search };
+      const filters = { search, status: 'active' };
       getJobs(filters);   // updates global context
     }, 3000);
 
@@ -98,8 +98,11 @@ const EngineerJobs = () => {
   // LOCAL FILTER (fast UI filter after global fetch)
   // -------------------------------------------------------------
   const filteredJobs = jobs.filter(job =>
-    job.title?.toLowerCase().includes(search.toLowerCase())
-  );
+    // implement search and only active jobs filter here
+    job.status === 'active' &&
+    (job.title.toLowerCase().includes(search.toLowerCase()) ||
+     job.company.toLowerCase().includes(search.toLowerCase()))
+    );
 
   const isLoading = loading;
 

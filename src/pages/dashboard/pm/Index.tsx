@@ -19,6 +19,7 @@ const PMDashboard = () => {
   const [activeProjectsCount, setActiveProjectsCount] = useState(0);
   const [totalApplicationsCount, setTotalApplicationsCount] = useState(0);
   const [totalJobsCount, setTotalJobsCount] = useState(0);
+  const [activeJobsCount, setActiveJobsCount] = useState(0);
   const [totalProjectsCount, setTotalProjectsCount] = useState(0);
   const [recentApplications, setRecentApplications] = useState([]);
   const [activeProjects, setActiveProjects] = useState([]);
@@ -32,6 +33,7 @@ const PMDashboard = () => {
       setActiveProjectsCount(pmDashboardData.statistics.activeProjectsCount);
       setTotalApplicationsCount(pmDashboardData.statistics.totalApplicationsCount);
       setTotalJobsCount(pmDashboardData.statistics.totalJobsCount);
+      setActiveJobsCount(pmDashboardData.statistics.activeJobsCount);
       setTotalProjectsCount(pmDashboardData.statistics.totalProjectsCount);
       setRecentApplications(pmDashboardData.recentApplications);
       setActiveProjects(pmDashboardData.activeProjects);
@@ -47,7 +49,7 @@ const PMDashboard = () => {
   // const completedProjects = projects.filter(p => p.status === 'Completed').length;
 
   const stats = [
-    { label: "Active Jobs", value: totalJobsCount, icon: Briefcase, change: `+${recentJobs.length} this week` },
+    { label: "Active Jobs", value: activeJobsCount, icon: Briefcase, change: `+${recentJobs.length} this week` },
     { label: "Total Applicantions", value: totalApplicationsCount, icon: Users, change: `+${recentApplications.length} new` },
     { label: "Projects", value: activeProjectsCount, icon: Clock, change: `${totalProjectsCount} completed` },
     { label: "Success Rate", value: "94%", icon: TrendingUp, change: "+2%" },
@@ -59,7 +61,7 @@ const PMDashboard = () => {
       case "In Progress": return "bg-blue-100 text-blue-800";
       case "Planning": return "bg-yellow-100 text-yellow-800";
       case "active": return "bg-green-100 text-green-800";
-      case "closed": return "bg-gray-100 text-gray-800";
+      case "closed": return "bg-red-400 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };

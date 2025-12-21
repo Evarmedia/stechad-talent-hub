@@ -110,7 +110,7 @@ export const JobsTable = ({
                     variant="outline" 
                     onClick={() => onToggleStatus(job)}
                   >
-                    {job.status === "active" ? "Close" : "Reopen"}
+                    {job.status === "active" ? "close" : "Reopen"}
                   </Button>
                 </div>
               </td>

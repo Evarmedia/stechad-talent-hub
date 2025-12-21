@@ -26,7 +26,7 @@ const ManageJobs = () => {
   });
 
   const getStatusColor = (status: string) => {
-    return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
+    return status === "active" ? "bg-green-500 text-black" : "bg-red-400 text-black";
   };
 
   const handleViewJob = (job: any) => {
@@ -36,7 +36,8 @@ const ManageJobs = () => {
 
   const handleToggleStatus = async (job: any) => {
     try {
-      const newStatus = job.status === "active" || job.status === "Active" ? "closed" : "active";
+      const newStatus = job.status === "active" || job.status === "active" ? "closed" : "active";
+      console.log("updating Job Status with", newStatus);
       await updateJob(job.jobs_id, { status: newStatus });
     } catch (error) {
       console.error('Error updating job status:', error);

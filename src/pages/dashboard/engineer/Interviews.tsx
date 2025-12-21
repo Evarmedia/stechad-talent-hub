@@ -132,10 +132,10 @@ const Interviews = () => {
                           </div>
                         )}
                       </div>
-
+{/* 
                       {interview.status === 'scheduled' && (
                         <div className="flex gap-2">
-                          {/* <Button
+                          <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleReschedule(interview)}
@@ -143,7 +143,7 @@ const Interviews = () => {
                           >
                             <Edit className="w-3 h-3" />
                             Reschedule
-                          </Button> */}
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
@@ -157,7 +157,7 @@ const Interviews = () => {
                             Cancel
                           </Button>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 );

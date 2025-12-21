@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { useDataContext } from "@/hooks/useDataContext";
-import { Calendar, Edit, X } from 'lucide-react';
+import { Calendar, Edit, X, CheckCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
 import { useAuthContext } from '../../../hooks/useAuthContext';
@@ -94,7 +94,7 @@ const Interviews = () => {
                 const { date, time } = formatDateTime(interview.date_time);
                 return (
                   <div key={interview.interviews_id} className="border rounded-lg p-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-medium text-lg">{interview.candidate_name}</h3>
@@ -136,8 +136,8 @@ const Interviews = () => {
                           </span>
                           </div>)}
                       </div>
-                      
-                      {interview.status === 'scheduled' && (
+
+                      {(interview.status === 'scheduled' || interview.status === 'rescheduled' ) && (
                         <div className="flex gap-2">
                           <Button
                             size="sm"
@@ -148,6 +148,36 @@ const Interviews = () => {
                             <Edit className="w-3 h-3" />
                             Reschedule
                           </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await updateInterview(interview.interviews_id, { status: "completed" });
+
+                                toast({
+                                  title: "Success",
+                                  description: "Interview completed successfully"
+                                });
+
+                                // Refresh interviews list
+                                if (user) {
+                                  await fetchUserInterviews(user.user_id, user.role);
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to complete interview"
+                                });
+                              }
+                            }}
+                            className="flex items-center gap-1 hover:bg-green-600 text-black hover:text-white"
+                          >
+                            <CheckCheck className="w-3 h-3" />
+                            Mark As Complete
+                          </Button>
+
                           <Button
                             size="sm"
                             variant="outline"
@@ -155,7 +185,7 @@ const Interviews = () => {
                               setInterviewToCancel(interview);
                               setCancelDialogOpen(true);
                             }}
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                            className="flex items-center gap-1 text-red-500 hover:bg-red-500 hover:text-white"
                           >
                             <X className="w-3 h-3" />
                             Cancel

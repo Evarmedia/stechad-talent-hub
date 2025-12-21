@@ -231,7 +231,7 @@ const Profile = () => {
       // Call backend update
       const response = await updateProfile(profileData);
 
-      console.log("✅ Profile update response:", response);
+      // console.log("✅ Profile update response:", response);
 
       if (response?.success) {
         toast.success("Profile updated successfully!");
@@ -496,7 +496,7 @@ const Profile = () => {
                         name="first_name"
                         value={formData.first_name}
                         onChange={handleInputChange}
-                        disabled={!isEditing || loading}
+                        disabled
                         placeholder="First name"
                         className="h-10"
                       />
@@ -511,7 +511,7 @@ const Profile = () => {
                         name="last_name"
                         value={formData.last_name}
                         onChange={handleInputChange}
-                        disabled={!isEditing || loading}
+                        disabled
                         placeholder="Last name"
                         className="h-10"
                       />
@@ -619,7 +619,7 @@ const Profile = () => {
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Select skill level" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className='bg-white'>
                           <SelectItem value="beginner">Beginner</SelectItem>
                           <SelectItem value="intermediate">Intermediate</SelectItem>
                           <SelectItem value="advanced">Advanced</SelectItem>
@@ -643,7 +643,7 @@ const Profile = () => {
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Select availability" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className='bg-white'>
                           <SelectItem value="available">Available</SelectItem>
                           <SelectItem value="busy">Busy</SelectItem>
                           <SelectItem value="unavailable">Unavailable</SelectItem>
