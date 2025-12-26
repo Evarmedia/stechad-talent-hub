@@ -261,7 +261,7 @@ export const useOnboardingForm = () => {
         // Treat onboarding like login
         updateUser(response.data.user);
 
-        console.log("🟢 [ONBOARDING] ========== STEP 5: Redirecting to /dashboard/engineer ==========");
+        // console.log("🟢 [ONBOARDING] ========== STEP 5: Redirecting to /dashboard/engineer ==========");
         navigate("/dashboard/engineer");
 
         toast({

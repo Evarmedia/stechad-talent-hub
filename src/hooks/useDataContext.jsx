@@ -84,6 +84,7 @@ const DataProviderInner = ({ children }) => {
     resetApplicationState: applicationsContext.resetApplicationState,
     
     // Projects
+    projects: projectsContext.projects,
     getProjects: projectsContext.getProjects,
     getProjectById: projectsContext.getProjectById,
     createProject: projectsContext.createProject,

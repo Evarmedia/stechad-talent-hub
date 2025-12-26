@@ -8,9 +8,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "", role: "engineer" });
+  const [form, setForm] = useState({ email: "", password: "", role: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, authLoading } = useAuthContext();
+  const { login, authLoading, user } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,16 +48,16 @@ const Login = () => {
       if (from !== "/") {
         navigate(from, { replace: true });
       } else {
-        if (form.role === "engineer") {
+        if (response.data.user.role === "engineer"|| form.role === "engineer") {
           // Check if engineer has completed onboarding
           // if (!response.data.user.engineer.is_onboarded) {
           //   navigate("/onboarding");
           // } else {
           navigate("/dashboard/engineer");
           // }
-        } else if (form.role === "project_manager") {
+        } else if (response.data.user.role === "project_manager" || form.role === "project_manager") {
           navigate("/dashboard/pm");
-        } else if (form.role === "admin") {
+        } else if (response.data.user.role === "admin" ||form.role === "admin") {
           navigate("/admin");
         }
       }
@@ -87,10 +87,11 @@ const Login = () => {
             onChange={handleChange}
             className="p-3 mb-2 border border-border rounded"
             disabled={authLoading}
+            style={{ display: 'none'}}
           >
             <option value="engineer">Engineer</option>
             <option value="project_manager">Project Manager</option>
-            <option value="admin">Admin (Staff Only)</option>
+            <option value="admin">Admin</option>
           </select>
           <Input
             type="email"
