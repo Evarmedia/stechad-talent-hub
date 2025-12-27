@@ -7,7 +7,7 @@
 - ✅ POST /login - User authentication
 - ✅ POST /logout - User logout
 - ✅ GET /me - Get current user profile
-- ✅ Token storage and management (localStorage)
+- ✅ Token storage and state management (localStorage)
 - ✅ Automatic token refresh handling
 - ✅ 401 redirect to login
 
@@ -41,7 +41,7 @@
 - ✅ GET /admin/project-managers - List all PMs
 - ✅ GET /admin/project-managers/:id - Get PM details
 - ✅ DELETE /admin/project-managers/:id - Delete PM
-- ✅ POST /admin/project-managers/invite - Invite PM
+- ❌ POST /admin/project-managers/invite - Invite PM
 - ✅ PUT /pm/profile - Update PM profile
 - ✅ GET /pm/dashboard - Get PM dashboard
 
@@ -113,8 +113,8 @@
 ### Core Services
 - ✅ `apiService.js` - Base API client with JWT handling
 - ✅ `websocketService.js` - WebSocket client for real-time features
-- ✅ `uploadService.js` - File upload handling
-- ✅ `analyticsService.js` - Analytics data fetching
+<!-- - ✅ `uploadService.js` - File upload handling -->
+<!-- - ✅ `analyticsService.js` - Analytics data fetching -->
 - ✅ `exportService.js` - Data export utilities
 
 ### Context Providers
@@ -154,16 +154,17 @@
 ## ⚠️ Missing Endpoints to Implement (if needed)
 
 ### Password Reset Flow
-- ❌ POST /auth/send-otp - Send OTP (exists but not integrated)
-- ❌ POST /auth/verify-email - Verify OTP (exists but not integrated)
-- ❌ POST /auth/reset-password - Reset password (exists but not integrated)
-- ❌ POST /auth/edit-password - Change password (exists but not integrated)
+- ✅ POST /auth/send-otp - Send OTP (exists but not integrated)
+- ✅ POST /auth/verify-email - Verify OTP (exists but not integrated)
+- ✅ POST /auth/reset-password - Reset password (exists but not integrated)
+- ✅ POST /auth/edit-password - Change password (exists but not integrated)
 
 ### Google OAuth
-- ❌ GET /auth/google - Initiate Google OAuth
-- ❌ GET /auth/google/callback - OAuth callback
+- ✅ GET /auth/google - Initiate Google OAuth
+- ✅ GET /auth/google/callback - OAuth callback
 
 ### Invite System
+- ❌ POST admin/project-managers/invite - Send invitation
 - ❌ POST /auth/accept-invite/:token - Accept invitation
 
 ### Interview Management
@@ -197,29 +198,6 @@ VITE_WS_URL=ws://localhost:5000
 7. **File Upload Testing**: Test CV and avatar uploads
 
 ## 📚 Usage Examples
-
-### Making API Calls
-```javascript
-// Get jobs with filters
-// const jobs = await getJobs({
-//   page: 1,
-//   limit: 20,
-//   status: 'active',
-//   remote: true,
-//   skills: ['React', 'TypeScript']
-// });
-
-// // Create application
-// const application = await createApplication(jobId, {
-//   cover_letter: 'I am interested...',
-//   proposed_rate: '$50/hr'
-// });
-
-// // Upload file
-// const formData = new FormData();
-// formData.append('avatar', file);
-// await updateProfile(formData);
-```
 
 ### Using WebSocket
 ```javascript

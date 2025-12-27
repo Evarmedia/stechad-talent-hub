@@ -1,9 +1,9 @@
 
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
-import { JobsFilters } from "@/components/pm/JobsFilters";
-import { JobsGrid } from "@/components/pm/JobsGrid";
-import { JobsHeader } from "@/components/pm/JobsHeader";
-import { JobsTable } from "@/components/pm/JobsTable";
+import { JobsFilters } from "@/pages/dashboard/pm/components/JobsFilters";
+import { JobsGrid } from "@/pages/dashboard/pm/components/JobsGrid";
+import { JobsHeader } from "@/pages/dashboard/pm/components/JobsHeader";
+import { JobsTable } from "@/pages/dashboard/pm/components/JobsTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDataContext } from "@/hooks/useDataContext";
 import { useState } from "react";
