@@ -21,12 +21,13 @@ export const ProjectManagersProvider = ({ children }) => {
     try {
       const response = await apiService.get(`pm/dashboard`);
       setPmDashboardData(response.data);
-      setLoading(false);
+      // setLoading(false);
       // console.log("PM Data from context", response.data);
       return response.data;
     } catch (error) {
       console.error("Project Manager dashboard fetch error:", error);
-      setLoading(false);
+      // setLoading(false);
+      throw error;
     }
   };
 
