@@ -10,7 +10,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "", role: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, authLoading, user } = useAuthContext();
+  const { login, authLoading, user, googleLogin } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -102,6 +102,7 @@ const Login = () => {
             className="p-3"
             disabled={authLoading}
             autoFocus
+            autoComplete="username"
           />
           <div className="relative">
             <Input
@@ -112,6 +113,7 @@ const Login = () => {
               onChange={handleChange}
               className="p-3 pr-10"
               disabled={authLoading}
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -120,6 +122,26 @@ const Login = () => {
               disabled={authLoading}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          {/* Social signup */}
+          <div className="flex gap-3 justify-center pt-1">
+            <button
+              type="button"
+              className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
+              disabled={authLoading}
+              onClick={googleLogin}
+            >
+              <img src="https://img.icons8.com/external-those-icons-flat-those-icons/96/external-Google-logos-and-brands-those-icons-flat-those-icons.png" alt="Google" className="w-5 h-5 mr-2" />
+              Google
+            </button>
+            <button
+              type="button"
+              className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
+              disabled={authLoading}
+            >
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" className="w-5 h-5 mr-2" />
+              LinkedIn
             </button>
           </div>
           <Button

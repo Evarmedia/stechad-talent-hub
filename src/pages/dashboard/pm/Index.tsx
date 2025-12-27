@@ -190,7 +190,7 @@ const PMDashboard = () => {
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{project.team?.length || 0} team members</span>
-                      <span>Due: {project.deadline}</span>
+                      <span>Due: {project.deadline.split("T")[0]}</span>
                     </div>
                   </div>
                 ))}

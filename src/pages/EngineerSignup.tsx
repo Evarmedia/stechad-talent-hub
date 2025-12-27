@@ -101,6 +101,7 @@ const EngineerSignup = () => {
               onChange={handleChange}
               className="p-3 pr-10"
               disabled={authLoading}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -120,6 +121,7 @@ const EngineerSignup = () => {
               onChange={handleChange}
               className="p-3 pr-10"
               disabled={authLoading}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -153,7 +155,8 @@ const EngineerSignup = () => {
             <button
               type="button"
               className="flex items-center px-4 py-2 border border-border rounded-md text-sm font-semibold hover:bg-muted cursor-pointer"
-              disabled={authLoading}
+              disabled
+              title={`Coming soon`}
             >
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" className="w-5 h-5 mr-2" />
               LinkedIn
