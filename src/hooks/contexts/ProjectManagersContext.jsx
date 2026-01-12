@@ -34,19 +34,18 @@ export const ProjectManagersProvider = ({ children }) => {
   const getProjectManagers = async (filters = {}) => {
     setLoading(true);
     try {
-      let params = {
-        page: filters.page || 1,
-        limit: filters.limit || 50,
-      };
+      // let params = {
+      //   page: filters.page || 1,
+      //   limit: filters.limit || 50,
+      // };
 
-      if (filters.is_verified !== undefined) {
-        params.is_verified = filters.is_verified;
-      }
+      // if (filters.is_verified !== undefined) {
+      //   params.is_verified = filters.is_verified;
+      // }
 
       const response = await apiService.get(
         "admin/project-managers",
-        null,
-        params
+        // params
       );
       const managersData =
         response.success && response.data
@@ -54,6 +53,8 @@ export const ProjectManagersProvider = ({ children }) => {
           : [];
 
       setProjectManagers(managersData);
+
+      // console.log("Project Managers fetched", managersData);
       return managersData;
     } catch (error) {
       console.error("Error fetching project managers:", error);
@@ -74,9 +75,6 @@ export const ProjectManagersProvider = ({ children }) => {
       setLoading(true);
 
       try {
-        // if (user.role === "engineer") {
-        //   // Engineers fetch their dashboard ONLY
-        // }
         if (user.role === "project_manager") {
           // PMs fetch Dashboard
           await getPmDashboard();

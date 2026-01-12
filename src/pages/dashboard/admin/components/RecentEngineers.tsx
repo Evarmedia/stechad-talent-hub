@@ -12,7 +12,7 @@ interface RecentEngineersProps {
 }
 
 const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers }) => {
-  const recentEngineers = engineers.slice(0, 5);
+  const recentEngineers = engineers.slice(0, 3);
 
   return (
     <Card>
@@ -39,14 +39,18 @@ const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers })
             {recentEngineers.map((e, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-sm">{e.name}</div>
-                  <div className="text-xs text-muted-foreground">{e.country}</div>
+                  <div className="font-medium text-sm">{`${e.user.first_name} ${e.user.last_name}`}</div>
+                  <div className="text-xs text-muted-foreground">{e.user.country || "Remote"}</div>
                 </div>
-                {e.isVetted && (
+                {e.is_vetted ? (
                   <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                     Vetted
                   </Badge>
-                )}
+                ) : ( 
+                <>
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                    Not Vetted
+                </Badge></>)}
               </div>
             ))}
             {recentEngineers.length === 0 && (

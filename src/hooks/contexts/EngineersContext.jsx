@@ -52,6 +52,7 @@ export const EngineersProvider = ({ children }) => {
       const engineersList = response.data?.engineers || response.data || [];
       setEngineers(engineersList);
       setLoading(false);
+      // console.log("Engineers fetched", engineersList);
       return engineersList;
     } catch (error) {
       console.error("Error fetching engineers:", error);
@@ -87,11 +88,13 @@ export const EngineersProvider = ({ children }) => {
           // Engineers fetch their dashboard ONLY
           await getEngrDashboard();
           await getEngrProjects();
+          setInitialized(true);
         }
 
         if (user.role === "admin" || user.role === "project_manager") {
           // Admins + PMs fetch engineer list ONLY
           await getEngineers();
+          setInitialized(true);
         }
       } catch (err) {
         console.error("EngineersContext init error:", err);

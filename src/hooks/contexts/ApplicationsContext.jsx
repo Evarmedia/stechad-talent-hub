@@ -141,39 +141,45 @@ export const ApplicationsProvider = ({ children }) => {
     }
   };
 
-  const updateApplication = async (id, updateData) => {
-    setLoading(true);
-    try {
-      const response = await apiService.api.put(`/applications/${id}/status`, updateData);
+const updateApplication = async (id, updateData) => {
+  setLoading(true);
+  try {
+    const response = await apiService.api.put(
+      `/applications/${id}/status`,
+      updateData
+    );
 
-      // The backend returns { success: true, data: { ... } }
-      if (response.data && response.data.success) {
-        // Update both applications and jobApplications with the new status
-        const updatedData = { status: updateData.status };
-        
-        // Update applications state - preserve all existing data
-        setApplications((prev) =>
-          prev.map((a) =>
-            a.applications_id === id ? { ...a, ...updatedData } : a
-          )
-        );
-        
-        // Also update jobApplications state - preserve all existing data
-        setJobApplications((prev) =>
-          prev.map((a) =>
-            a.applications_id === id ? { ...a, ...updatedData } : a
-          )
-        );
-        
-        return updatedData;
-      }
-    } catch (error) {
-      console.error("Error updating application:", error);
-      throw error;
-    } finally {
-      setLoading(false);
+    if (response.data?.success) {
+      const updatedApplication = response.data.data;
+
+      // 🔥 Update applications
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applications_id === id ? updatedApplication : app
+        )
+      );
+
+      // 🔥 Update jobApplications
+      setJobApplications((prev) =>
+        prev.map((app) =>
+          app.applications_id === id ? updatedApplication : app
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Application status updated successfully.",
+      });
+
+      return updatedApplication;
     }
-  };
+  } catch (error) {
+    console.error("Error updating application:", error);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteApplication = async (id) => {
     setLoading(true);
@@ -203,7 +209,7 @@ export const ApplicationsProvider = ({ children }) => {
         }
 
         if (user.role === "admin" || user.role === "project_manager") {
-          // Admins + PMs fetch engineer list ONLY
+          // Admins + PMs fetch all Application list
           await getApplications();
         }
       } catch (err) {

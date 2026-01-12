@@ -6,14 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { User, Mail, Calendar, MapPin } from "lucide-react";
 
 interface Engineer {
-  id: number;
-  name: string;
-  email: string;
-  skills: string[];
-  experience: string;
+  engineer_id: number;
+  specialization: string[];
+  years_of_experience: string;
   status: string;
-  isVetted: boolean;
-  joinedAt: string;
+  is_vetted: boolean;
+  onboarded_at: string;
+  user: any;
 }
 
 interface EngineerDetailsDialogProps {
@@ -39,14 +38,14 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span>{engineer.name}</span>
-                {engineer.isVetted && (
+                <span>{engineer.user.first_name} {engineer.user.last_name}</span>
+                {engineer.is_vetted && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700">
                     Vetted
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground font-normal">{engineer.email}</p>
+              <p className="text-sm text-muted-foreground font-normal">{engineer.user.email}</p>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -59,7 +58,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   <Mail className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Contact</span>
                 </div>
-                <p className="text-sm">{engineer.email}</p>
+                <p className="text-sm">{engineer.user.email}</p>
               </CardContent>
             </Card>
 
@@ -69,7 +68,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Joined</span>
                 </div>
-                <p className="text-sm">{engineer.joinedAt}</p>
+                <p className="text-sm">{engineer.onboarded_at.split("T")[0]}</p>
               </CardContent>
             </Card>
           </div>
@@ -79,7 +78,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
               <div className="mb-3">
                 <span className="text-sm font-medium">Experience</span>
               </div>
-              <p className="text-sm text-muted-foreground">{engineer.experience}</p>
+              <p className="text-sm text-muted-foreground">{engineer.years_of_experience}</p>
             </CardContent>
           </Card>
 
@@ -89,7 +88,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                 <span className="text-sm font-medium">Skills</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {engineer.skills.map(skill => (
+                {engineer.specialization.map(skill => (
                   <Badge key={skill} variant="outline" className="text-xs">
                     {skill}
                   </Badge>
@@ -103,7 +102,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
               <div className="mb-3">
                 <span className="text-sm font-medium">Status</span>
               </div>
-              <Badge className={engineer.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+              <Badge className={engineer.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
                 {engineer.status}
               </Badge>
             </CardContent>

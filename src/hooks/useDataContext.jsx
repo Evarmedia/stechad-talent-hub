@@ -1,36 +1,52 @@
-
-import { createContext, useContext } from 'react';
-import { ApplicationsProvider, useApplicationsContext } from './contexts/ApplicationsContext';
-import { EngineersProvider, useEngineersContext } from './contexts/EngineersContext';
-import { JobsProvider, useJobsContext } from './contexts/JobsContext';
-import { ProjectManagersProvider, useProjectManagersContext } from './contexts/ProjectManagersContext';
-import { ProjectsProvider, useProjectsContext } from './contexts/ProjectsContext';
-
-import { InterviewProvider, useInterviewContext } from './contexts/InterviewContext';
-
-import { NotificationsProvider, useNotificationsContext } from './contexts/NotificationsContext';
+import { createContext, useContext } from "react";
+import {
+  ApplicationsProvider,
+  useApplicationsContext,
+} from "./contexts/ApplicationsContext";
+import {
+  EngineersProvider,
+  useEngineersContext,
+} from "./contexts/EngineersContext";
+import { JobsProvider, useJobsContext } from "./contexts/JobsContext";
+import {
+  ProjectManagersProvider,
+  useProjectManagersContext,
+} from "./contexts/ProjectManagersContext";
+import {
+  ProjectsProvider,
+  useProjectsContext,
+} from "./contexts/ProjectsContext";
+import {
+  InterviewProvider,
+  useInterviewContext,
+} from "./contexts/InterviewContext";
+import {
+  NotificationsProvider,
+  useNotificationsContext,
+} from "./contexts/NotificationsContext";
+import { AdminProvider, useAdminContext } from "./contexts/AdminContext";
 
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   return (
-    <EngineersProvider>
-      <JobsProvider>
-        <ApplicationsProvider>
-          <InterviewProvider>
-          <ProjectsProvider>
-            <ProjectManagersProvider>
-              <NotificationsProvider>
-              <DataProviderInner>
-                {children}
-              </DataProviderInner>
-              </NotificationsProvider>
-            </ProjectManagersProvider>
-          </ProjectsProvider>
-          </InterviewProvider>
-        </ApplicationsProvider>
-      </JobsProvider>
-    </EngineersProvider>
+    <AdminProvider>
+      <EngineersProvider>
+        <JobsProvider>
+          <ApplicationsProvider>
+            <InterviewProvider>
+              <ProjectsProvider>
+                <ProjectManagersProvider>
+                  <NotificationsProvider>
+                    <DataProviderInner>{children}</DataProviderInner>
+                  </NotificationsProvider>
+                </ProjectManagersProvider>
+              </ProjectsProvider>
+            </InterviewProvider>
+          </ApplicationsProvider>
+        </JobsProvider>
+      </EngineersProvider>
+    </AdminProvider>
   );
 };
 
@@ -42,6 +58,7 @@ const DataProviderInner = ({ children }) => {
   const projectManagersContext = useProjectManagersContext();
   const interviewContext = useInterviewContext();
   const notificationContext = useNotificationsContext();
+  const AdminContext = useAdminContext();
 
   const value = {
     // State
@@ -57,7 +74,18 @@ const DataProviderInner = ({ children }) => {
     pmDashboardData: projectManagersContext.pmDashboardData,
     interviews: interviewContext.interviews,
     allInterviews: interviewContext.allInterviews,
-    loading: engineersContext.loading || jobsContext.loading || applicationsContext.loading || projectsContext.loading || projectManagersContext.loading || interviewContext.loading,
+    loading:
+      engineersContext.loading ||
+      jobsContext.loading ||
+      applicationsContext.loading ||
+      projectsContext.loading ||
+      projectManagersContext.loading ||
+      interviewContext.loading || AdminContext.loading,
+
+    // Admin
+    adminDashboardData: AdminContext.adminDashboardData,
+    resetAdminDashboardState: AdminContext.resetAdminDashboardState,
+    inviteProjectManager: AdminContext.inviteProjectManager,
     
     // Engineers
     getEngineers: engineersContext.getEngineers,
@@ -65,7 +93,7 @@ const DataProviderInner = ({ children }) => {
     updateEngineer: engineersContext.updateEngineer,
     deleteEngineer: engineersContext.deleteEngineer,
     resetEngineerState: engineersContext.resetEngineerState,
-    
+
     // Jobs
     getJobs: jobsContext.getJobs,
     getJobById: jobsContext.getJobById,
@@ -73,7 +101,7 @@ const DataProviderInner = ({ children }) => {
     updateJob: jobsContext.updateJob,
     deleteJob: jobsContext.deleteJob,
     resetJobsState: jobsContext.resetJobsState,
-    
+
     // Applications
     getApplications: applicationsContext.getApplications,
     getEngineersApplication: applicationsContext.getEngineersApplication,
@@ -82,7 +110,7 @@ const DataProviderInner = ({ children }) => {
     updateApplication: applicationsContext.updateApplication,
     deleteApplication: applicationsContext.deleteApplication,
     resetApplicationState: applicationsContext.resetApplicationState,
-    
+
     // Projects
     projects: projectsContext.projects,
     getProjects: projectsContext.getProjects,
@@ -92,7 +120,7 @@ const DataProviderInner = ({ children }) => {
     deleteProject: projectsContext.deleteProject,
     projectStats: projectsContext.projectStats,
     resetProjectsState: projectsContext.resetProjectsState,
-    
+
     // Project Managers
     // getProjectManagers: projectManagersContext.getProjectManagers,
     getPmDashboard: projectManagersContext.getPmDashboardData,
@@ -116,17 +144,13 @@ const DataProviderInner = ({ children }) => {
     resetNotificationState: notificationContext.resetNotificationState,
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 export const useDataContext = () => {
   const context = useContext(DataContext);
   if (!context) {
-    throw new Error('useDataContext must be used within a DataProvider');
+    throw new Error("useDataContext must be used within a DataProvider");
   }
   return context;
 };

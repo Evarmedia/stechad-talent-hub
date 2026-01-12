@@ -14,32 +14,34 @@ export const ProjectsProvider = ({ children }) => {
   const getProjects = async (filters = {}) => {
     setLoading(true);
     try {
-      let params = {
-        page: filters.page || 1,
-        limit: filters.limit || 50,
-      };
+      // let params = {
+      //   page: filters.page || 1,
+      //   limit: filters.limit || 50,
+      // };
 
-      if (filters.status && filters.status !== "all") {
-        params.status = filters.status;
-      }
-      if (filters.priority && filters.priority !== "all") {
-        params.priority = filters.priority;
-      }
-      if (filters.project_manager_id || filters.projectManagerId) {
-        params.project_manager_id =
-          filters.project_manager_id || filters.projectManagerId;
-      }
-      if (filters.engineer_id || filters.engineerId) {
-        params.engineer_id = filters.engineer_id || filters.engineerId;
-      }
+      // if (filters.status && filters.status !== "all") {
+      //   params.status = filters.status;
+      // }
+      // if (filters.priority && filters.priority !== "all") {
+      //   params.priority = filters.priority;
+      // }
+      // if (filters.project_manager_id || filters.projectManagerId) {
+      //   params.project_manager_id =
+      //     filters.project_manager_id || filters.projectManagerId;
+      // }
+      // if (filters.engineer_id || filters.engineerId) {
+      //   params.engineer_id = filters.engineer_id || filters.engineerId;
+      // }
 
-      const response = await apiService.get("projects", params);
+      const response = await apiService.get("projects");
       const projectsData =
         response.success && response.data
           ? response.data.projects || response.data
           : [];
 
       setProjects(projectsData);
+
+      // console.log("Projects fetched", projectsData);
       return projectsData;
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -141,11 +143,13 @@ export const ProjectsProvider = ({ children }) => {
 
     const init = async () => {
       setLoading(true);
-
       try {
-        getProjects();
+        if (user.role === "admin") { // adjust this if Pm need to see all projects(check backend access too)
+          getProjects();
+          setInitialized(true);
+        }
       } catch (err) {
-        console.error("ProjectssContext init error:", err);
+        console.error("ProjectsManagersContext init error:", err);
       } finally {
         setInitialized(true);
         setLoading(false);

@@ -6,7 +6,7 @@ import { Building, Calendar, Clock, DollarSign, MapPin, Users } from "lucide-rea
 import React from "react";
 
 interface Job {
-  id: number;
+  jobs_id: number;
   title: string;
   company: string;
   location: string;
@@ -39,7 +39,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
     return status.toLowerCase() === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
   };
 
-  const displayDate = job.posted_at || job.posted || "Not specified";
+  const displayDate = job.posted_at || "Not specified";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

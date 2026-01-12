@@ -13,6 +13,8 @@ interface LatestJobsProps {
 const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
   const recentJobs = jobs.slice(0, 3);
 
+  console.log("Gotten Jobs:", jobs);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -42,8 +44,8 @@ const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
               <div key={idx} className="space-y-1">
                 <div className="font-medium text-sm">{j.title}</div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Posted: {j.postedDate}</span>
-                  <span>{j.applications} applications</span>
+                  <span>Posted: {j.posted_at.split("T")[0]}</span>
+                  <span>{j.applications_count} applications</span>
                 </div>
               </div>
             ))}

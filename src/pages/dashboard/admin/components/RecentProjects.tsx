@@ -16,10 +16,11 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ loading, projects }) =>
 
   const getProjectStatusColor = (status: string) => {
     switch (status) {
-      case "Completed": return "bg-green-100 text-green-800";
-      case "In Progress": return "bg-blue-100 text-blue-800";
-      case "Planning": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "completed": return "bg-green-500 text-black";
+      case "in_progress": return "bg-blue-500 text-white";
+      case "planning": return "bg-yellow-500 text-black";
+      case "on_hold": return "bg-yellow-500 text-black";
+      default: return "bg-gray-500 text-white";
     }
   };
 

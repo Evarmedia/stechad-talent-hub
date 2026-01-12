@@ -10,38 +10,38 @@ import { Search, Filter, FileText, Clock, Check, X } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
 
 const AdminApplications = () => {
-  const [applicationsList, setApplicationsList] = useState([]);
+  // const [applicationsList, setApplicationsList] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // const [isInitialLoad, setIsInitialLoad] = useState(true);
   
-  const { getApplications, updateApplication, loading } = useDataContext();
+  const { getApplications, updateApplication, applications, loading } = useDataContext();
+
+  // useEffect(() => {
+  //   const fetchApplications = async () => {
+  //     try {
+  //       const applications = await getApplications();
+  //       setApplicationsList(applications);
+  //       setFilteredApplications(applications);
+  //     } catch (error) {
+  //       console.error('Error fetching applications:', error);
+  //     } finally {
+  //       setIsInitialLoad(false);
+  //     }
+  //   };
+
+  //   fetchApplications();
+  // }, []); // []<-- getApplications 
 
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const applications = await getApplications();
-        setApplicationsList(applications);
-        setFilteredApplications(applications);
-      } catch (error) {
-        console.error('Error fetching applications:', error);
-      } finally {
-        setIsInitialLoad(false);
-      }
-    };
-
-    fetchApplications();
-  }, []); // []<-- getApplications 
-
-  useEffect(() => {
-    if (!isInitialLoad) {
-      let filtered = [...applicationsList];
+    if (applications) {
+      let filtered = [...applications];
 
       if (searchTerm) {
         filtered = filtered.filter(app => 
-          app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          app.engineerName.toLowerCase().includes(searchTerm.toLowerCase())
+          app.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.engineer_name.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
 
@@ -51,12 +51,13 @@ const AdminApplications = () => {
 
       setFilteredApplications(filtered);
     }
-  }, [applicationsList, searchTerm, statusFilter, isInitialLoad]);
+  }, [applications, searchTerm, statusFilter]);
 
   const getStatusColor = (status) => {
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-800";
       case "reviewed": return "bg-blue-100 text-blue-800";
+      case "shortlisted": return "bg-blue-100 text-blue-800";
       case "rejected": return "bg-red-100 text-red-800";
       case "accepted": return "bg-green-100 text-green-800";
       default: return "bg-gray-100 text-gray-800";
@@ -77,21 +78,23 @@ const AdminApplications = () => {
     try {
       await updateApplication(applicationId, { status: newStatus });
       const updatedApplications = await getApplications();
-      setApplicationsList(updatedApplications);
+      setFilteredApplications(updatedApplications);
     } catch (error) {
       console.error('Error updating application status:', error);
     }
   };
 
   const stats = {
-    total: applicationsList.length,
-    pending: applicationsList.filter(app => app.status === "pending").length,
-    reviewed: applicationsList.filter(app => app.status === "reviewed").length,
-    accepted: applicationsList.filter(app => app.status === "accepted").length,
-    rejected: applicationsList.filter(app => app.status === "rejected").length
+    total: applications.length,
+    pending: applications.filter(app => app.status === "pending").length,
+    reviewed: applications.filter(app => app.status === "reviewed").length,
+    accepted: applications.filter(app => app.status === "accepted").length,
+    rejected: applications.filter(app => app.status === "rejected").length,
+    shortlisted: applications.filter(app => app.status === "shortlisted").length
   };
 
-  if (isInitialLoad || loading) {
+  // Loading Skeleton
+  if (loading) {
     return (
       <div className="p-6">
         <div className="mb-6">
@@ -200,10 +203,11 @@ const AdminApplications = () => {
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="reviewed">Reviewed</SelectItem>
+                  <SelectItem value="shortlisted">Shortlisted</SelectItem>
                   <SelectItem value="accepted">Accepted</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
@@ -223,13 +227,13 @@ const AdminApplications = () => {
           </Card>
         ) : (
           filteredApplications.map((application) => (
-            <Card key={application.id} className="hover:shadow-md transition-shadow">
+            <Card key={application.applications_id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold">{application.jobTitle}</h3>
-                    <p className="text-gray-600">Applied by {application.engineerName}</p>
-                    <p className="text-sm text-gray-500">Applied on {application.appliedDate}</p>
+                    <h3 className="text-lg font-semibold">{application.job_title}</h3>
+                    <p className="text-gray-600">Applied by {application.engineer_name}</p>
+                    <p className="text-sm text-gray-500">Applied on {application.applied_at.split("T")[0]}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge className={getStatusColor(application.status)}>
@@ -240,7 +244,7 @@ const AdminApplications = () => {
                 </div>
 
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Experience Level: {application.experience}</p>
+                  <p className="text-sm text-gray-600 mb-2">Experience Level: {application.experience || "None Provided"}</p>
                   {application.skills && (
                     <div className="flex flex-wrap gap-1">
                       {application.skills.map((skill, index) => (
@@ -252,52 +256,19 @@ const AdminApplications = () => {
                   )}
                 </div>
 
-                {application.coverLetter && (
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Cover Letter:</p>
-                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                      {application.coverLetter}
-                    </p>
-                  </div>
-                )}
-
                 <div className="flex gap-2">
-                  {application.status === "pending" && (
-                    <>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleStatusUpdate(application.id, "reviewed")}
-                      >
-                        Mark as Reviewed
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleStatusUpdate(application.id, "accepted")}
-                      >
-                        Accept
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => handleStatusUpdate(application.id, "rejected")}
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  {application.status === "reviewed" && (
+                  {application.status === "shortlisted" && (
                     <>
                       <Button 
                         size="sm"
-                        onClick={() => handleStatusUpdate(application.id, "accepted")}
+                        onClick={() => handleStatusUpdate(application.applications_id, "accepted")}
                       >
                         Accept
                       </Button>
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={() => handleStatusUpdate(application.id, "rejected")}
+                        onClick={() => handleStatusUpdate(application.applications_id, "rejected")}
                       >
                         Reject
                       </Button>

@@ -6,18 +6,16 @@ import { Users, Briefcase, FileText, UserCheck, TrendingUp } from "lucide-react"
 
 interface AdminStatsProps {
   loading: boolean;
-  engineers: any[];
-  jobs: any[];
-  applications: any[];
-  projectManagers: any[];
+  statistics: any;
+
 }
 
-const AdminStats: React.FC<AdminStatsProps> = ({ loading, engineers, jobs, applications, projectManagers }) => {
+const AdminStats: React.FC<AdminStatsProps> = ({ loading, statistics }) => {
   const stats = [
-    { label: "Engineers", value: engineers.length, icon: Users, change: "+12%" },
-    { label: "Project Managers", value: projectManagers.length, icon: UserCheck, change: "+2%" },
-    { label: "Active Jobs", value: jobs.filter(j => j.status === 'active').length, icon: Briefcase, change: "+5%" },
-    { label: "Applications", value: applications.length, icon: FileText, change: "+18%" },
+    { label: "Engineers", value: statistics?.totalEngineers, icon: Users, change: "+12%" },
+    { label: "Project Managers", value: statistics?.totalProjectManagers, icon: UserCheck, change: "+2%" },
+    { label: "Active Jobs", value: statistics?.totalJobs, icon: Briefcase, change: "+5%" },
+    { label: "Applications", value: statistics?.totalApplications, icon: FileText, change: "+18%" },
   ];
 
   return (

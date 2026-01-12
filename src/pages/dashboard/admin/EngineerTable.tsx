@@ -20,11 +20,10 @@ const statusColor = (status: string) => {
 interface Engineer {
   name: string;
   country: string;
-  exp: number;
-  status: string;
-  email: string;
-  phone: string;
-  onboardedAt: string;
+  years_of_experience: number;
+  status?: string;
+  onboarded_at?: string;
+  user: { first_name: string; last_name: string; country?: string; email?: string; phone_number?: string;};
 }
 
 interface EngineerTableProps {
@@ -83,15 +82,15 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
           ) : (
             engineers.map((eng, i) => (
               <tr key={i} className="border-b">
-                <td className="p-2">{eng.name}</td>
+                <td className="p-2">{eng.user.first_name} {eng.user.last_name}</td>
                 <td className="p-2">{eng.country}</td>
-                <td className="p-2">{eng.exp} yrs</td>
+                <td className="p-2">{eng.years_of_experience} yrs</td>
                 <td className="p-2">
                   <span className={`px-2 py-1 rounded ${statusColor(eng.status)} text-xs`}>
                     {eng.status}
                   </span>
                 </td>
-                <td className="p-2">{eng.onboardedAt ? new Date(eng.onboardedAt).toLocaleDateString() : "n/a"}</td>
+                <td className="p-2">{eng.onboarded_at ? new Date(eng.onboarded_at).toLocaleDateString() : "n/a"}</td>
                 <td className="p-2">
                   <Dialog>
                     <DialogTrigger asChild>
@@ -106,25 +105,25 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
-                          {selectedEngineer?.name}'s Profile
+                          {selectedEngineer?.user.first_name}'s Profile
                         </DialogTitle>
                         <DialogDescription>Engineer profile details.</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-2">
                         <div>
-                          <strong>Name:</strong> {selectedEngineer?.name}
+                          <strong>Name:</strong> {selectedEngineer?.user.first_name} {selectedEngineer?.user.last_name}
                         </div>
                         <div>
-                          <strong>Country:</strong> {selectedEngineer?.country}
+                          <strong>Country:</strong> {selectedEngineer?.user.country}
                         </div>
                         <div>
-                          <strong>Email:</strong> {selectedEngineer?.email}
+                          <strong>Email:</strong> {selectedEngineer?.user?.email}
                         </div>
                         <div>
-                          <strong>Phone:</strong> {selectedEngineer?.phone}
+                          <strong>Phone:</strong> {selectedEngineer?.user?.phone_number}
                         </div>
                         <div>
-                          <strong>Experience:</strong> {selectedEngineer?.exp} yrs
+                          <strong>Experience:</strong> {selectedEngineer?.years_of_experience} years
                         </div>
                         <div>
                           <strong>Status:</strong>
@@ -133,7 +132,7 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
                           </span>
                         </div>
                         <div>
-                          <strong>Onboarded At:</strong> {selectedEngineer?.onboardedAt ? new Date(selectedEngineer.onboardedAt).toLocaleDateString() : "n/a"}
+                          <strong>Onboarded At:</strong> {selectedEngineer?.onboarded_at ? new Date(selectedEngineer.onboarded_at).toLocaleDateString() : "n/a"}
                         </div>
                       </div>
                       <DialogClose asChild>

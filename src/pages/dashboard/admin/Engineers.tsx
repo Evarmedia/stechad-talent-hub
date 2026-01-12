@@ -7,84 +7,103 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Eye, User, Download } from "lucide-react";
 import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
 import { useDataContext } from "@/hooks/useDataContext";
-import { exportToCSV } from "./exportUtils";
+import { exportToCSV, exportToXLSX } from "./exportUtils";
+// import EngineerTable from "./EngineerTable";
+// import { exportToXLSX } from "./exportToXlsx";
 
 const Engineers = () => {
-  const [loading, setLoading] = useState(true);
-  const [engineers, setEngineers] = useState([]);
+  // const [loading, setLoading] = useState(true);
+  // const [engineers, setEngineers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("All");
   const [selectedEngineer, setSelectedEngineer] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const { getEngineers } = useDataContext();
+  const { engineers, loading } = useDataContext();
 
-  useEffect(() => {
-    const fetchEngineers = async () => {
-      try {
-        const engineersData = await getEngineers();
-        setEngineers(engineersData);
-      } catch (error) {
-        console.error('Error fetching engineers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // console.log("Engineers at Engineers page", engineers);
 
-    fetchEngineers();
-  }, [getEngineers]);
+  const filteredEngineers = engineers.filter((engineer) => {
+    const fullName =
+      `${engineer.user?.first_name || ""} ${engineer.user?.last_name || ""}`.toLowerCase();
 
-  const filteredEngineers = engineers.filter(engineer => {
-    const matchesSearch = engineer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         engineer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "All" || engineer.status === statusFilter;
-    
+    const matchesSearch =
+      fullName.includes(searchTerm.toLowerCase()) ||
+      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      engineer.status?.toLowerCase() === statusFilter.toLowerCase();
+
     let matchesDate = true;
-    if (dateFilter === "Recent") {
+    if (dateFilter === "Recent" && engineer.onboarded_at) {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      const joinedDate = new Date(engineer.joinedAt);
-      matchesDate = joinedDate >= oneMonthAgo;
+      matchesDate = new Date(engineer.onboarded_at) >= oneMonthAgo;
     }
-    
+
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  // Sort by recent if filter is applied
-  const sortedEngineers = dateFilter === "Recent" 
-    ? [...filteredEngineers].sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime())
-    : filteredEngineers;
+  const sortedEngineers =
+    dateFilter === "Recent"
+      ? [...filteredEngineers].sort(
+        (a, b) =>
+          new Date(b.onboarded_at || 0).getTime() -
+          new Date(a.onboarded_at || 0).getTime()
+      )
+      : filteredEngineers;
 
-  const getStatusColor = (status: string) => {
-    return status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
-  };
+  const getStatusColor = (status: string) =>
+    status === "active"
+      ? "bg-green-100 text-green-800"
+      : "bg-gray-100 text-gray-800";
 
   const handleViewEngineer = (engineer: any) => {
     setSelectedEngineer(engineer);
     setIsDetailsOpen(true);
   };
 
-  const handleExportCSV = () => {
+  const handleExportXlsx = () => {
     const dataToExport = sortedEngineers.map(engineer => ({
-      name: engineer.name,
-      country: engineer.country,
-      exp: engineer.experience.replace(' years', ''),
+      name: `${engineer.user.first_name} ${engineer.user.last_name}`,
+      email: engineer.user.email,
+      phone: engineer.user.phone_number || 'N/A',
+      date_Of_Birth: engineer.date_of_birth,
+      skills: engineer.specialization.join(", "),
+      languages: engineer.languages.join(", "),
+      language_Proficiency: engineer.language_proficiency,
+      country: engineer.user.country,
+      experience: engineer.years_of_experience,
       status: engineer.status,
-      email: engineer.email,
-      phone: engineer.phone || 'N/A',
-      onboardedAt: engineer.joinedAt
+      onboarded_On: engineer.onboarded_at.split("T")[0],
+      open_To_Nearby_Cities: engineer.open_to_nearby_cities ? 'Yes' : 'No',
+      has_Drivers_Licence: engineer.has_drivers_licence ? 'Yes' : 'No',
+      skill_Level: engineer.skill_level,
+      certifications: engineer.certifications.join(", "),
+      project_Types: engineer.project_types.join(", "),
+      open_To_Training: engineer.open_to_training ? 'Yes' : 'No',
+      Are_You_A_Freelancer: engineer.is_freelancer ? 'Yes' : 'No',
+      Are_You_Following_Us_On_Linkedin: engineer.follows_linkedin ? 'Yes' : 'No',
+      Would_You_Like_To_Subscribe_To_Our_Newsletter: engineer.newsletter ? 'Yes' : 'No',
+      // cv_Url: engineer.cv_url || 'N/A',
+      CV: engineer.cv_url
+        ? { f: `HYPERLINK("${engineer.cv_url}", "engineer_cv")` }
+        : "N/A",
     }));
-    exportToCSV(dataToExport);
+
+    exportToXLSX(dataToExport);
   };
+
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Engineers Management</h1>
-        <Button onClick={handleExportCSV} variant="outline">
+        <Button onClick={handleExportXlsx} variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          Export CSV
+          Export data
         </Button>
       </div>
 
@@ -93,23 +112,23 @@ const Engineers = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search engineers..."
+            placeholder="Search engineers by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
-        <select 
-          value={statusFilter} 
+        <select
+          value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="border rounded-md px-3 py-2 bg-background"
         >
           <option value="All">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
         </select>
-        <select 
-          value={dateFilter} 
+        <select
+          value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
           className="border rounded-md px-3 py-2 bg-background"
         >
@@ -127,74 +146,76 @@ const Engineers = () => {
           <div className="md:hidden space-y-4">
             {loading
               ? Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="w-10 h-10 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-40" />
-                      </div>
-                    </div>
+                <div key={i} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-full" />
                     <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <div className="flex justify-between items-center">
-                        <Skeleton className="h-6 w-16" />
-                        <Skeleton className="h-8 w-20" />
-                      </div>
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-4 w-40" />
                     </div>
                   </div>
-                ))
-              : sortedEngineers.map((engineer) => (
-                  <div key={engineer.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{engineer.name}</h3>
-                          {engineer.isVetted && (
-                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                              Vetted
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{engineer.email}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium">Skills: </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {engineer.skills.map(skill => (
-                            <Badge key={skill} variant="outline" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Experience: </span>
-                        <span className="font-medium">{engineer.experience}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Country: </span>
-                        <span className="font-medium">{engineer.country}</span>
-                      </div>
-                    </div>
-
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
                     <div className="flex justify-between items-center">
-                      <Badge className={getStatusColor(engineer.status)}>
-                        {engineer.status}
-                      </Badge>
-                      <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
-                        <Eye className="w-3 h-3 mr-1" />
-                        View
-                      </Button>
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-8 w-20" />
                     </div>
                   </div>
-                ))}
+                </div>
+              ))
+              : sortedEngineers.map((engineer) => (
+                <div key={engineer.engineer_id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</h3>
+                        {engineer.is_vetted ? (
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                            Vetted
+                          </Badge>
+                        ) : (<Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                          Not Vetted
+                        </Badge>)}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{engineer.user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-medium">Skills: </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {engineer.specialization.map(skill => (
+                          <Badge key={skill} variant="outline" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Experience: </span>
+                      <span className="font-medium">{engineer.years_of_experience}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Country: </span>
+                      <span className="font-medium">{engineer.user.country || "Remote"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <Badge className={getStatusColor(engineer.status)}>
+                      {engineer.status}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))}
           </div>
 
           {/* Desktop: Table layout */}
@@ -214,69 +235,73 @@ const Engineers = () => {
               <tbody>
                 {loading
                   ? Array(3).fill(0).map((_, i) => (
-                      <tr key={i} className="border-b">
-                        <td className="p-3"><Skeleton className="h-5 w-40" /></td>
-                        <td className="p-3"><Skeleton className="h-5 w-32" /></td>
-                        <td className="p-3"><Skeleton className="h-5 w-20" /></td>
-                        <td className="p-3"><Skeleton className="h-5 w-20" /></td>
-                        <td className="p-3"><Skeleton className="h-5 w-16" /></td>
-                        <td className="p-3"><Skeleton className="h-5 w-24" /></td>
-                        <td className="p-3"><Skeleton className="h-8 w-20" /></td>
-                      </tr>
-                    ))
+                    <tr key={i} className="border-b">
+                      <td className="p-3"><Skeleton className="h-5 w-40" /></td>
+                      <td className="p-3"><Skeleton className="h-5 w-32" /></td>
+                      <td className="p-3"><Skeleton className="h-5 w-20" /></td>
+                      <td className="p-3"><Skeleton className="h-5 w-20" /></td>
+                      <td className="p-3"><Skeleton className="h-5 w-16" /></td>
+                      <td className="p-3"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-3"><Skeleton className="h-8 w-20" /></td>
+                    </tr>
+                  ))
                   : sortedEngineers.map((engineer) => (
-                      <tr key={engineer.id} className="border-b hover:bg-gray-50">
-                        <td className="p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-primary" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{engineer.name}</span>
-                                {engineer.isVetted && (
-                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                    Vetted
-                                  </Badge>
-                                )}
-                              </div>
-                              <span className="text-sm text-muted-foreground">{engineer.email}</span>
-                            </div>
+                    <tr key={engineer.engineer_id} className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-primary" />
                           </div>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex flex-wrap gap-1">
-                            {engineer.skills.slice(0, 2).map(skill => (
-                              <Badge key={skill} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                            {engineer.skills.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{engineer.skills.length - 2}
-                              </Badge>
-                            )}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</span>
+                              {engineer.is_vetted ? (
+                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                  Vetted
+                                </Badge>
+                              ) : (<Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                Not Vetted
+                              </Badge>)}
+                            </div>
+                            <span className="text-sm text-muted-foreground">{engineer.email}</span>
                           </div>
-                        </td>
-                        <td className="p-3 text-sm">{engineer.experience}</td>
-                        <td className="p-3 text-sm">{engineer.country}</td>
-                        <td className="p-3">
-                          <Badge className={getStatusColor(engineer.status)}>
-                            {engineer.status}
-                          </Badge>
-                        </td>
-                        <td className="p-3 text-sm text-muted-foreground">{engineer.joinedAt}</td>
-                        <td className="p-3">
-                          <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-wrap gap-1">
+                          {engineer.specialization.slice(0, 2).map(skill => (
+                            <Badge key={skill} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {engineer.specialization.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{engineer.specialization.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 text-sm">{engineer.years_of_experience}</td>
+                      <td className="p-3 text-sm">{engineer.user.country || "Remote"}</td>
+                      <td className="p-3">
+                        <Badge className={getStatusColor(engineer.status)}>
+                          {engineer.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at.split("T")[0]}</td>
+                      <td className="p-3">
+                        <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
+
+          {/* <EngineerTable engineers={sortedEngineers} loading={loading} /> */}
         </CardContent>
       </Card>
 

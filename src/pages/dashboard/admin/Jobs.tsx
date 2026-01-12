@@ -82,7 +82,7 @@ const AdminJobs = () => {
                   </div>
                 ))
               : filteredJobs.map((job) => (
-                  <div key={job.id} className="border rounded-lg p-4 space-y-3">
+                  <div key={job.jobs_id} className="border rounded-lg p-4 space-y-3">
                     <div>
                       <h3 className="font-medium text-base">{job.title}</h3>
                       <p className="text-sm text-muted-foreground">{job.company}</p>
@@ -95,7 +95,7 @@ const AdminJobs = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span>Posted: {job.postedDate}</span>
+                      <span>Posted: {job.posted_at.split("T")[0]}</span>
                       </div>
                       <div>
                         <span className="font-medium">Salary: </span>
@@ -163,7 +163,7 @@ const AdminJobs = () => {
                             {job.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-sm text-muted-foreground">{job.postedDate}</td>
+                        <td className="p-3 text-sm text-muted-foreground">{job.posted_at.split("T")[0]}</td>
                         <td className="p-3">
                           <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
                             <Eye className="w-4 h-4 mr-1" />
