@@ -13,7 +13,7 @@ interface LatestJobsProps {
 const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
   const recentJobs = jobs.slice(0, 3);
 
-  console.log("Gotten Jobs:", jobs);
+  // console.log("Gotten Jobs:", jobs);
 
   return (
     <Card>

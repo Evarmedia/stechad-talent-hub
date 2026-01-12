@@ -233,7 +233,7 @@ const AdminApplications = () => {
                   <div>
                     <h3 className="text-lg font-semibold">{application.job_title}</h3>
                     <p className="text-gray-600">Applied by {application.engineer_name}</p>
-                    <p className="text-sm text-gray-500">Applied on {application.applied_at.split("T")[0]}</p>
+                    <p className="text-sm text-gray-500">Applied on {new Date(application.applied_at).toLocaleDateString()}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge className={getStatusColor(application.status)}>
@@ -256,7 +256,31 @@ const AdminApplications = () => {
                   )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 text-gray-300">
+                  {application.status === "pending" && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusUpdate(application.applications_id, "reviewed")}
+                      >
+                        Mark as Reviewed
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleStatusUpdate(application.applications_id, "accepted")}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleStatusUpdate(application.applications_id, "rejected")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
                   {application.status === "shortlisted" && (
                     <>
                       <Button 
