@@ -148,7 +148,7 @@ const AdminJobs = () => {
                       </tr>
                     ))
                   : filteredJobs.map((job) => (
-                      <tr key={job.id} className="border-b hover:bg-gray-50">
+                    <tr key={job.jobs_id} className="border-b hover:bg-gray-50">
                         <td className="p-3">
                           <div>
                             <span className="font-medium">{job.title}</span>

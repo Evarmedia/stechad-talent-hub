@@ -18,51 +18,43 @@ import { CheckCircle, User, Eye } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
 
 const EngineerVetting = () => {
-  const [loading, setLoading] = useState(true);
-  const [engineers, setEngineers] = useState([]);
   const [selectedEngineer, setSelectedEngineer] = useState(null);
 
-  const { getEngineers, updateEngineer } = useDataContext();
+  const { getEngineers, updateEngineer, engineers, loading } = useDataContext();
 
-  useEffect(() => {
-    const fetchEngineers = async () => {
-      try {
-        const engineersData = await getEngineers();
-        setEngineers(engineersData);
-      } catch (error) {
-        console.error('Error fetching engineers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+   // Vet engineer (context-driven)
 
-    fetchEngineers();
-  }, [getEngineers]);
-
-  const handleVetEngineer = async (engineerId: number) => {
+  const handleVetEngineer = async (engineerId: string) => {
     try {
-      await updateEngineer(engineerId, { isVetted: true });
-      setEngineers(engineers.map(eng => 
-        eng.id === engineerId ? { ...eng, isVetted: true } : eng
-      ));
-      toast({ title: "Success", description: "Engineer has been vetted successfully!" });
+      await updateEngineer({ engineer_id: engineerId, is_vetted: true });
+      toast({
+        title: "Success",
+        description: "Engineer has been vetted successfully!",
+      });
       setSelectedEngineer(null);
     } catch (error) {
-      console.error('Error vetting engineer:', error);
-      toast({ title: "Error", description: "Failed to vet engineer", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to vet engineer",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleUnvetEngineer = async (engineerId: number) => {
+   // Remove vetting
+  const handleUnvetEngineer = async (engineerId: string) => {
     try {
-      await updateEngineer(engineerId, { isVetted: false });
-      setEngineers(engineers.map(eng => 
-        eng.id === engineerId ? { ...eng, isVetted: false } : eng
-      ));
-      toast({ title: "Success", description: "Engineer vetting status removed." });
+      await updateEngineer({ engineer_id: engineerId, is_vetted: false });
+      toast({
+        title: "Success",
+        description: "Engineer vetting removed.",
+      });
     } catch (error) {
-      console.error('Error unveting engineer:', error);
-      toast({ title: "Error", description: "Failed to remove vetting status", variant: "destructive" });
+      toast({
+        title: "Info",
+        description: "Failed to remove vetting",
+        variant: "destructive",
+      });
     }
   };
 
@@ -92,7 +84,7 @@ const EngineerVetting = () => {
                   </div>
                 ))
               : engineers.map((engineer) => (
-                  <div key={engineer.id} className="border rounded-lg p-4 space-y-3">
+                <div key={engineer.engineer_id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -100,8 +92,8 @@ const EngineerVetting = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{engineer.name}</h3>
-                            {engineer.isVetted && (
+                          <h3 className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</h3>
+                            {engineer.is_vetted && (
                               <Badge variant="secondary" className="text-xs">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Vetted
@@ -119,7 +111,7 @@ const EngineerVetting = () => {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Status: </span>
-                        <span className={`font-medium ${engineer.status === 'Active' ? 'text-green-600' : 'text-yellow-600'}`}>
+                        <span className={`font-medium ${engineer.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
                           {engineer.status}
                         </span>
                       </div>
@@ -127,7 +119,7 @@ const EngineerVetting = () => {
                     <div>
                       <span className="text-muted-foreground text-sm">Skills: </span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {engineer.skills.map(skill => (
+                      {engineer.specialization.map(skill => (
                           <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                         ))}
                       </div>
@@ -152,8 +144,8 @@ const EngineerVetting = () => {
                           {selectedEngineer && (
                             <div className="space-y-4">
                               <div>
-                                <h3 className="font-medium">{selectedEngineer.name}</h3>
-                                <p className="text-sm text-muted-foreground">{selectedEngineer.email}</p>
+                                <h3 className="font-medium">{selectedEngineer.user.first_name} {selectedEngineer.user.last_name}</h3>
+                                <p className="text-sm text-muted-foreground">{selectedEngineer.user.email}</p>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -168,7 +160,7 @@ const EngineerVetting = () => {
                               <div>
                                 <label className="text-sm font-medium">Skills</label>
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {selectedEngineer.skills.map(skill => (
+                                {selectedEngineer.specialization.map(skill => (
                                     <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                                   ))}
                                 </div>
@@ -193,8 +185,8 @@ const EngineerVetting = () => {
                             <DialogClose asChild>
                               <Button variant="outline">Close</Button>
                             </DialogClose>
-                            {selectedEngineer && !selectedEngineer.isVetted && (
-                              <Button onClick={() => handleVetEngineer(selectedEngineer.id)}>
+                            {selectedEngineer && !selectedEngineer.is_vetted && (
+                              <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)}>
                                 <CheckCircle className="w-4 h-4 mr-1" />
                                 Vet Engineer
                               </Button>
@@ -202,11 +194,11 @@ const EngineerVetting = () => {
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
-                      {engineer.isVetted ? (
+                      {engineer.is_vetted ? (
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          onClick={() => handleUnvetEngineer(engineer.id)}
+                          onClick={() => handleUnvetEngineer(engineer.engineer_id)}
                           className="flex-1"
                         >
                           Remove Vetting
@@ -214,7 +206,7 @@ const EngineerVetting = () => {
                       ) : (
                         <Button 
                           size="sm" 
-                          onClick={() => handleVetEngineer(engineer.id)}
+                          onClick={() => handleVetEngineer(engineer.engineer_id)}
                           className="flex-1"
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
@@ -252,36 +244,36 @@ const EngineerVetting = () => {
                       </tr>
                     ))
                   : engineers.map((engineer) => (
-                      <tr key={engineer.id} className="border-b hover:bg-gray-50">
+                    <tr key={engineer.engineer_id} className="border-b hover:bg-gray-50">
                         <td className="p-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                               <User className="w-4 h-4 text-primary" />
                             </div>
                             <div>
-                              <div className="font-medium">{engineer.name}</div>
-                              <div className="text-sm text-muted-foreground">{engineer.email}</div>
+                            <div className="font-medium">{`${engineer.user.first_name} ${engineer.user.last_name}`}</div>
+                              <div className="text-sm text-muted-foreground">{engineer.user.email}</div>
                             </div>
                           </div>
                         </td>
                         <td className="p-3">{engineer.experience} years</td>
                         <td className="p-3">
                           <div className="flex flex-wrap gap-1">
-                            {engineer.skills.slice(0, 2).map(skill => (
+                          {engineer.specialization.slice(0, 2).map(skill => (
                               <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                             ))}
-                            {engineer.skills.length > 2 && (
-                              <span className="text-xs text-muted-foreground">+{engineer.skills.length - 2} more</span>
+                          {engineer.specialization.length > 2 && (
+                            <span className="text-xs text-muted-foreground">+{engineer.specialization.length - 2} more</span>
                             )}
                           </div>
                         </td>
                         <td className="p-3">
-                          <span className={`text-sm ${engineer.status === 'Active' ? 'text-green-600' : 'text-yellow-600'}`}>
+                          <span className={`text-sm ${engineer.status === 'active' ? 'text-green-600 bg-yellow-200 rounded-lg p-1' : 'text-yellow-600'}`}>
                             {engineer.status}
                           </span>
                         </td>
                         <td className="p-3">
-                          {engineer.isVetted ? (
+                          {engineer.is_vetted ? (
                             <Badge variant="secondary">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               Vetted
@@ -309,8 +301,8 @@ const EngineerVetting = () => {
                                 {selectedEngineer && (
                                   <div className="space-y-4">
                                     <div>
-                                      <h3 className="font-medium">{selectedEngineer.name}</h3>
-                                      <p className="text-sm text-muted-foreground">{selectedEngineer.email}</p>
+                                      <h3 className="font-medium">{selectedEngineer.user.first_name} {selectedEngineer.user.last_name}</h3>
+                                    <p className="text-sm text-muted-foreground">{selectedEngineer.user.email}</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                       <div>
@@ -319,13 +311,13 @@ const EngineerVetting = () => {
                                       </div>
                                       <div>
                                         <label className="text-sm font-medium">Country</label>
-                                        <p className="text-sm">{selectedEngineer.country}</p>
+                                        <p className="text-sm">{selectedEngineer.user.country}</p>
                                       </div>
                                     </div>
                                     <div>
                                       <label className="text-sm font-medium">Skills</label>
                                       <div className="flex flex-wrap gap-1 mt-1">
-                                        {selectedEngineer.skills.map(skill => (
+                                      {selectedEngineer.specialization.map(skill => (
                                           <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                                         ))}
                                       </div>
@@ -350,8 +342,8 @@ const EngineerVetting = () => {
                                   <DialogClose asChild>
                                     <Button variant="outline">Close</Button>
                                   </DialogClose>
-                                  {selectedEngineer && !selectedEngineer.isVetted && (
-                                    <Button onClick={() => handleVetEngineer(selectedEngineer.id)}>
+                                  {selectedEngineer && !selectedEngineer.is_vetted && (
+                                    <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)}>
                                       <CheckCircle className="w-4 h-4 mr-1" />
                                       Vet Engineer
                                     </Button>
@@ -359,18 +351,18 @@ const EngineerVetting = () => {
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                            {engineer.isVetted ? (
+                            {engineer.is_vetted ? (
                               <Button 
                                 size="sm" 
                                 variant="outline" 
-                                onClick={() => handleUnvetEngineer(engineer.id)}
+                                onClick={() => handleUnvetEngineer(engineer.engineer_id)}
                               >
                                 Remove Vetting
                               </Button>
                             ) : (
                               <Button 
                                 size="sm" 
-                                onClick={() => handleVetEngineer(engineer.id)}
+                                onClick={() => handleVetEngineer(engineer.engineer_id)}
                               >
                                 <CheckCircle className="w-4 h-4 mr-1" />
                                 Vet

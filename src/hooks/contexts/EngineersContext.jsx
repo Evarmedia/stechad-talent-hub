@@ -10,7 +10,7 @@ export const EngineersProvider = ({ children }) => {
 
   const [engineers, setEngineers] = useState([]);
   const [engrDashboardData, setEngrDashboardData] = useState(null);
-  const [engrProjects, setEngrProjects ] = useState([])
+  const [engrProjects, setEngrProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false); // prevents double fetching
 
@@ -66,11 +66,11 @@ export const EngineersProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await apiService.get(`engineers/projects`);
-      setEngrProjects(response.data?.projects)
+      setEngrProjects(response.data?.projects);
       setLoading(false);
       return response.data.projects || [];
     } catch (error) {
-      console.log("Error Fetching Engr Projects", error)
+      console.log("Error Fetching Engr Projects", error);
     }
   };
 
@@ -119,19 +119,22 @@ export const EngineersProvider = ({ children }) => {
     }
   };
 
-  const updateEngineer = async (id, updateData) => {
+  const updateEngineer = async (updateData) => {
     try {
-      const response = await apiService.request(`/admin/engineers/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(updateData),
-      });
+      const response = await apiService.putNoId(
+        `admin/engineers/toggle-vet`,
+        updateData,
+      );
 
       const updated = response.data?.engineer || response.data;
       if (updated) {
         setEngineers((prev) =>
-          prev.map((e) => (e.id === id || e.engineer_id === id ? updated : e))
+          prev.map((e) =>
+            e.engineer_id === updateData.engineer_id ? updated : e
+          )
         );
       }
+      // console.log("Updated Response", updated)
       return updated;
     } catch (error) {
       console.error("Update engineer error:", error);
