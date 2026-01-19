@@ -62,7 +62,7 @@ const EngineerJobs = () => {
       return;
     }
 
-    const hasApplied = userApplications.some(a => a.job_id === jobId);
+    const hasApplied = userApplications.some(a => a.jobs_id === jobId);
     if (hasApplied) {
       toast({
         title: "Error",
@@ -86,7 +86,7 @@ const EngineerJobs = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to submit application. Please try again.",
+        description: error.message || "Failed to submit application. Please try again.",
         variant: "destructive"
       });
     } finally {

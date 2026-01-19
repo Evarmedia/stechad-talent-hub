@@ -35,7 +35,7 @@ const DEFAULT_RESPONSIBILITIES = [
   "Meet project deadlines and quality standards",
 ];
 
-const EXPERIENCE_LEVELS = ["entry", "intermediate", "senior", "expert"] as const;
+const EXPERIENCE_LEVELS = ["entry", "intermediate", "advanced", "expert"] as const;
 
 const PostJob = () => {
   const { createJob } = useDataContext();
@@ -49,7 +49,7 @@ const PostJob = () => {
     duration: "",
     openings: "",
     remote: false,
-    employment_type: "fulltime",
+    employment_type: "full-time",
     salary: "",
     experience_level: "",
     requirements: "",
@@ -104,13 +104,13 @@ const PostJob = () => {
         company: form.company || "Your Company",
         location: form.location,
         description: form.description,
-        skills_required: form.skills_required,
-        duration: form.duration,
-        openings: Number(form.openings),
-        remote: form.remote,
         employment_type: form.employment_type,
         salary: form.salary || "Competitive",
+        duration: form.duration,
+        openings: Number(form.openings),
         experience_level: form.experience_level,
+        skills_required: form.skills_required,
+        // remote: form.remote,
         requirements: toArray(form.requirements, DEFAULT_REQUIREMENTS),
         responsibilities: toArray(form.responsibilities, DEFAULT_RESPONSIBILITIES),
         posted: new Date().toISOString().split("T")[0],
@@ -257,9 +257,9 @@ const PostJob = () => {
                 onValueChange={handleEmploymentTypeChange}
                 className="flex gap-6"
               >
-                <RadioGroupItem value="fulltime" /> Full-time
+                <RadioGroupItem value="full-time" /> Full-time
                 <RadioGroupItem value="contract" /> Contract
-                <RadioGroupItem value="parttime" /> Part-time
+                <RadioGroupItem value="part-time" /> Part-time
               </RadioGroup>
             </div>
 

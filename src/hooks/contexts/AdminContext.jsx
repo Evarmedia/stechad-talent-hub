@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
-import { toast } from "@/hooks/use-toast";
 
 const AdminContext = createContext();
 
@@ -20,11 +20,11 @@ export const AdminProvider = ({ children }) => {
     try {
       const response = await apiService.get(`admin/dashboard`);
       setAdminDashboardData(response.data);
-      setLoading(false);
       // console.log('Admin Data from context', response.data);
       return response.data;
     } catch (error) {
       console.error("Admin dashboard fetch error:", error);
+      throw error;
     }
   };
 
@@ -35,7 +35,7 @@ export const AdminProvider = ({ children }) => {
     try {
       const response = await apiService.post(
         "admin/project-managers/invite",
-        pmData
+        pmData,
       );
 
       // console.log("Response From PM Invitation", response.message);
@@ -48,10 +48,7 @@ export const AdminProvider = ({ children }) => {
 
       return response;
     } catch (error) {
-      console.error(
-        "Error inviting project manager:",
-        error.message
-      );
+      console.error("Error inviting project manager:", error.message);
 
       toast({
         title: "Info",
@@ -73,18 +70,17 @@ export const AdminProvider = ({ children }) => {
     if (!token || !user || initialized) return;
 
     const init = async () => {
-      setLoading(true);
-
-      try {
-        // Admin fetch their dashboard ONLY
-        await getAdminDashboard();
-        setInitialized(true);
-        setLoading(false);
-      } catch (err) {
-        console.error("AdminContext init error:", err);
-      } finally {
-        setInitialized(true);
-        setLoading(false);
+      if (user && user.role == "admin") {
+        try {
+        setLoading(true);
+          // Admin fetch their dashboard ONLY
+          await getAdminDashboard();
+        } catch (err) {
+          console.error("AdminContext init error:", err);
+        } finally {
+          setInitialized(true);
+          setLoading(false);
+        }
       }
     };
 

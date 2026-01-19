@@ -92,13 +92,13 @@ export const JobsProvider = ({ children }) => {
 
   const createJob = async (jobData) => {
     setLoading(true);
-    console.log("Job Data to be Created", jobData)
+    // console.log("Job Data to be Created", jobData)
     try {
       const response = await apiService.post("pm/jobs", jobData);
 
       const createdJob = response.data?.job || response.data;
 
-      console.log("Created Job Response", createdJob);
+      // console.log("Created Job Response", createdJob);
 
       if (createdJob) {
         setJobs((prev) => [createdJob, ...prev]);

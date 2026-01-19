@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
 
@@ -21,11 +21,11 @@ export const EngineersProvider = ({ children }) => {
     try {
       const response = await apiService.get(`engineers/dashboard`);
       setEngrDashboardData(response.data);
-      setLoading(false);
       // console.log('Engr Data from context', response.data);
       return response.data;
     } catch (error) {
       console.error("Engineer dashboard fetch error:", error);
+      throw error;
     }
   };
 
@@ -63,14 +63,13 @@ export const EngineersProvider = ({ children }) => {
   };
 
   const getEngrProjects = async () => {
-    setLoading(true);
     try {
       const response = await apiService.get(`engineers/projects`);
       setEngrProjects(response.data?.projects);
-      setLoading(false);
       return response.data.projects || [];
     } catch (error) {
       console.log("Error Fetching Engr Projects", error);
+      throw error;
     }
   };
 
@@ -88,13 +87,11 @@ export const EngineersProvider = ({ children }) => {
           // Engineers fetch their dashboard ONLY
           await getEngrDashboard();
           await getEngrProjects();
-          setInitialized(true);
         }
 
         if (user.role === "admin" || user.role === "project_manager") {
           // Admins + PMs fetch engineer list ONLY
           await getEngineers();
-          setInitialized(true);
         }
       } catch (err) {
         console.error("EngineersContext init error:", err);

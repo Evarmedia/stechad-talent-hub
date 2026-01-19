@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../../services/apiService.js";
 
 import { useAuthContext } from "../useAuthContext.jsx";
@@ -78,15 +78,11 @@ export const ProjectManagersProvider = ({ children }) => {
         if (user.role === "project_manager") {
           // PMs fetch Dashboard
           await getPmDashboard();
-          setInitialized(true);
-          setLoading(false);
         }
 
         if (user.role === "admin") {
           // Admins fetch pm list ONLY
           await getProjectManagers();
-          setInitialized(true);
-          setLoading(false);
         }
       } catch (err) {
         console.error("PMContext init error:", err);
@@ -97,7 +93,7 @@ export const ProjectManagersProvider = ({ children }) => {
     };
 
     init();
-  }, [token, user, initialized]);
+  }, [token, user]);
 
   const resetPMsState = () => {
     setProjectManagers([]);

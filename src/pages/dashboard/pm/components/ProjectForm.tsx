@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, CheckCircle, AlertCircle, Circle, Edit } from "lucide-react";
+import { Plus, Trash2, CheckCircle, AlertCircle, Circle, Edit, OctagonPause, CircleOff } from "lucide-react";
 
 interface Task {
   id: number;
@@ -21,6 +21,7 @@ interface ProjectFormData {
   status: string;
   progress: number;
   deadline: string;
+  start_date?: string;
   priority: string;
   team: string[];
   tasks: Task[];
@@ -41,8 +42,10 @@ interface ProjectFormProps {
 const getTaskIcon = (status: string) => {
   switch (status) {
     case "completed": return <CheckCircle className="w-4 h-4 text-green-600" />;
-    case "in-progress": return <AlertCircle className="w-4 h-4 text-blue-600" />;
+    case "in_progresss": return <AlertCircle className="w-4 h-4 text-blue-600" />;
     case "pending": return <Circle className="w-4 h-4 text-gray-400" />;
+    case "on_hold": return <OctagonPause className="w-4 h-4 text-gray-400" />;
+    case "cancelled": return <CircleOff className="w-4 h-4 text-gray-400" />;
     default: return <Circle className="w-4 h-4 text-gray-400" />;
   }
 };
@@ -155,9 +158,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Planning">Planning</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="planning">Planning</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -231,9 +236,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="planning">Planning</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="on_hold">On Hold</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
             <Button type="button" onClick={addTask} className="w-full md:w-auto">
@@ -264,9 +271,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="on_hold">On Hold</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button size="sm" onClick={saveTaskEdit}>Save</Button>
