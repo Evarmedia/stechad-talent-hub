@@ -5,15 +5,18 @@ import { CheckCircle, Clock, Users, CalendarDays } from "lucide-react";
 
 interface ProjectStatsProps {
   projects: Array<{
-    id: number;
+    projects_id: string;
     status: string;
     tasks?: Array<{ status: string }>;
+    priority: string;
   }>;
 }
 
 export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
-  const completedProjects = projects.filter(p => p.status === 'Completed').length;
-  const inProgressProjects = projects.filter(p => p.status === 'In Progress').length;
+  console.log(projects);
+  const completedProjects = projects.filter(p => p.status === 'completed').length;
+  const inProgressProjects = projects.filter(p => p.status === 'in_progress').length;
+  const criticalProjects = projects.filter(p => p.priority === 'critical').length;
   
   const allTasks = projects.flatMap(p => p.tasks || []);
   const completedTasks = allTasks.filter(t => t.status === 'completed').length;
@@ -48,8 +51,8 @@ export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-purple-600" />
             <div>
-              <p className="text-sm text-gray-600">Team Members</p>
-              <p className="text-2xl font-bold">8</p>
+              <p className="text-sm text-gray-600 font-bold">Critical Projects</p>
+              <p className="text-2xl font-bold">{criticalProjects}</p>
             </div>
           </div>
         </CardContent>

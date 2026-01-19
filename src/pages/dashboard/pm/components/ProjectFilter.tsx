@@ -41,11 +41,11 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="Planning">Planning</SelectItem>
-            <SelectItem value="In Progress">In Progress</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
+            <SelectItem value="planning">Planning</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
         </Select>
 
@@ -53,11 +53,11 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="All Priority" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="all">All Priority</SelectItem>
-            <SelectItem value="High">High</SelectItem>
-            <SelectItem value="Medium">Medium</SelectItem>
-            <SelectItem value="Low">Low</SelectItem>
+            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="low">Low</SelectItem>
           </SelectContent>
         </Select>
 
