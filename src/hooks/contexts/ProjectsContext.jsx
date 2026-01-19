@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
+import { toast } from '@/hooks/use-toast';
 
 const ProjectsContext = createContext();
 
@@ -86,6 +87,7 @@ export const ProjectsProvider = ({ children }) => {
   };
 
   const updateProject = async (id, updateData) => {
+    console.log("Updating project", id, updateData);
     setLoading(true);
     try {
       const response = await apiService.request(`/projects/${id}`, {
@@ -105,6 +107,7 @@ export const ProjectsProvider = ({ children }) => {
           )
         );
       }
+      console.log("Updated project", updatedProject);
       return updatedProject;
     } catch (error) {
       console.error("Error updating project:", error);
@@ -123,6 +126,11 @@ export const ProjectsProvider = ({ children }) => {
       );
     } catch (error) {
       console.error("Error deleting project:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete the project.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -144,12 +152,12 @@ export const ProjectsProvider = ({ children }) => {
     const init = async () => {
       setLoading(true);
       try {
-        if (user.role === "admin") { // adjust this if Pm need to see all projects(check backend access too)
+        if (user.role === "admin" || user.role === "project_manager") { // adjust this if Pm need to see all projects(check backend access too)
           getProjects();
           setInitialized(true);
         }
       } catch (err) {
-        console.error("ProjectsManagersContext init error:", err);
+        console.error("ProjectsContext init error:", err);
       } finally {
         setInitialized(true);
         setLoading(false);

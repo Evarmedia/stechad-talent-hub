@@ -7,7 +7,7 @@ interface ProjectFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (formData: any) => Promise<void>;
-  initialData?: any;
+  initialData: any;
   mode: 'create' | 'edit';
 }
 
@@ -18,13 +18,14 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   initialData,
   mode
 }) => {
+  console.log("ProjectFormDialog initialData:", initialData);
   const [formData, setFormData] = useState({
-    title: initialData?.name || initialData?.title || '',
+    title: initialData?.title || '',
     description: initialData?.description || '',
-    status: initialData?.status || 'Planning',
+    status: initialData?.status || 'planning',
     progress: initialData?.progress || 0,
     deadline: initialData?.deadline || '',
-    priority: initialData?.priority || 'Medium',
+    priority: initialData?.priority || 'medium',
     team: initialData?.team || [],
     tasks: initialData?.tasks || []
   });

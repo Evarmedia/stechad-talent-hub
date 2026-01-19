@@ -20,6 +20,8 @@ const Projects = () => {
 
   const { projects, getProjects, createProject, updateProject, deleteProject, loading } = useDataContext();
 
+  // console.log("Projects Page - Projects from Context:", projects);
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">

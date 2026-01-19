@@ -157,7 +157,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="planning">Planning</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -172,10 +172,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Low">Low</SelectItem>
-              <SelectItem value="Medium">Medium</SelectItem>
-              <SelectItem value="High">High</SelectItem>
+            <SelectContent className="bg-white">
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -235,9 +236,9 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="planning">Planning</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="in_progress">In Progres</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="on_hold">On Hold</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -270,8 +271,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="planning">Planning</SelectItem>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="planning">Planninggggg</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="on_hold">On Hold</SelectItem>
