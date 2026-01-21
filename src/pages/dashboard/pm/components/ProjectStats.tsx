@@ -13,7 +13,7 @@ interface ProjectStatsProps {
 }
 
 export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
-  console.log(projects);
+  // console.log(projects);
   const completedProjects = projects.filter(p => p.status === 'completed').length;
   const inProgressProjects = projects.filter(p => p.status === 'in_progress').length;
   const criticalProjects = projects.filter(p => p.priority === 'critical').length;
@@ -24,6 +24,17 @@ export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-orange-600" />
+            <div>
+              <p className="text-sm text-gray-600">Total Projects</p>
+              <p className="text-2xl font-bold">{projects.length}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-2">
@@ -53,17 +64,6 @@ export const ProjectStats: React.FC<ProjectStatsProps> = ({ projects }) => {
             <div>
               <p className="text-sm text-gray-600 font-bold">Critical Projects</p>
               <p className="text-2xl font-bold">{criticalProjects}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-orange-600" />
-            <div>
-              <p className="text-sm text-gray-600">Tasks Completed</p>
-              <p className="text-2xl font-bold">{completedTasks}/{totalTasks}</p>
             </div>
           </div>
         </CardContent>

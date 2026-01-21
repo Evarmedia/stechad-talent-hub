@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { ProjectStats } from "./components/ProjectStats";
@@ -18,7 +18,22 @@ const Projects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   // const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { projects, getProjects, createProject, updateProject, deleteProject, loading } = useDataContext();
+  const { projects, createProject, updateProject, deleteProject, loading } = useDataContext();
+
+  const filteredProjects = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    return projects.filter((project) => {
+      const matchesStatus = statusFilter === "all" || project.status === statusFilter;
+      const matchesPriority = priorityFilter === "all" || project.priority === priorityFilter;
+      const matchesSearch =
+        !search ||
+        project.name?.toLowerCase().includes(search) ||
+        project.description?.toLowerCase().includes(search);
+
+      return matchesStatus && matchesPriority && matchesSearch;
+    });
+  }, [projects, statusFilter, priorityFilter, searchTerm]);
 
   // console.log("Projects Page - Projects from Context:", projects);
 
@@ -71,7 +86,7 @@ const Projects = () => {
         <p className="text-gray-600">Manage and track your projects</p>
       </div>
 
-      <ProjectStats projects={projects} />
+      <ProjectStats projects={filteredProjects} />
 
       <ProjectFilter
         statusFilter={statusFilter}
@@ -84,13 +99,13 @@ const Projects = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.length === 0 ? (
+        {filteredProjects.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
             <p className="text-lg mb-2">No projects found</p>
             <p className="text-sm">Create your first project to get started</p>
           </div>
         ) : (
-            projects.map((project) => (
+            filteredProjects.map((project) => (
             <ProjectCard
               key={project.projects_id}
               project={project}

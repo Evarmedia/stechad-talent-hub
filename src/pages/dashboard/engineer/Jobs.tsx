@@ -17,7 +17,8 @@ const EngineerJobs = () => {
     loading, 
     getJobs,
     createApplication, 
-    getEngineersApplication 
+    getEngineersApplication,
+    refreshAllEngineers
   } = useDataContext();
 
   const { user } = useAuthContext();
@@ -34,7 +35,7 @@ const EngineerJobs = () => {
 
     loadApplications();
   }, [user?.user_id]);
-
+  
   // -------------------------------------------------------------
   // SEARCH & FILTER (Debounced API call)
   // -------------------------------------------------------------
@@ -62,7 +63,7 @@ const EngineerJobs = () => {
       return;
     }
 
-    const hasApplied = userApplications.some(a => a.jobs_id === jobId);
+    const hasApplied = userApplications.some(a => a.job_id === jobId);
     if (hasApplied) {
       toast({
         title: "Error",
@@ -83,6 +84,7 @@ const EngineerJobs = () => {
         title: "Success",
         description: "Application submitted successfully!",
       });
+      refreshAllEngineers();
     } catch (error) {
       toast({
         title: "Error",

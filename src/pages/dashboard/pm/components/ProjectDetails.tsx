@@ -29,18 +29,18 @@ interface ProjectDetailsProps {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Completed": return "bg-green-500";
-    case "In Progress": return "bg-blue-500";
-    case "Planning": return "bg-yellow-500";
+    case "completed": return "bg-green-500";
+    case "in_progress": return "bg-blue-500";
+    case "planning": return "bg-yellow-500";
     default: return "bg-gray-500";
   }
 };
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
-    case "High": return "bg-red-100 text-red-800";
-    case "Medium": return "bg-yellow-100 text-yellow-800";
-    case "Low": return "bg-green-100 text-green-800";
+    case "high": return "bg-red-100 text-red-800";
+    case "medium": return "bg-yellow-100 text-yellow-800";
+    case "low": return "bg-green-100 text-green-800";
     default: return "bg-gray-100 text-gray-800";
   }
 };
@@ -48,7 +48,7 @@ const getPriorityColor = (priority: string) => {
 const getTaskIcon = (status: string) => {
   switch (status) {
     case "completed": return <CheckCircle className="w-4 h-4 text-green-600" />;
-    case "in-progress": return <AlertCircle className="w-4 h-4 text-blue-600" />;
+    case "in_progress": return <AlertCircle className="w-4 h-4 text-blue-600" />;
     case "pending": return <Circle className="w-4 h-4 text-gray-400" />;
     default: return <Circle className="w-4 h-4 text-gray-400" />;
   }

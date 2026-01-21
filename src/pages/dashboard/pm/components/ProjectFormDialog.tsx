@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProjectForm } from "./ProjectForm";
 
@@ -18,9 +18,8 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   initialData,
   mode
 }) => {
-  console.log("ProjectFormDialog initialData:", initialData);
   const [formData, setFormData] = useState({
-    title: initialData?.title || '',
+    title: initialData?.title || initialData?.name || '',
     description: initialData?.description || '',
     status: initialData?.status || 'planning',
     progress: initialData?.progress || 0,
@@ -37,13 +36,49 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
     status: 'pending'
   });
 
+  useEffect(() => {
+    const normalizeDate = (value: string | undefined) => {
+      if (!value) return '';
+      return value.includes('T') ? value.split('T')[0] : value;
+    };
+
+    const normalizedTasks = (initialData?.tasks || []).map((task: any, index: number) => ({
+      id: task.id ?? task.task_id ?? index,
+      title: task.title || task.name || '',
+      assignee: task.assignee || '',
+      status: task.status || 'pending'
+    }));
+
+    setFormData({
+      title: initialData?.title || initialData?.name || '',
+      description: initialData?.description || '',
+      status: initialData?.status || 'planning',
+      progress: Number(initialData?.progress ?? 0),
+      deadline: normalizeDate(initialData?.deadline),
+      priority: initialData?.priority || 'medium',
+      team: initialData?.team || [],
+      tasks: normalizedTasks
+    });
+    setNewTeamMember('');
+    setNewTask({
+      title: '',
+      assignee: '',
+      status: 'pending'
+    });
+  }, [initialData, mode, isOpen]);
+
   const handleSubmit = async () => {
     // Convert title back to name for the API
     const submitData = {
       ...formData,
       name: formData.title
     };
-    await onSubmit(submitData);
+    try {
+      await onSubmit(submitData);
+      onClose();
+    } catch (error) {
+      console.error('Failed to submit project form:', error);
+    }
   };
 
   return (

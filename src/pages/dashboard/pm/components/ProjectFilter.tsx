@@ -61,8 +61,8 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           </SelectContent>
         </Select>
 
-        <Button onClick={onCreateNew} className="w-full md:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={onCreateNew} className="w-full md:w-auto text-white">
+          <Plus className="w-4 h-4 mr-2 text-white" />
           Create Project
         </Button>
       </div>

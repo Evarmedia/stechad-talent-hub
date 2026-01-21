@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Camera, FileText, Loader2, X, ZoomIn } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from '@/hooks/use-toast';
 import { useAuthContext } from "../../../hooks/useAuthContext";
 
 // Utility function to extract filename from object path
@@ -116,13 +116,13 @@ const Profile = () => {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file");
+        toast({title: "Error",description:"Please select an image file"});
         return;
       }
 
       // Validate file size (5MB max)
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("Image size must be less than 2MB");
+        toast({ title: "Error", description: "Image size must be less than 2MB" });
         return;
       }
 
@@ -144,25 +144,25 @@ const Profile = () => {
       // Validate file type (PDF, DOC, DOCX)
       const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error("Please select a PDF or Word document");
+        toast({ title: "Error", description: "Please select a PDF or Word document" });
         return;
       }
 
       // Validate file size (10MB max for documents)
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("File size must be less than 2MB");
+        toast({ title: "Error", description: "File size must be less than 2MB" });
         return;
       }
 
       setFormData(prev => ({ ...prev, cv_file: file }));
-      toast.success(`Resume selected: ${file.name}`);
+      toast({ title: "Success", description: `Resume selected: ${file.name}` });
     }
   };
 
   // Handle CV removal
   const handleCVRemove = () => {
     setFormData(prev => ({ ...prev, cv_file: null }));
-    toast.info("Resume removed");
+    toast({ title: "Info", description: `Resume removed` });
   };
 
   // Handle form submission
@@ -176,7 +176,7 @@ const Profile = () => {
 
     // Validate required fields
     if (!formData.first_name.trim() || !formData.last_name.trim()) {
-      toast.error("First name and last name are required");
+      toast({ title: "Info", description: `First name and last name are required` });
       return;
     }
 
@@ -234,15 +234,15 @@ const Profile = () => {
       // console.log("✅ Profile update response:", response);
 
       if (response?.success) {
-        toast.success("Profile updated successfully!");
+        toast({ title: "Success", description: "Profile updated successfully!" });
         setIsEditing(false);
         setFormData(prev => ({ ...prev, avatar: null }));
       } else {
-        toast.error(response?.message || "Failed to update profile");
+        toast({ title: "Error", description: response?.message || "Failed to update profile" });
       }
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error(error?.message || "An error occurred while updating your profile");
+      toast({ title: "Error", description: error.message || "An error occurred while updating profile" });
     } finally {
       setLoading(false);
     }

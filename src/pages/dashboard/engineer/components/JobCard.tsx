@@ -46,6 +46,7 @@ const JobCard: React.FC<JobCardProps> = ({
             size="sm" 
             onClick={() => onApply(job.jobs_id)}
             disabled={isApplying || hasApplied}
+            className="text-white"
           >
             {isApplying 
               ? "Applying..." 

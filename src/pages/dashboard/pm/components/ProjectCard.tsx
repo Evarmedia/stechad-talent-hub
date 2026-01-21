@@ -8,7 +8,7 @@ import { CalendarDays, Edit, Trash2, Users } from "lucide-react";
 
 interface Project {
   projects_id: string;
-  name: string;
+  title: string;
   description?: string;
   status: string;
   progress: number;
@@ -34,6 +34,7 @@ const getStatusColor = (status: string) => {
     case "completed": return "bg-green-100 text-green-800";
     case "in_progress": return "bg-blue-100 text-blue-800";
     case "planning": return "bg-yellow-100 text-yellow-800";
+    case "on_hold": return "bg-yellow-100 text-gray-600";
     default: return "bg-gray-100 text-gray-800";
   }
 };
@@ -57,7 +58,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDel
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-lg font-semibold text-gray-900 truncate pr-2">
-            {project.name}
+            {project.title}
           </h3>
           <Badge className={getPriorityColor(project.priority)}>
             {project.priority}

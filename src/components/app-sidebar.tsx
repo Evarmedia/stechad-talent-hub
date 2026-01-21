@@ -10,7 +10,7 @@ const engineerMenu = [
   { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
   { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
-  { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
+  // { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
   { icon: User,    label: "Profile",   to: "/dashboard/engineer/profile" },
 ];
 
@@ -22,7 +22,7 @@ const pmMenu = [
   // { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
-  { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
+  // { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
 ];
 
 const adminMenu = [
@@ -32,7 +32,7 @@ const adminMenu = [
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
   { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
-  { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
+  // { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
 ];
 

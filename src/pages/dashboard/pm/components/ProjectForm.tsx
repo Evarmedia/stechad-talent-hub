@@ -203,7 +203,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             onKeyPress={(e) => e.key === 'Enter' && addTeamMember()}
           />
           <Button type="button" onClick={addTeamMember}>
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-white" />
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -244,8 +244,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
-            <Button type="button" onClick={addTask} className="w-full md:w-auto">
-              <Plus className="w-4 h-4" />
+            <Button type="button" onClick={addTask} className="w-full md:w-auto text-white">
+              <Plus className="w-4 h-4 text-white" />
             </Button>
           </div>
         </div>
@@ -272,15 +272,15 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white">
-                      <SelectItem value="planning">Planninggggg</SelectItem>
+                      <SelectItem value="planning">Planning</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="on_hold">On Hold</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button size="sm" onClick={saveTaskEdit}>Save</Button>
-                  <Button size="sm" variant="outline" onClick={cancelTaskEdit}>Cancel</Button>
+                  <Button size="sm" className="text-white" onClick={saveTaskEdit}>Save</Button>
+                  <Button size="sm" className="text-white" variant="outline" onClick={cancelTaskEdit}>Cancel</Button>
                 </div>
               ) : (
                 <>
@@ -308,7 +308,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         <Button variant="outline" onClick={onCancel} className="w-full md:w-auto">
           Cancel
         </Button>
-        <Button onClick={onSubmit} className="w-full md:w-auto">
+        <Button onClick={onSubmit} className="w-full md:w-auto text-white">
           {isEdit ? "Update Project" : "Create Project"}
         </Button>
       </div>

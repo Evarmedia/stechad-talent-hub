@@ -93,6 +93,7 @@ const DataProviderInner = ({ children }) => {
     updateEngineer: engineersContext.updateEngineer,
     deleteEngineer: engineersContext.deleteEngineer,
     resetEngineerState: engineersContext.resetEngineerState,
+    refreshAllEngineers: engineersContext.refreshAll,
 
     // Jobs
     getJobs: jobsContext.getJobs,

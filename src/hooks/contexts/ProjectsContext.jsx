@@ -87,13 +87,10 @@ export const ProjectsProvider = ({ children }) => {
   };
 
   const updateProject = async (id, updateData) => {
-    console.log("Updating project", id, updateData);
+    // console.log("Updating project", id, updateData,);
     setLoading(true);
     try {
-      const response = await apiService.request(`/projects/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(updateData),
-      });
+      const response = await apiService.put(`projects`, id, updateData);
 
       const updatedProject =
         response.success && response.data
@@ -107,7 +104,7 @@ export const ProjectsProvider = ({ children }) => {
           )
         );
       }
-      console.log("Updated project", updatedProject);
+      // console.log("Updated project", updatedProject);
       return updatedProject;
     } catch (error) {
       console.error("Error updating project:", error);

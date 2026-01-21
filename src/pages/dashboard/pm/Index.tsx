@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const PMDashboard = () => {
-  
+
   const { pmDashboardData, loading } = useDataContext();
   const { user } = useAuthContext();
   const recentJobs = pmDashboardData?.recentJobs ?? [];
@@ -39,9 +39,9 @@ const PMDashboard = () => {
     },
     {
       label: "Success Rate",
-      value: "94%",
+      value: statistics?.successRate ?? "0%",
       icon: TrendingUp,
-      change: "+2%",
+      change: statistics?.successRateChange ?? "0%",
     },
   ];
 
@@ -50,8 +50,10 @@ const PMDashboard = () => {
       case "completed": return "bg-green-100 text-green-800";
       case "on_hold": return "bg-blue-100 text-red-800";
       case "planning": return "bg-yellow-100 text-yellow-800";
-      case "in_progress": return "bg-green-100 text-green-800";
+      case "in_progress": return "bg-green-300 text-black";
       case "cancelled": return "bg-red-400 text-gray-800";
+      case "active": return "bg-green-500 text-black";
+      case "closed": return "bg-red-400 text-black";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -178,7 +180,9 @@ const PMDashboard = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{project.title}</span>
                       <Badge className={getStatusColor(project.status)} variant="outline">
-                        {project.status.replace("_", " ").toUpperCase()}
+                        <span className="capitalize">
+                          {project.status.replace("_", " ")}
+                        </span>
                       </Badge>
                     </div>
                     <div className="space-y-1">

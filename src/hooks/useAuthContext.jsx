@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       // Enhanced error message for rate limiting
       if (error.status === 429) {
         throw new Error(
-          "Too many login attempts. Please wait a moment and try again."
+          "Too many login attempts. Please wait a moment and try again.",
         );
       }
       throw error;
@@ -210,11 +210,11 @@ export const AuthProvider = ({ children }) => {
       if (response.success && response.data) {
         const updatedUser = response.data.user;
         // console.log("✅ [updateProfile] Updated user object:", updatedUser);
-        
+
         // Update auth context
         setUser(updatedUser);
         localStorage.setItem("stechad_user", JSON.stringify(updatedUser));
-        
+
         // Update tokens if they were returned
         // if (response.data.token) {
         //   localStorage.setItem("stechad_token", response.data.token);
@@ -223,7 +223,7 @@ export const AuthProvider = ({ children }) => {
         // if (response.data.refreshToken) {
         //   localStorage.setItem("stechad_refresh_token", response.data.refreshToken);
         // }
-        
+
         return response;
       }
 
@@ -248,6 +248,21 @@ export const AuthProvider = ({ children }) => {
     return user?.engineer?.is_onboarded === true;
   };
 
+  const acceptInvites = async (
+    token,
+    payload
+  ) => {
+    setLoading(true);
+    try {
+      await axios.post(`/auth/invite/accept/${token}`, {
+        ...payload,
+      });
+    } catch (error) {
+      console.error("Accept invites error:", error);
+    } finally {
+    }
+  };
+
   const value = {
     user,
     updateUser,
@@ -263,6 +278,7 @@ export const AuthProvider = ({ children }) => {
     googleLogin,
     sendOtp,
     resetPassword,
+    acceptInvites,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -22,7 +22,7 @@ const JobsGrid: React.FC<JobsGridProps> = ({
   onViewDetails
 }) => {
   const hasAppliedToJob = (jobId: string) => {
-    return userApplications.some(app => app.jobs_id === jobId);
+    return userApplications.some(app => app.job_id === jobId);
   };
 
   if (isLoading) {
