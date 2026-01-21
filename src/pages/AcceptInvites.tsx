@@ -1,18 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useLocation } from "react-router-dom";
 
 const ResetPassword = () => {
-  const { resetPassword } = useAuthContext();
-  const [canResend, setCanResend] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const { acceptInvites } = useAuthContext();
   const [formData, setFormData] = useState({
-    otp: "",
+    temp_password: "",
     new_password: "",
     confirm_password: ""
   });
@@ -21,27 +19,10 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          setCanResend(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token");
 
-    return () => clearInterval(timer);
-  }, []);
-
-  // Handle OTP change
-  const handleOTPChange = (newValue: string) => {
-    setFormData({
-      ...formData,
-      otp: newValue,  // Handle OTP input change
-    });
-  };
 
   // Handle input change (for password and confirmPassword)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,15 +54,9 @@ const ResetPassword = () => {
     }
 
     setLoading(true);
-    console.log("Resetting password with:", formData);
-    await resetPassword(formData);
+    // console.log("Resetting password with:", formData);
+    await acceptInvites(token, formData);
     navigate("/login");
-  };
-
-  const handleResend = () => {
-    setCanResend(false);
-    setCountdown(30);
-    navigate("/forgot-password");
   };
 
   return (
@@ -90,41 +65,39 @@ const ResetPassword = () => {
         <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8 flex flex-col items-center">
           <h1 className="text-2xl font-bold text-primary mb-2 text-center">Reset Password</h1>
           <p className="text-center text-text-main mb-8 text-sm">
-            Please enter your OTP and new password below.
+            Welcome! Please Reset Your password using the Old password sent to your email to gain access to your account.
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
             <div className="space-y-2">
-              {/* OTP input */}
-              {/* <div className="flex flex-col gap-6 w-full items-center">
-                <div className="space-y-2">
-                  <InputOTP
-                    maxLength={6}
-                    value={formData.otp}
-                    onChange={handleOTPChange}  // Call the OTP-specific handler
-                    disabled={loading}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                  <p className="text-xs text-muted-foreground text-center text-red-600">
-                    Code Expires in 10 mins
-                  </p>
-                </div>
-              </div> */}
+              <label className="text-sm font-medium">Temporary Password</label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="temp_password"
+                  placeholder="Enter new password"
+                  value={formData.temp_password}
+                  onChange={handleInputChange}  // Call the input change handler
+                  disabled={loading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
+            <div className="space-y-2">
               <label className="text-sm font-medium">New Password</label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   name="new_password"
-                  placeholder="Enter new password"
+                  placeholder="Enter Temporary password"
                   value={formData.new_password}
                   onChange={handleInputChange}  // Call the input change handler
                   disabled={loading}
@@ -167,28 +140,12 @@ const ResetPassword = () => {
 
             <Button
               type="submit"
-              className="w-full mt-4"
+              className="w-full mt-4 text-white"
               disabled={loading || !formData.new_password || !formData.confirm_password}
             >
               {loading ? "Updating Password..." : "Update Password"}
             </Button>
           </form>
-
-          {/* resend code */}
-          <div className="mt-6 text-center">
-            {canResend ? (
-              <button
-                onClick={handleResend}
-                className="text-sm text-primary underline font-semibold"
-              >
-                Resend Code
-              </button>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Resend code in {countdown}s
-              </p>
-            )}
-          </div>
 
           <Link to="/login" className="mt-6 text-sm text-primary underline font-semibold">
             Back to Login

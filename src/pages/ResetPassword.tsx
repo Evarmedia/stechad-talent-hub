@@ -73,7 +73,7 @@ const ResetPassword = () => {
     }
 
     setLoading(true);
-    console.log("Resetting password with:", formData);
+    // console.log("Resetting password with:", formData);
     await resetPassword(formData);
     navigate("/login");
   };
@@ -167,7 +167,7 @@ const ResetPassword = () => {
 
             <Button
               type="submit"
-              className="w-full mt-4"
+              className="w-full mt-4 text-white"
               disabled={loading || !formData.new_password || !formData.confirm_password}
             >
               {loading ? "Updating Password..." : "Update Password"}

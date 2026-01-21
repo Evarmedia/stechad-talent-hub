@@ -25,7 +25,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
   onClose,
   interview
 }) => {
-  const { updateInterview, loading } = useDataContext();
+  const { updateInterview, loading, refreshAllInterviews } = useDataContext();
 
   const [formData, setFormData] = useState({
     date_time: '',
@@ -72,6 +72,8 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
         phone_number: '',
         notes: '' 
       });
+      await refreshAllInterviews();
+
     } catch (error) {
       toast({
         title: "Error",

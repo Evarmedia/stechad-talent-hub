@@ -224,7 +224,7 @@ const PMDashboard = () => {
             ) : (
               <>
                 <p className="mb-4 text-sm text-muted-foreground">Start hiring top talent by posting new positions to the STECHAD platform.</p>
-                <Button asChild>
+                <Button asChild className='text-white'>
                   <Link to="/dashboard/pm/post-job">Post New Job</Link>
                 </Button>
               </>

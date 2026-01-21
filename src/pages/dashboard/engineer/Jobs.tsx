@@ -35,7 +35,7 @@ const EngineerJobs = () => {
 
     loadApplications();
   }, [user?.user_id]);
-  
+
   // -------------------------------------------------------------
   // SEARCH & FILTER (Debounced API call)
   // -------------------------------------------------------------
@@ -84,7 +84,7 @@ const EngineerJobs = () => {
         title: "Success",
         description: "Application submitted successfully!",
       });
-      refreshAllEngineers();
+      await refreshAllEngineers();
     } catch (error) {
       toast({
         title: "Error",

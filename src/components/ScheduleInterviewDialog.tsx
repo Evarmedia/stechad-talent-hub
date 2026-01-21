@@ -44,10 +44,12 @@ interface Engineer {
 }
 
 interface Applicant {
+  engineer_id: string;
   first_name?: string;
   last_name?: string;
   email?: string;
   engineer?: Engineer;
+  user: any;
 }
 
 interface ApplicantData {
@@ -91,18 +93,19 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
   // jobId,
   jobTitle
 }) => {
-  const { scheduleInterview, loading, interviews } = useDataContext();
+  const { scheduleInterview, loading, interviews, refreshAllInterviews } = useDataContext();
   const { user } = useAuthContext();
   
   // Handle both data structures - full application or direct applicant
   const getApplicantData = () => {
     // If applicant has nested 'applicant' property, use that (from Applicants page)
+    // console.log("Applicant Data:", applicant);
     if (applicant.applicant) {
       return {
-        firstName: applicant.applicant.first_name || '',
-        lastName: applicant.applicant.last_name || '',
-        email: applicant.applicant.email || '',
-        engineerId: applicant.applicant.engineer?.engineer_id || applicant.engineer_id || '',
+        firstName: applicant.applicant.user?.first_name || '',
+        lastName: applicant.applicant.user?.last_name || '',
+        email: applicant.applicant.user?.email || '',
+        engineerId: applicant.applicant?.engineer_id || applicant.engineer_id || '',
       };
     }
     // Otherwise, applicant is the direct object (from profile dialog)
@@ -145,7 +148,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         notes: formData.notes
       };
 
-      console.log('Submitting interview data:', interviewData);
+      // console.log('Submitting interview data:', interviewData);
       await scheduleInterview(interviewData);
       toast({ 
         title: "Success", 
@@ -162,6 +165,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         phone_number: '',
         notes: ''
       });
+      await refreshAllInterviews();
     } catch (error) {
       console.error('Error scheduling interview:', error);
       toast({ 
@@ -240,10 +244,10 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
           </div>
           
           <div>
-            <Label htmlFor="notes">Zoom/Conference Link (Optional)</Label>
+            <Label htmlFor="zoom_link">Zoom/Conference Link (Optional)</Label>
             <Input
-              id="notes"
-              name="notes"
+              id="zoom_link"
+              name="zoom_link"
               value={formData.zoom_link}
               onChange={handleChange}
               placeholder="Add zoom link here"

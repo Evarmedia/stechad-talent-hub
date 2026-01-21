@@ -38,7 +38,7 @@ export const InterviewProvider = ({ children }) => {
         newInterview
       );
       setInterviews((prev) => [createdInterview, ...prev]);
-      console.log("Interview scheduled successfully:", createdInterview);
+      // console.log("Interview scheduled successfully:", createdInterview);
       return createdInterview;
     } catch (error) {
       console.error("Error scheduling interview:", error);
@@ -214,6 +214,9 @@ export const InterviewProvider = ({ children }) => {
     updateInterview,
     // rescheduleInterview, // remove use updateInterview instead
     resetInterviewState,
+    refreshAll: async () => {
+      setInitialized(false);
+    },
   };
 
   return (

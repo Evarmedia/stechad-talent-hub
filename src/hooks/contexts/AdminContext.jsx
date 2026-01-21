@@ -31,7 +31,7 @@ export const AdminProvider = ({ children }) => {
   // INVITE PM //
   const inviteProjectManager = async (pmData) => {
     setLoading(true);
-    console.log("Inviting PM with data:", pmData);
+    // console.log("Inviting PM with data:", pmData);
     try {
       const response = await apiService.post(
         "admin/project-managers/invite",

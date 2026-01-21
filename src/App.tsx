@@ -45,6 +45,7 @@ import PMMessages from "./pages/dashboard/pm/Messages";
 import PMPostJob from "./pages/dashboard/pm/PostJob";
 import PMProfile from "./pages/dashboard/pm/Profile";
 import PMProjects from "./pages/dashboard/pm/Projects";
+import AcceptInvite from "./pages/AcceptInvites";
 
 const queryClient = new QueryClient();
 
@@ -65,7 +66,8 @@ const App = () => (
                     <Route path="/login" element={<Login />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/verify-otp" element={<VerifyOTP />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/accept-invite" element={<AcceptInvite />} />
                     <Route path="/onboarding" element={
                       <ProtectedRoute requiredRole="engineer">
                         <Onboarding />

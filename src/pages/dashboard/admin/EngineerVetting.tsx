@@ -111,7 +111,7 @@ const EngineerVetting = () => {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Status: </span>
-                        <span className={`font-medium ${engineer.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
+                        <span className={`font-medium ${engineer.status === 'active' ? 'bg-green-100 text-green-800' : 'text-yellow-800'}`}>
                           {engineer.status}
                         </span>
                       </div>
@@ -268,7 +268,7 @@ const EngineerVetting = () => {
                           </div>
                         </td>
                         <td className="p-3">
-                          <span className={`text-sm ${engineer.status === 'active' ? 'text-green-600 bg-yellow-200 rounded-lg p-1' : 'text-yellow-600'}`}>
+                        <span className={`text-sm ${engineer.status === 'active' ? 'bg-green-100 text-green-800 font-bold rounded-lg p-2' : 'text-yellow-600'}`}>
                             {engineer.status}
                           </span>
                         </td>

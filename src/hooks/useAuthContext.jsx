@@ -152,7 +152,8 @@ export const AuthProvider = ({ children }) => {
       await apiService.post("auth/send-otp", { email, purpose });
       return true;
     } catch (error) {
-      console.log("Send OTP error:", error);
+      // console.log("Send OTP error:", error);
+      throw error;
     }
   };
 
@@ -166,7 +167,8 @@ export const AuthProvider = ({ children }) => {
       });
       setLoading(false);
     } catch (error) {
-      console.log("resetPasword Error:", error);
+      // console.log("resetPasword Error:", error);
+      throw error;
       toast({
         title: "Error resetting password",
         description: error?.message || "Error resetting password",
@@ -254,12 +256,11 @@ export const AuthProvider = ({ children }) => {
   ) => {
     setLoading(true);
     try {
-      await axios.post(`/auth/invite/accept/${token}`, {
-        ...payload,
-      });
+      await axios.post(`/auth/invite/accept/${token}`, payload);
     } catch (error) {
       console.error("Accept invites error:", error);
     } finally {
+      setLoading(false);
     }
   };
 

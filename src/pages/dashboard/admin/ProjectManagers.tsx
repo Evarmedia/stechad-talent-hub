@@ -23,7 +23,7 @@ const ProjectManagers = () => {
   // const [pms, setPms] = useState([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPmEmail, setNewPmEmail] = useState("");
-  const [first_name, setFirst_name] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [last_name, setLast_name] = useState("");
   const [selectedPM, setSelectedPM] = useState(null);
   const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
@@ -62,10 +62,12 @@ const ProjectManagers = () => {
     }
 
     const pmData = {
-      first_name: "",
-      last_name: "",
+      first_name: firstName,
+      // last_name: "",
       email: newPmEmail,
     };
+
+    // console.log("PM invitation data", pmData)
 
     await inviteProjectManager(pmData);
 
@@ -127,8 +129,8 @@ const ProjectManagers = () => {
                       Project Manager's Name:
                     </label>
                     <Input
-                      value={first_name}
-                      onChange={(e) => setFirst_name(e.target.value)}
+                      value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Name (Optional)"
                     />
 

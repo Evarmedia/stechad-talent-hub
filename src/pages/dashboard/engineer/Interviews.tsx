@@ -117,7 +117,7 @@ const Interviews = () => {
                         {interview.zoom_link && interview.status === 'scheduled' && (
                           <div className="mt-2">
                             <a
-                              href={interview.zoom_link}
+                              href={interview.zoom_link.startsWith('http') ? interview.zoom_link : `https://${interview.zoom_link}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"

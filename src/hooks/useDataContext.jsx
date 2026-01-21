@@ -80,13 +80,14 @@ const DataProviderInner = ({ children }) => {
       applicationsContext.loading ||
       projectsContext.loading ||
       projectManagersContext.loading ||
-      interviewContext.loading || AdminContext.loading,
+      interviewContext.loading ||
+      AdminContext.loading,
 
     // Admin
     adminDashboardData: AdminContext.adminDashboardData,
     resetAdminDashboardState: AdminContext.resetAdminDashboardState,
     inviteProjectManager: AdminContext.inviteProjectManager,
-    
+
     // Engineers
     getEngineers: engineersContext.getEngineers,
     getEngineerById: engineersContext.getEngineerById,
@@ -135,6 +136,7 @@ const DataProviderInner = ({ children }) => {
     updateInterview: interviewContext.updateInterview,
     // rescheduleInterview: interviewContext.rescheduleInterview,
     resetInterviewState: interviewContext.resetInterviewState,
+    refreshAllInterviews: interviewContext.refreshAll,
 
     // Notification
     getNotifications: notificationContext.getNotifications,
