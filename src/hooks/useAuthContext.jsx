@@ -258,9 +258,13 @@ export const AuthProvider = ({ children }) => {
     // console.log("payload recieved", payload );
     setLoading(true);
     try {
-      await axios.post(`/auth/invite/accept/${token}`, payload);
+      await apiService.request(`/auth/accept-invite/${token}`, {
+        method: "POST",
+        data: payload
+      });
     } catch (error) {
       console.error("Accept invites error:", error);
+      throw error;
     } finally {
       setLoading(false);
     }

@@ -66,13 +66,8 @@ const Login = () => {
         title: "Login Failed",
         description: error.message || "Invalid credentials"
       });
-      if (error.status === 429 || error.isRateLimit) {
-        // Show user-friendly rate limit message
-        throw new Error('Too many login attempts. Please wait 1-2 minutes and try again.');
-      } else {
-        throw new Error(error.message || 'Login failed');
-      }
-
+      // Keep user on page to edit credentials; avoid throwing to React boundary
+      return;
     }
   };
 

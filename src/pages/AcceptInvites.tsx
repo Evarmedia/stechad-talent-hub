@@ -35,6 +35,15 @@ const ResetPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!token) {
+      toast({
+        title: "Invalid invite link",
+        description: "The invite link is missing or expired.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (formData.new_password.length < 8) {
       toast({
         title: "Password Too Short",
@@ -54,9 +63,22 @@ const ResetPassword = () => {
     }
 
     setLoading(true);
-    // console.log("Resetting password with:", formData);
-    await acceptInvites(token, formData);
-    navigate("/login");
+    try {
+      await acceptInvites(token, formData);
+      toast({
+        title: "Password updated",
+        description: "You can now log in with your new password."
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        title: "Invite acceptance failed",
+        description: error.message || "Please try again or request a new link.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

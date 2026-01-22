@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
+import { createContext, useContext, useEffect, useState } from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
-import { toast } from '@/hooks/use-toast';
 
 const ProjectsContext = createContext();
 
@@ -100,14 +100,19 @@ export const ProjectsProvider = ({ children }) => {
       if (updatedProject) {
         setProjects((prev) =>
           prev.map((p) =>
-            p.projects_id === id || p.id === id ? updatedProject : p
-          )
+            p.projects_id === id || p.id === id ? updatedProject : p,
+          ),
         );
       }
       // console.log("Updated project", updatedProject);
       return updatedProject;
     } catch (error) {
-      console.error("Error updating project:", error);
+      // console.error("Error updating project:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update the project.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -119,7 +124,7 @@ export const ProjectsProvider = ({ children }) => {
     try {
       await apiService.delete("projects", id);
       setProjects((prev) =>
-        prev.filter((p) => p.projects_id !== id && p.id !== id)
+        prev.filter((p) => p.projects_id !== id && p.id !== id),
       );
     } catch (error) {
       console.error("Error deleting project:", error);
@@ -149,7 +154,8 @@ export const ProjectsProvider = ({ children }) => {
     const init = async () => {
       setLoading(true);
       try {
-        if (user.role === "admin" || user.role === "project_manager") { // adjust this if Pm need to see all projects(check backend access too)
+        if (user.role === "admin" || user.role === "project_manager") {
+          // adjust this if Pm need to see all projects(check backend access too)
           getProjects();
           setInitialized(true);
         }
@@ -193,7 +199,7 @@ export const useProjectsContext = () => {
   const context = useContext(ProjectsContext);
   if (!context) {
     throw new Error(
-      "useProjectsContext must be used within a ProjectsProvider"
+      "useProjectsContext must be used within a ProjectsProvider",
     );
   }
   return context;
