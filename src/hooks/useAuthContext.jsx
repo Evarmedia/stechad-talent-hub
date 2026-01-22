@@ -254,6 +254,8 @@ export const AuthProvider = ({ children }) => {
     token,
     payload
   ) => {
+    // console.log("token recieved", token );
+    // console.log("payload recieved", payload );
     setLoading(true);
     try {
       await axios.post(`/auth/invite/accept/${token}`, payload);
