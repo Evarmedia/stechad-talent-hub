@@ -46,20 +46,33 @@ class ApiService {
     this.api.interceptors.response.use(
       (response) => response.data,
       async (error) => {
-        const originalRequest = error.config;
+        const originalRequest = error.config || {};
+        const url = originalRequest.url || "";
+        const isPublicAuthEndpoint = [
+          "/auth/login",
+          "/auth/signup",
+          "/auth/send-otp",
+          "/auth/reset-password",
+          "/auth/accept-invite",
+          "/auth/verify-otp",
+        ].some((path) => url.startsWith(path));
 
-        // Token expired → refresh
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
+        // Token expired → refresh (skip for public auth endpoints)
+        if (error.response?.status === 401 && !isPublicAuthEndpoint) {
+          if (!originalRequest._retry) {
+            originalRequest._retry = true;
 
-          const newToken = await this.refreshAccessToken();
-          if (newToken) {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return this.api(originalRequest);
+            const newToken = await this.refreshAccessToken();
+            if (newToken) {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return this.api(originalRequest);
+            }
           }
 
           this.clearTokens();
           window.location.href = "/login";
+          return;
         }
 
         // Too many requests

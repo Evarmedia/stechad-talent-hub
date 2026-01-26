@@ -15,14 +15,16 @@ export const AuthProvider = ({ children }) => {
       const token = apiService.getToken();
       // const storedUser = localStorage.getItem("stechad_user");
       const params = new URLSearchParams(window.location.search);
-      const googleToken = params.get("token");
+      const queryToken = params.get("token");
+      const isInvitePath = window.location.pathname.startsWith("/accept-invite");
 
-      if (googleToken) {
-        apiService.setToken(googleToken);
+      // Treat ?token as an auth token for OAuth redirects (e.g., Google), but not on invite acceptance
+      if (queryToken && !isInvitePath) {
+        apiService.setToken(queryToken);
         window.history.replaceState({}, "", window.location.pathname);
       }
 
-      const finalToken = googleToken || token;
+      const finalToken = isInvitePath ? token : (queryToken || token);
 
       if (finalToken) {
         try {

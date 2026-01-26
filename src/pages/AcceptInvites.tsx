@@ -85,9 +85,9 @@ const ResetPassword = () => {
     <>
       <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8 flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-primary mb-2 text-center">Reset Password</h1>
+          <h1 className="text-2xl font-bold text-primary mb-2 text-center">Accept Invitation</h1>
           <p className="text-center text-text-main mb-8 text-sm">
-            Welcome! Please Reset Your password using the Old password sent to your email to gain access to your account.
+            Welcome! Please reset your password using the Temporary password sent to your email and gain access to your account.
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
