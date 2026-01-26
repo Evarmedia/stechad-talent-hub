@@ -17,12 +17,14 @@ const ForgotPassword = () => {
       return;
     }
     setLoading(true);
-    await sendOtp(email);
-    setLoading(false);
-    toast({
-      title: "Verification Code Sent",
-      description: "A 6-digit verification code has been sent to your email.",
-    });
+    try {
+      await sendOtp(email);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      throw error;
+    }
+
     navigate("/reset-password");
   };
 

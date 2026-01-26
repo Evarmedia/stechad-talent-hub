@@ -150,9 +150,18 @@ export const AuthProvider = ({ children }) => {
     // password_reset or email_verification
     try {
       await apiService.post("auth/send-otp", { email, purpose });
+      toast({
+        title: "Verification Code Sent",
+        description: "A 6-digit verification code has been sent to your email.",
+      });
       return true;
     } catch (error) {
       // console.log("Send OTP error:", error);
+      toast({
+        title: "Error sending OTP",
+        description: error?.message || "Error sending OTP",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -250,17 +259,14 @@ export const AuthProvider = ({ children }) => {
     return user?.engineer?.is_onboarded === true;
   };
 
-  const acceptInvites = async (
-    token,
-    payload
-  ) => {
+  const acceptInvites = async (token, payload) => {
     // console.log("token recieved", token );
     // console.log("payload recieved", payload );
     setLoading(true);
     try {
       await apiService.request(`/auth/accept-invite/${token}`, {
         method: "POST",
-        data: payload
+        data: payload,
       });
     } catch (error) {
       console.error("Accept invites error:", error);

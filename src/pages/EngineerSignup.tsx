@@ -9,7 +9,10 @@ import { useAuthContext } from "../hooks/useAuthContext";
 
 
 const EngineerSignup = () => {
-  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm_password: "", googleSignIn: false, referral_code: "", });
+  const params = new URLSearchParams(window.location.search);
+  const refQuery = params.get("referral")
+
+  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm_password: "", googleSignIn: false, referral_code: refQuery ?? "", });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup, authLoading, googleLogin } = useAuthContext();
