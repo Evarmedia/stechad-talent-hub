@@ -13,6 +13,7 @@ interface Engineer {
   is_vetted: boolean;
   onboarded_at: string;
   user: any;
+  cv_url?: string;
 }
 
 interface EngineerDetailsDialogProps {
@@ -107,6 +108,19 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
               </Badge>
             </CardContent>
           </Card>
+          {/* Add CV url preview */}
+          {engineer.cv_url && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="mb-3">
+                  <span className="text-sm font-medium">CV Preview</span>
+                </div>
+                <a href={engineer.cv_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                  View CV
+                </a>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>

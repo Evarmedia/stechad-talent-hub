@@ -229,7 +229,7 @@ const Engineers = () => {
                   <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Joined</th>
-                  <th className="p-3"></th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Action</th>
                 </tr>
               </thead>
               <tbody>

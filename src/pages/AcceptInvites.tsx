@@ -87,11 +87,11 @@ const ResetPassword = () => {
         <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8 flex flex-col items-center">
           <h1 className="text-2xl font-bold text-primary mb-2 text-center">Accept Invitation</h1>
           <p className="text-center text-text-main mb-8 text-sm">
-            Welcome! Please reset your password using the Temporary password sent to your email and gain access to your account.
+            Welcome! Please reset your password gain access to your account.
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium">Temporary Password</label>
               <div className="relative">
                 <Input
@@ -111,7 +111,7 @@ const ResetPassword = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
               <label className="text-sm font-medium">New Password</label>
@@ -119,7 +119,7 @@ const ResetPassword = () => {
                 <Input
                   type={showPassword ? "text" : "password"}
                   name="new_password"
-                  placeholder="Enter Temporary password"
+                  placeholder="Enter new password"
                   value={formData.new_password}
                   onChange={handleInputChange}  // Call the input change handler
                   disabled={loading}

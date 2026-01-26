@@ -36,8 +36,8 @@ export const EngineersProvider = ({ children }) => {
     setLoading(true);
     try {
       const params = {
-        page: filters.page || 1,
-        limit: filters.limit || 50,
+        page: filters.page,
+        limit: filters.limit,
         ...(filters.country && { country: filters.country }),
         ...(filters.is_vetted !== undefined && {
           is_vetted: filters.is_vetted,
