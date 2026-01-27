@@ -140,6 +140,7 @@ const Applicants = () => {
         <CardContent>
           {/* Mobile: Card layout */}
           <div className="md:hidden space-y-4">
+            {console.log("Job applications",jobApplications)}
             {jobApplications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>No applicants found for this job.</p>
@@ -149,12 +150,12 @@ const Applicants = () => {
                 <div key={app.applications_id} className="border rounded-lg p-4 space-y-3">
                   <div>
                     <h3 className="font-medium cursor-pointer text-base text-blue-600 hover:underline"
-                      onClick={() => { handleViewProfile(app.applicant) }}>{app.applicant?.first_name} {app.applicant?.last_name}</h3>
-                    <p className="text-sm text-muted-foreground">{app.applicant?.email}</p>
+                      onClick={() => { handleViewProfile(app.applicant) }}>{app.applicant?.user.first_name} {app.applicant?.user.last_name}</h3>
+                    <p className="text-sm text-muted-foreground">{app.applicant?.user?.email}</p>
                     <div className="mt-2">
-                      {app.applicant?.engineer?.cv_url ? (
+                      {app.applicant?.cv_url ? (
                         <button
-                          onClick={() => handleViewResume(app.applicant.engineer.cv_url)}
+                          onClick={() => handleViewResume(app.applicant?.cv_url)}
                           className="underline text-primary text-sm hover:text-primary/80 inline-flex items-center gap-1"
                         >
                           <FileText className="w-3 h-3" />
@@ -241,14 +242,14 @@ const Applicants = () => {
                     <tr key={app.applications_id} className="border-b hover:bg-gray-50">
                       <td className="p-2">
                         <div className="font-medium cursor-pointer text-blue-600 hover:underline"
-                          onClick={() => { handleViewProfile(app.applicant)}}>{app.applicant?.first_name} {app.applicant?.last_name}</div>
+                          onClick={() => { handleViewProfile(app.applicant) }}>{app.applicant?.user.first_name} {app.applicant?.user.last_name}</div>
                       </td>
-                      <td className="p-2 text-sm">{app.applicant?.email}</td>
+                      <td className="p-2 text-sm">{app.applicant?.user.email}</td>
                       <td className="p-2 text-sm text-muted-foreground">{new Date(app.applied_at).toLocaleDateString()}</td>
                       <td className="p-2">
-                        {app.applicant?.engineer?.cv_url ? (
+                        {app.applicant?.cv_url ? (
                           <button
-                            onClick={() => handleViewResume(app.applicant.engineer.cv_url)}
+                            onClick={() => handleViewResume(app.applicant.cv_url)}
                             className="underline text-primary text-sm hover:text-primary/80 inline-flex items-center gap-1"
                           >
                             <FileText className="w-3 h-3" />
