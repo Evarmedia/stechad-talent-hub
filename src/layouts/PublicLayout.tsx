@@ -31,7 +31,7 @@ const PublicLayout: React.FC = () => {
         <Outlet />
       </main>
       <footer className="w-full bg-muted py-7 text-center text-sm text-text-muted mt-12">
-        <span>© 2025 STECHAD | <a href="mailto:contact@stechad.com" className="text-primary underline hover:text-primary-faint">Contact</a></span>
+        <span>© {new Date().getFullYear()} STECHAD | <a href="mailto:contact@stechad.com" className="text-primary underline hover:text-primary-faint">Contact</a></span>
       </footer>
     </div>
   );
