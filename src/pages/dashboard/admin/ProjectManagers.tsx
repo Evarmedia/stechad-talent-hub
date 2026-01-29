@@ -30,30 +30,17 @@ const ProjectManagers = () => {
 
   const { getProjectManagers, getProjects, projectManagers, projects, inviteProjectManager, loading } = useDataContext();
 
-  // useEffect(() => {
-  //   const fetchPMs = async () => {
-  //     try {
-  //       const [pmsData, projectsData] = await Promise.all([
-  //         getProjectManagers(),
-  //         getProjects()
-  //       ]);
-
-  //       // Count projects for each PM
-  //       const pmsWithProjects = pmsData.map(pm => ({
-  //         ...pm,
-  //         projectsCount: projectsData.filter(p => p.managerId === pm.id).length
-  //       }));
-
-  //       setPms(pmsWithProjects);
-  //     } catch (error) {
-  //       console.error('Error fetching project managers:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchPMs();
-  // }, [getProjectManagers, getProjects]);
+  interface ProjectManager {
+    project_managers_id: string;
+    user: {
+      first_name: string;
+      last_name: string;
+      email: string;
+    };
+    total_projects: number;
+    is_active: boolean;
+    created_at: string;
+  }
 
   const handleAddPM = async () => {
     if (!newPmEmail || !/^\S+@\S+\.\S+$/.test(newPmEmail)) {
@@ -67,18 +54,24 @@ const ProjectManagers = () => {
       email: newPmEmail,
     };
 
-    // console.log("PM invitation data", pmData)
+    try {
 
-    await inviteProjectManager(pmData);
+      await inviteProjectManager(pmData);
 
-    setIsAddDialogOpen(false);
-    setFirstName("");
-    setLast_name("");
-    setNewPmEmail("");
-    toast({ title: "Success", description: "PM invitation sent successfully!" });
+      setIsAddDialogOpen(false);
+      setFirstName("");
+      setLast_name("");
+      setNewPmEmail("");
+      toast({ title: "Success", description: "PM invitation sent successfully!" });      
+    } catch (error) {
+      setFirstName("");
+      setLast_name("");
+      setNewPmEmail("");
+      throw new Error(error);
+    }
   };
 
-  const handleViewProjects = (pm: any) => {
+  const handleViewProjects = (pm: ProjectManager) => {
     setSelectedPM(pm);
     setIsProjectsDialogOpen(true);
   };

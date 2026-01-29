@@ -10,7 +10,8 @@ import { useLocation } from "react-router-dom";
 const ResetPassword = () => {
   const { acceptInvites } = useAuthContext();
   const [formData, setFormData] = useState({
-    temp_password: "",
+    first_name: "",
+    last_name: "",
     new_password: "",
     confirm_password: ""
   });
@@ -91,27 +92,37 @@ const ResetPassword = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
-            {/* <div className="space-y-2">
-              <label className="text-sm font-medium">Temporary Password</label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">First Name</label>
               <div className="relative">
                 <Input
-                  type={showPassword ? "text" : "password"}
-                  name="temp_password"
-                  placeholder="Enter new password"
-                  value={formData.temp_password}
-                  onChange={handleInputChange}  // Call the input change handler
+                  type="text"
+                  name="first_name"
+                  placeholder="Enter your first name"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  required
                   disabled={loading}
                   className="pr-10"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
-            </div> */}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Last Name</label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  name="last_name"
+                  placeholder="Enter your last name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                  className="pr-10"
+                />
+              </div>
+            </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">New Password</label>
@@ -121,7 +132,8 @@ const ResetPassword = () => {
                   name="new_password"
                   placeholder="Enter new password"
                   value={formData.new_password}
-                  onChange={handleInputChange}  // Call the input change handler
+                  onChange={handleInputChange}
+                  required
                   disabled={loading}
                   className="pr-10"
                 />
@@ -146,7 +158,8 @@ const ResetPassword = () => {
                   name="confirm_password"
                   placeholder="Confirm new password"
                   value={formData.confirm_password}
-                  onChange={handleInputChange}  // Call the input change handler
+                  onChange={handleInputChange}
+                  required
                   disabled={loading}
                   className="pr-10"
                 />
