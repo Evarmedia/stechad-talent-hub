@@ -56,7 +56,8 @@ export const AuthProvider = ({ children }) => {
   // --------------------------
   const googleLogin = () => {
     // Redirect browser to backend
-    window.location.href = "http://localhost:5000/api/auth/google";
+    // window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google`;
   };
 
   const updateUser = (updatedUser) => {
