@@ -1,22 +1,22 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PMProjectsDialog } from "@/components/PMProjectsDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
-import { User, Plus, Eye } from "lucide-react";
-import { PMProjectsDialog } from "@/components/PMProjectsDialog";
 import { useDataContext } from "@/hooks/useDataContext";
+import { Plus, User } from "lucide-react";
+import { useState } from "react";
 
 const ProjectManagers = () => {
   // const [loading, setLoading] = useState(true);
@@ -72,6 +72,9 @@ const ProjectManagers = () => {
     await inviteProjectManager(pmData);
 
     setIsAddDialogOpen(false);
+    setFirstName("");
+    setLast_name("");
+    setNewPmEmail("");
     toast({ title: "Success", description: "PM invitation sent successfully!" });
   };
 
