@@ -76,6 +76,8 @@ const ProjectManagers = () => {
     setIsProjectsDialogOpen(true);
   };
 
+  console.log("PMs", projectManagers);
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -248,9 +250,9 @@ const ProjectManagers = () => {
                       <td className="p-3 text-muted-foreground">{pm.user.email}</td>
                       <td className="p-3">{pm.total_projects}</td>
                       <td className="p-3">
-                        <span className={`px-2 py-1 rounded text-xs ${pm.is_active === true ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                        <span className={`px-2 py-1 rounded text-xs ${pm.status === "active" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
                           }`}>
-                          {pm.is_active === true ? "Active" : "Inactive"}
+                          {pm.status}
                         </span>
                       </td>
                       <td className="p-3 text-muted-foreground">{pm.created_at.split("T")[0]}</td>
