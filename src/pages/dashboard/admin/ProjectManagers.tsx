@@ -24,7 +24,7 @@ const ProjectManagers = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPmEmail, setNewPmEmail] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [last_name, setLast_name] = useState("");
+  const [lastName, setLastName] = useState("");
   const [selectedPM, setSelectedPM] = useState(null);
   const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false);
 
@@ -50,7 +50,7 @@ const ProjectManagers = () => {
 
     const pmData = {
       first_name: firstName,
-      // last_name: "",
+      // last_name: lastName,
       email: newPmEmail,
     };
 
@@ -60,13 +60,13 @@ const ProjectManagers = () => {
 
       setIsAddDialogOpen(false);
       setFirstName("");
-      setLast_name("");
+      setLastName("");
       setNewPmEmail("");
       toast({ title: "Success", description: "PM invitation sent successfully!" });      
     } catch (error) {
-      setFirstName("");
-      setLast_name("");
-      setNewPmEmail("");
+      // setFirstName("");
+      // setLastName("");
+      // setNewPmEmail("");
       throw new Error(error);
     }
   };
