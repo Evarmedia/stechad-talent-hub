@@ -97,7 +97,7 @@ const Login = () => {
             className="p-3"
             disabled={authLoading}
             autoFocus
-            autoComplete="username"
+            // autoComplete="username"
           />
           <div className="relative">
             <Input
@@ -108,7 +108,7 @@ const Login = () => {
               onChange={handleChange}
               className="p-3 pr-10"
               disabled={authLoading}
-              autoComplete="current-password"
+              // autoComplete="current-password"
             />
             <button
               type="button"
