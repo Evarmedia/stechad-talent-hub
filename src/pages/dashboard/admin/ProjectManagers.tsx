@@ -76,7 +76,7 @@ const ProjectManagers = () => {
     setIsProjectsDialogOpen(true);
   };
 
-  console.log("PMs", projectManagers);
+  // console.log("PMs", projectManagers);
 
   return (
     <div className="p-4 md:p-8">

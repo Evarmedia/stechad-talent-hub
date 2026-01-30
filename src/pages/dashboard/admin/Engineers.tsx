@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Search, Eye, User, Download } from "lucide-react";
-import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
 import { useDataContext } from "@/hooks/useDataContext";
-import { exportToCSV, exportToXLSX } from "./exportUtils";
+import { Download, Eye, Search, User } from "lucide-react";
+import { useState } from "react";
+import { exportToXLSX } from "./exportUtils";
 // import EngineerTable from "./EngineerTable";
 // import { exportToXLSX } from "./exportToXlsx";
 
@@ -77,7 +77,7 @@ const Engineers = () => {
       country: engineer.user.country,
       experience: engineer.years_of_experience,
       status: engineer.status,
-      onboarded_On: engineer.onboarded_at.split("T")[0],
+      onboarded_On: engineer.onboarded_at?.split("T")[0],
       open_To_Nearby_Cities: engineer.open_to_nearby_cities ? 'Yes' : 'No',
       has_Drivers_Licence: engineer.has_drivers_licence ? 'Yes' : 'No',
       skill_Level: engineer.skill_level,
@@ -288,7 +288,7 @@ const Engineers = () => {
                           {engineer.status}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at.split("T")[0]}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at?.split("T")[0]}</td>
                       <td className="p-3">
                         <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
                           <Eye className="w-4 h-4 mr-1" />
