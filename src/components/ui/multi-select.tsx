@@ -17,7 +17,7 @@ export function MultiSelect({
   options,
   selected,
   onChange,
-  placeholder = "Select items...",
+  placeholder = "Select or type in...",
   className
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)

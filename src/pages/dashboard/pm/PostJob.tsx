@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -13,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
+import React, { useState } from "react";
 
 const ALL_SKILLS = [
   "React", "Node.js", "Python", "Java", "AWS", "Docker", "C#", "SQL", "TypeScript", "Kubernetes",
@@ -152,42 +152,52 @@ const PostJob = () => {
   }
 
   return (
-    <div className="p-10 max-w-6xl mx-auto">
+    <div className="px-4 py-6 sm:px-6 lg:px-10 max-w-6xl mx-auto">
       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl">Post a Job</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl sm:text-2xl">
+            Post a Job
+          </CardTitle>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-8">
 
             {/* BASIC INFO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
-                <Label>Job Title *</Label>
+                <Label>Job Title <span className="text-red-700">*</span></Label>
                 <Input name="title" value={form.title} onChange={handleChange} />
               </div>
+
               <div>
-                <Label>Company</Label>
+                <Label>Company(optional)</Label>
                 <Input name="company" value={form.company} onChange={handleChange} />
               </div>
+
               <div>
-                <Label>Location *</Label>
+                <Label>Location <span className="text-red-700">*</span></Label>
                 <Input name="location" value={form.location} onChange={handleChange} />
               </div>
+
               <div>
-                <Label>Salary</Label>
+                <Label>Salary(optional)</Label>
                 <Input name="salary" value={form.salary} onChange={handleChange} />
               </div>
             </div>
 
             <div>
-              <Label>Description *</Label>
-              <Textarea name="description" rows={4} value={form.description} onChange={handleChange} />
+              <Label>Description <span className="text-red-700">*</span></Label>
+              <Textarea
+                name="description"
+                rows={4}
+                value={form.description}
+                onChange={handleChange}
+              />
             </div>
 
             <div>
-              <Label>Required Skills</Label>
+              <Label>Required Skills <span className="text-red-700">*</span></Label>
               <MultiSelect
                 options={ALL_SKILLS}
                 selected={form.skills_required}
@@ -196,7 +206,7 @@ const PostJob = () => {
             </div>
 
             {/* REQUIREMENTS & RESPONSIBILITIES */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
                 <Label>Requirements</Label>
                 <Textarea
@@ -207,6 +217,7 @@ const PostJob = () => {
                   onChange={handleChange}
                 />
               </div>
+
               <div>
                 <Label>Responsibilities</Label>
                 <Textarea
@@ -220,12 +231,31 @@ const PostJob = () => {
             </div>
 
             {/* META */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Input name="duration" placeholder="Duration *" value={form.duration} onChange={handleChange} />
-              <Input name="openings" type="number" placeholder="Openings *" value={form.openings} onChange={handleChange} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <div>
+                <Label>Duration <span className="text-red-700">*</span></Label>
+                <Input
+                  name="duration"
+                  placeholder="Duration"
+                  value={form.duration}
+                  onChange={handleChange}
+                />
+              </div>
 
               <div>
-                {/* <Label>Experience Level</Label> */}
+
+                <Label>Openings <span className="text-red-700">*</span></Label>
+                <Input
+                  name="openings"
+                  type="number"
+                  placeholder="Openings"
+                  value={form.openings}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <Label>Experience Level <span className="text-red-700">*</span></Label>
                 <Select
                   value={form.experience_level}
                   onValueChange={(value) =>
@@ -235,7 +265,7 @@ const PostJob = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select experience level" />
                   </SelectTrigger>
-                  <SelectContent className='bg-white'>
+                  <SelectContent className="bg-white">
                     {EXPERIENCE_LEVELS.map(level => (
                       <SelectItem key={level} value={level}>
                         {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -246,24 +276,34 @@ const PostJob = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              {/* <Label className="flex gap-2 items-center">
-                <input type="checkbox" name="remote" checked={form.remote} onChange={handleChange} />
-                Remote role
-              </Label> */}
-
+            {/* EMPLOYMENT TYPE */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <RadioGroup
                 value={form.employment_type}
                 onValueChange={handleEmploymentTypeChange}
-                className="flex gap-6"
+                className="flex flex-wrap gap-4"
               >
-                <RadioGroupItem value="full-time" /> Full-time
-                <RadioGroupItem value="contract" /> Contract
-                <RadioGroupItem value="part-time" /> Part-time
+                <label className="flex items-center gap-2">
+                  <RadioGroupItem value="full-time" />
+                  Full-time
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <RadioGroupItem value="contract" />
+                  Contract
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <RadioGroupItem value="part-time" />
+                  Part-time
+                </label>
               </RadioGroup>
             </div>
 
-            <Button className="w-full text-lg py-6" disabled={loading}>
+            <Button
+              className="w-full text-base sm:text-lg py-5 sm:py-6 text-white"
+              disabled={loading}
+            >
               {loading ? "Posting..." : "Post Job"}
             </Button>
           </form>
