@@ -103,6 +103,7 @@ const DataProviderInner = ({ children }) => {
     updateJob: jobsContext.updateJob,
     deleteJob: jobsContext.deleteJob,
     resetJobsState: jobsContext.resetJobsState,
+    refreshAllJobs: jobsContext.refreshAll,
 
     // Applications
     getApplications: applicationsContext.getApplications,
