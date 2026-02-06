@@ -127,7 +127,7 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
                         </div>
                         <div>
                           <strong>Status:</strong>
-                          <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedEngineer?.status!)} text-xs`}>
+                          <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedEngineer?.status)} text-xs`}>
                             {selectedEngineer?.status}
                           </span>
                         </div>

@@ -11,6 +11,15 @@ import { exportToXLSX } from "./exportUtils";
 // import EngineerTable from "./EngineerTable";
 // import { exportToXLSX } from "./exportToXlsx";
 
+interface Engineer {
+  name: string;
+  country: string;
+  years_of_experience: number;
+  status?: string;
+  onboarded_at?: string;
+  user: { first_name: string; last_name: string; country?: string; email?: string; phone_number?: string; };
+}
+
 const Engineers = () => {
   // const [loading, setLoading] = useState(true);
   // const [engineers, setEngineers] = useState([]);
@@ -60,7 +69,7 @@ const Engineers = () => {
       ? "bg-green-100 text-green-800"
       : "bg-gray-100 text-gray-800";
 
-  const handleViewEngineer = (engineer: any) => {
+  const handleViewEngineer = (engineer: Engineer) => {
     setSelectedEngineer(engineer);
     setIsDetailsOpen(true);
   };

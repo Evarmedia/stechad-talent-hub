@@ -12,7 +12,8 @@ interface Engineer {
   status: string;
   is_vetted: boolean;
   onboarded_at: string;
-  user: any;
+  user: {
+    first_name: string; last_name: string; country?: string; email?: string; }
   cv_url?: string;
 }
 
