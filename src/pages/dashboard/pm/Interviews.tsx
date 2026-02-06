@@ -23,7 +23,7 @@ const Interviews = () => {
     if (!user) return;
 
     const run = async () => {
-      await refreshAllInterviews();
+      await fetchUserInterviews();
     };
 
     run();

@@ -23,7 +23,7 @@ export const InterviewProvider = ({ children }) => {
   const scheduleInterview = useCallback(async (interviewData) => {
     setLoading(true);
     try {
-      console.log("Scheduling interview with data:", interviewData);
+      // console.log("Scheduling interview with data:", interviewData);
 
       const newInterview = {
         ...interviewData,
