@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
-import { Search } from "lucide-react";
+import { Award, Briefcase, Code, FileText, Mail, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Award, Briefcase, Code, FileText, Mail } from "lucide-react";
 
 
 const statusColor = (status: string) => {
@@ -172,8 +171,8 @@ const Applications = () => {
             <Card key={app.applications_id}>
               <CardContent className="pt-6 space-y-3">
                 <div>
-                  <h3 className="font-semibold cursor-pointer text-base text-blue-600 hover:underline" onClick={() => { handleViewProfile(app.applicant) }}>{app.applicant?.first_name} {app.applicant?.last_name}</h3>
-                  <p className="text-sm text-muted-foreground">{app.applicant?.email}</p>
+                  <h3 className="font-semibold cursor-pointer text-base text-blue-600 hover:underline" onClick={() => { handleViewProfile(app.applicant) }}>{app.applicant?.user.first_name} {app.applicant?.user.last_name}</h3>
+                  <p className="text-sm text-muted-foreground">{app.applicant?.user.email}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-primary">{app.job?.title}</p>
@@ -219,7 +218,7 @@ const Applications = () => {
                     <Button
                       size="sm"
                       variant="default"
-                      className="text-xs bg-green-600 hover:bg-green-700"
+                      className="text-xs bg-green-600 hover:bg-green-700 text-white"
                       onClick={() => handleScheduleInterview(app)}
                     >
                       Schedule Interview
@@ -260,9 +259,9 @@ const Applications = () => {
                   {filteredApplications.map((app) => (
                     <tr key={app.applications_id} className="border-b hover:bg-gray-50">
                       <td className="p-3">
-                        <div className="font-medium text-sm cursor-pointer text-blue-600 hover:underline" onClick={() => { handleViewProfile(app.applicant) }} > {app.applicant?.first_name} {app.applicant?.last_name}</div>
+                        <div className="font-medium text-sm cursor-pointer text-blue-600 hover:underline" onClick={() => { handleViewProfile(app.applicant) }} > {app.applicant?.user?.first_name} {app.applicant?.user?.last_name}</div>
                       </td>
-                      <td className="p-3 text-sm">{app.applicant?.email}</td>
+                      <td className="p-3 text-sm">{app.applicant?.user?.email}</td>
                       <td className="p-3 text-sm font-medium text-primary">{app.job?.title}</td>
                       <td className="p-3 text-sm text-muted-foreground">{app.job?.company}</td>
                       <td className="p-3 text-sm text-muted-foreground">
@@ -306,7 +305,7 @@ const Applications = () => {
                             <Button
                               size="sm"
                               variant="default"
-                              className="text-xs bg-green-600 hover:bg-green-700"
+                              className="text-xs bg-green-600 hover:bg-green-700 text-white"
                               onClick={() => handleScheduleInterview(app)}
                             >
                               Schedule Interview
@@ -359,18 +358,19 @@ const Applications = () => {
             <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader> 
-                  <DialogTitle className="text-2xl font-bold text-primary">Applicant Profile</DialogTitle>
+                  <DialogTitle className="text-2xl font-bold text-primary">Applicant's Profile</DialogTitle>
                 </DialogHeader>
-                {selectedApplicant && selectedApplicant.engineer && (
+          {/* {console.log("Selected Applicant =>",selectedApplicant)} */}
+                {selectedApplicant && (
                   <div className="space-y-6 py-4">
                     {/* Header Section */}
                     <div className="border-b pb-6">
                       <h2 className="text-2xl font-bold text-gray-900">
-                        {selectedApplicant?.first_name} {selectedApplicant?.last_name}
+                  {selectedApplicant?.user?.first_name} {selectedApplicant?.user?.last_name}
                       </h2>
                       <div className="flex items-center gap-2 mt-2 text-gray-600">
                         <Mail className="w-4 h-4" />
-                        <p className="text-sm">{selectedApplicant?.email}</p>
+                  <p className="text-sm">{selectedApplicant?.user?.email}</p> {selectedApplicant.is_vetted ? <Badge className="bg-green-700 text-white" >Vetted</Badge> : <Badge className="bg-red-700 text-white">Not Vetted</Badge>}
                       </div>
                     </div>
       
@@ -383,10 +383,10 @@ const Applications = () => {
                           <h3 className="font-semibold text-gray-900">Experience</h3>
                         </div>
                         <p className="text-2xl font-bold text-blue-600">
-                          {selectedApplicant.engineer?.years_of_experience || 'N/A'} years
+                          {selectedApplicant?.years_of_experience || 'N/A'} years
                         </p>
-                        {selectedApplicant.engineer?.experience && (
-                          <p className="text-sm text-gray-700 mt-2">{selectedApplicant.engineer.experience}</p>
+                        {selectedApplicant?.experience && (
+                          <p className="text-sm text-gray-700 mt-2">{selectedApplicant.experience}</p>
                         )}
                       </div>
       
@@ -397,20 +397,20 @@ const Applications = () => {
                           <h3 className="font-semibold text-gray-900">Skill Level</h3>
                         </div>
                         <Badge className="bg-purple-600 text-white capitalize">
-                          {selectedApplicant.engineer?.skill_level || 'Not specified'}
+                          {selectedApplicant?.skill_level || 'Not specified'}
                         </Badge>
                       </div>
                     </div>
       
                     {/* Specializations */}
-                    {selectedApplicant.engineer?.specialization && selectedApplicant.engineer.specialization.length > 0 && (
+                    {selectedApplicant?.specialization && selectedApplicant.specialization.length > 0 && (
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                           <Award className="w-5 h-5 text-amber-600" />
                           Specializations
                         </h3>
                         <div className="flex flex-wrap gap-2">
-                          {selectedApplicant.engineer.specialization.map((spec: string, idx: number) => (
+                          {selectedApplicant?.specialization.map((spec: string, idx: number) => (
                             <Badge key={idx} className="bg-amber-100 text-amber-900">
                               {spec}
                             </Badge>
@@ -420,11 +420,11 @@ const Applications = () => {
                     )}
       
                     {/* Certifications */}
-                    {selectedApplicant.engineer?.certifications && selectedApplicant.engineer.certifications.length > 0 && (
+                    {selectedApplicant?.certifications && selectedApplicant.certifications.length > 0 && (
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3">Certifications</h3>
                         <ul className="space-y-2">
-                          {selectedApplicant.engineer.certifications.map((cert: string, idx: number) => (
+                          {selectedApplicant.certifications.map((cert: string, idx: number) => (
                             <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
                               <span className="text-green-600 mt-1">✓</span>
                               <span>{cert}</span>
@@ -435,11 +435,11 @@ const Applications = () => {
                     )}
       
                     {/* Project Types */}
-                    {selectedApplicant.engineer?.project_types && selectedApplicant.engineer.project_types.length > 0 && (
+                    {selectedApplicant?.project_types && selectedApplicant.project_types.length > 0 && (
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3">Project Types</h3>
                         <div className="flex flex-wrap gap-2">
-                          {selectedApplicant.engineer.project_types.map((type: string, idx: number) => (
+                          {selectedApplicant.project_types.map((type: string, idx: number) => (
                             <Badge key={idx} className="bg-green-100 text-green-900">
                               {type}
                             </Badge>
@@ -449,20 +449,20 @@ const Applications = () => {
                     )}
       
                     {/* Languages */}
-                    {selectedApplicant.engineer?.languages && selectedApplicant.engineer.languages.length > 0 && (
+                    {selectedApplicant?.languages && selectedApplicant.languages.length > 0 && (
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-3">Languages</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {selectedApplicant.engineer.languages.map((lang: string, idx: number) => (
+                          {selectedApplicant.languages.map((lang: string, idx: number) => (
                             <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
                               <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
                               {lang}
                             </div>
                           ))}
                         </div>
-                        {selectedApplicant.engineer?.language_proficiency && (
+                        {selectedApplicant?.language_proficiency && (
                           <p className="text-xs text-gray-600 mt-2">
-                            Proficiency: <span className="capitalize font-semibold">{selectedApplicant.engineer.language_proficiency}</span>
+                            Proficiency: <span className="capitalize font-semibold">{selectedApplicant.language_proficiency}</span>
                           </p>
                         )}
                       </div>
@@ -475,37 +475,37 @@ const Applications = () => {
                         <div>
                           <p className="text-gray-600">Work Authorized</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.work_authorized ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.work_authorized ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Driver's License</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.has_drivers_license ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.has_drivers_license ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Own Vehicle</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.has_car ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.has_car ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Open to Training</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.open_to_training ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.open_to_training ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Freelancer</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.is_freelancer ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.is_freelancer ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Open to Nearby Cities</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedApplicant.engineer?.open_to_nearby_cities ? '✓ Yes' : '✗ No'}
+                            {selectedApplicant?.open_to_nearby_cities ? '✓ Yes' : '✗ No'}
                           </p>
                         </div>
                       </div>
@@ -513,7 +513,7 @@ const Applications = () => {
       
                     {/* CV Download */}
               {/* {console.log("Selected Application", selectedApplicant)} */}
-                    {selectedApplicant.engineer?.cv_url && (
+                    {selectedApplicant?.cv_url && (
                       <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="w-5 h-5 text-green-600" />
@@ -526,7 +526,7 @@ const Applications = () => {
                           size="sm"
                           className="bg-green-600 hover:bg-green-700"
                           onClick={() => {
-                            handleViewResume(selectedApplicant.engineer.cv_url);
+                            handleViewResume(selectedApplicant.cv_url);
                             setProfileDialogOpen(false);
                           }}
                         >

@@ -1,29 +1,34 @@
 
+import CancelInterviewDialog from '@/components/CancelInterviewDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { useDataContext } from "@/hooks/useDataContext";
-import { Calendar, Edit, X, CheckCheck } from 'lucide-react';
+import { Calendar, CheckCheck, Edit, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
 import { useAuthContext } from '../../../hooks/useAuthContext';
-import CancelInterviewDialog from '@/components/CancelInterviewDialog';
 
 const Interviews = () => {
-  const { interviews, loading, fetchAllInterviews, fetchUserInterviews, updateInterview } = useDataContext();
+  const { interviews, loading, fetchAllInterviews, fetchUserInterviews, updateInterview, refreshAllInterviews } = useDataContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [interviewToCancel, setInterviewToCancel] = useState(null);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     fetchUserInterviews(user.id, user.role);
-  //   }
-  // }, [user, fetchUserInterviews]);
+  useEffect(() => {
+    if (!user) return;
+
+    const run = async () => {
+      await refreshAllInterviews();
+    };
+
+    run();
+  }, [user]);
+
 
   const handleUpdateInterview = async (interviewId: string) => {
     try {

@@ -32,6 +32,7 @@ const CancelInterviewDialog: React.FC<CancelInterviewDialogProps> = ({
           <Button 
             variant="destructive"
             onClick={onConfirm}
+            className="text-white"
           >
             Yes, cancel interview
           </Button>

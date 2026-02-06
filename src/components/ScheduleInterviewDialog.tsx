@@ -95,7 +95,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
 }) => {
   const { scheduleInterview, loading, interviews, refreshAllInterviews } = useDataContext();
   const { user } = useAuthContext();
-  
+
   // Handle both data structures - full application or direct applicant
   const getApplicantData = () => {
     // If applicant has nested 'applicant' property, use that (from Applicants page)
@@ -118,7 +118,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
   };
 
   const applicantData = getApplicantData();
-  
+
   const [formData, setFormData] = useState({
     engineer_id: applicantData.engineerId,
     job_id: applicant.job_id || '',
@@ -131,7 +131,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.date_time) {
       toast({ title: "Error", description: "Please select a date and time" });
       return;
@@ -150,11 +150,11 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
 
       // console.log('Submitting interview data:', interviewData);
       await scheduleInterview(interviewData);
-      toast({ 
-        title: "Success", 
-        description: "Interview scheduled successfully!" 
+      toast({
+        title: "Success",
+        description: "Interview scheduled successfully!"
       });
-      
+
       onClose();
       setFormData({
         engineer_id: '',
@@ -168,9 +168,9 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
       await refreshAllInterviews();
     } catch (error) {
       console.error('Error scheduling interview:', error);
-      toast({ 
-        title: "Error", 
-        description: error.message || "Failed to schedule interview" 
+      toast({
+        title: "Error",
+        description: error.message || "Failed to schedule interview"
       });
     }
   };
@@ -189,13 +189,13 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Schedule Interview</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Candidate Name</Label>
-            <Input 
-              value={`${applicantData.firstName} ${applicantData.lastName}`} 
-              disabled 
+            <Input
+              value={`${applicantData.firstName} ${applicantData.lastName}`}
+              disabled
               className="bg-gray-50"
             />
           </div>
@@ -207,16 +207,16 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
               className="bg-gray-50"
             />
           </div>
-          
+
           <div>
             <Label>Job Position</Label>
-            <Input 
-              value={jobTitle} 
-              disabled 
+            <Input
+              value={jobTitle}
+              disabled
               className="bg-gray-50"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="date_time">Date & Time *</Label>
             <Input
@@ -229,7 +229,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
               min={new Date().toISOString().slice(0, 16)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="duration">Duration (minutes)</Label>
             <Input
@@ -242,7 +242,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
               max="180"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="zoom_link">Zoom/Conference Link (Optional)</Label>
             <Input
@@ -265,7 +265,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
               placeholder="+1234567890"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea
@@ -277,12 +277,12 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
               rows={3}
             />
           </div>
-          
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className='text-white'>
               {loading ? "Scheduling..." : "Schedule Interview"}
             </Button>
           </DialogFooter>
