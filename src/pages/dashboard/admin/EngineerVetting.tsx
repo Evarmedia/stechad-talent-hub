@@ -1,37 +1,40 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { CheckCircle, User, Eye } from "lucide-react";
 import { useDataContext } from "@/hooks/useDataContext";
+import { CheckCircle, Eye, User } from "lucide-react";
+import { useState } from "react";
 
 const EngineerVetting = () => {
   const [selectedEngineer, setSelectedEngineer] = useState(null);
 
   const { getEngineers, updateEngineer, engineers, loading } = useDataContext();
-
+  const [remark, setRemark] = useState("");
   // Vet engineer (context-driven)
 
   const handleVetEngineer = async (engineerId: string) => {
     try {
-      await updateEngineer({ engineer_id: engineerId, is_vetted: true });
+      await updateEngineer({ engineer_id: engineerId, is_vetted: true, remark });
       toast({
         title: "Success",
         description: "Engineer has been vetted successfully!",
       });
       setSelectedEngineer(null);
+      setRemark("");
     } catch (error) {
       toast({
         title: "Error",
@@ -57,6 +60,9 @@ const EngineerVetting = () => {
       });
     }
   };
+  const handleRemarkChange = async (e) => {
+    setRemark(e.target.value)
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -217,7 +223,7 @@ const EngineerVetting = () => {
                             <Button variant="outline">Close</Button>
                           </DialogClose>
                           {selectedEngineer && !selectedEngineer.is_vetted && (
-                            <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)}>
+                            <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white" >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Vet Engineer
                             </Button>
@@ -319,6 +325,7 @@ const EngineerVetting = () => {
                       </td>
                       <td className="p-3">
                         <div className="flex gap-2">
+                          {/* Engineer Profile Dialog */}
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
@@ -347,6 +354,10 @@ const EngineerVetting = () => {
                                     <div>
                                       <label className="text-sm font-bold">Country:</label>
                                       <p className="text-sm">{selectedEngineer?.user.country}</p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-bold">Remark:</label>
+                                      <p className="text-sm">{selectedEngineer?.remark || "None Provided Yet"}</p>
                                     </div>
                                   </div>
                                   <div>
@@ -409,7 +420,7 @@ const EngineerVetting = () => {
                                   <Button variant="outline">Close</Button>
                                 </DialogClose>
                                 {selectedEngineer && !selectedEngineer.is_vetted && (
-                                  <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)}>
+                                  <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white" >
                                     <CheckCircle className="w-4 h-4 mr-1" />
                                     Vet Engineer
                                   </Button>
@@ -426,14 +437,54 @@ const EngineerVetting = () => {
                               Remove Vetting
                             </Button>
                           ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => handleVetEngineer(engineer.engineer_id)}
-                                className="text-white"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Vet
-                            </Button>
+                            // <Button
+                            //   size="sm"
+                            //   onClick={() => handleVetEngineer(engineer.engineer_id)}
+                            //     className="text-white"
+                            // >
+                            //   <CheckCircle className="w-4 h-4 mr-1" />
+                            //   Vet
+                            // </Button>
+                            // Dialog for Vet Button
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    // onClick={() => handleVetEngineer(engineer.engineer_id)}
+                                    className="text-white"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Vet
+                                  </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Add Remark</DialogTitle>
+                                    <div>
+                                      <Label className="block font-semibold text-blue-400 mb-2">Remark for {selectedEngineer.user?.first_name}</Label>
+                                      <Textarea
+                                        name="remark"
+                                        value={remark}
+                                        onChange={handleRemarkChange}
+                                        placeholder="Add Remarks about Engineer"
+                                        rows={3}
+                                      />
+                                    </div>
+                                </DialogHeader>
+                                <DialogFooter className="flex justify-end gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline" onClick={() => setRemark("")}>Close</Button>
+                                    </DialogClose>
+
+                                    {selectedEngineer && !selectedEngineer.is_vetted && (
+                                      <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white">
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Vet Engineer
+                                      </Button>
+                                    )}
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           )}
                         </div>
                       </td>
