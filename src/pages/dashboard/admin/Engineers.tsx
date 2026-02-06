@@ -39,7 +39,7 @@ const Engineers = () => {
 
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
-      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || engineer.user?.country.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "All" ||
@@ -76,6 +76,7 @@ const Engineers = () => {
 
   const handleExportXlsx = () => {
     const dataToExport = sortedEngineers.map(engineer => ({
+      Date: engineer.onboarded_at?.split("T")[0],
       name: `${engineer.user.first_name} ${engineer.user.last_name}`,
       email: engineer.user.email,
       phone: engineer.user.phone_number || 'N/A',
@@ -86,7 +87,6 @@ const Engineers = () => {
       country: engineer.user.country,
       experience: engineer.years_of_experience,
       status: engineer.status,
-      onboarded_On: engineer.onboarded_at?.split("T")[0],
       open_To_Nearby_Cities: engineer.open_to_nearby_cities ? 'Yes' : 'No',
       has_Drivers_Licence: engineer.has_drivers_licence ? 'Yes' : 'No',
       skill_Level: engineer.skill_level,
@@ -105,7 +105,6 @@ const Engineers = () => {
     exportToXLSX(dataToExport);
   };
 
-
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -121,7 +120,7 @@ const Engineers = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search engineers by name or email..."
+            placeholder="Search engineers by name, country or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -235,6 +234,7 @@ const Engineers = () => {
                   <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">City</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Joined</th>
@@ -291,6 +291,7 @@ const Engineers = () => {
                         </div>
                       </td>
                       <td className="p-3 text-sm">{engineer.years_of_experience}</td>
+                      <td className="p-3 text-sm">{engineer.user.city || "Remote"}</td>
                       <td className="p-3 text-sm">{engineer.user.country || "Remote"}</td>
                       <td className="p-3">
                         <Badge className={getStatusColor(engineer.status)}>

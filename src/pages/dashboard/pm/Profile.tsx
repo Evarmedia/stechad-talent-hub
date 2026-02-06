@@ -14,9 +14,9 @@ interface ProfileFormData {
   email: string;
   city: string;
   country: string;
-  company_name: string;
-  company_size: string;
-  industry: string;
+  company: string;
+  // company_size: string;
+  // industry: string;
   website_url: string;
   linkedin_url: string;
   avatar: File | null;
@@ -37,9 +37,9 @@ const PMProfile = () => {
     email: "",
     city: "",
     country: "",
-    company_name: "",
-    company_size: "",
-    industry: "",
+    company: "",
+    // company_size: "",
+    // industry: "",
     website_url: "",
     linkedin_url: "",
     avatar: null,
@@ -56,9 +56,9 @@ const PMProfile = () => {
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
-        company_name: user.project_manager?.company_name || "",
-        company_size: user.project_manager?.company_size || "",
-        industry: user.project_manager?.industry || "",
+        company: user.project_manager?.company || "",
+        // company_size: user.project_manager?.company_size || "",
+        // industry: user.project_manager?.industry || "",
         website_url: user.project_manager?.website_url || "",
         linkedin_url: user.project_manager?.linkedin_url || "",
       }));
@@ -121,9 +121,9 @@ const PMProfile = () => {
       profileData.append("city", formData.city);
       profileData.append("country", formData.country);
 
-      if (formData.company_name) profileData.append("company_name", formData.company_name);
-      if (formData.company_size) profileData.append("company_size", formData.company_size);
-      if (formData.industry) profileData.append("industry", formData.industry);
+      if (formData.company) profileData.append("company", formData.company);
+      // if (formData.company_size) profileData.append("company_size", formData.company_size);
+      // if (formData.industry) profileData.append("industry", formData.industry);
       if (formData.website_url) profileData.append("website_url", formData.website_url);
       if (formData.linkedin_url) profileData.append("linkedin_url", formData.linkedin_url);
 
@@ -158,9 +158,9 @@ const PMProfile = () => {
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
-        company_name: user.project_manager?.company_name || "",
-        company_size: user.project_manager?.company_size || "",
-        industry: user.project_manager?.industry || "",
+        company: user.project_manager?.company || "",
+        // company_size: user.project_manager?.company_size || "",
+        // industry: user.project_manager?.industry || "",
         website_url: user.project_manager?.website_url || "",
         linkedin_url: user.project_manager?.linkedin_url || "",
         avatar: null,
@@ -292,15 +292,15 @@ const PMProfile = () => {
                     <div className="text-center">
                       <p className="text-slate-500 text-sm">Company</p>
                       <p className="text-lg font-semibold text-slate-900">
-                        {formData.company_name || "Not specified"}
+                        {formData.company || "Not specified"}
                       </p>
                     </div>
-                    <div className="text-center">
+                    {/* <div className="text-center">
                       <p className="text-slate-500 text-sm">Industry</p>
                       <p className="text-lg font-semibold text-slate-900 capitalize">
                         {formData.industry || "Not specified"}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>
@@ -418,8 +418,8 @@ const PMProfile = () => {
                         Company Name
                       </label>
                       <Input
-                        name="company_name"
-                        value={formData.company_name}
+                        name="company"
+                        value={formData.company}
                         onChange={handleInputChange}
                         disabled={!isEditing || loading}
                         placeholder="Your company name"
@@ -427,7 +427,7 @@ const PMProfile = () => {
                       />
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         Company Size
                       </label>
@@ -439,9 +439,9 @@ const PMProfile = () => {
                         placeholder="e.g., 50-100, 100-500"
                         className="h-10"
                       />
-                    </div>
+                    </div> */}
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         Industry
                       </label>
@@ -453,7 +453,7 @@ const PMProfile = () => {
                         placeholder="e.g., Tech, Finance, Healthcare"
                         className="h-10"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -464,7 +464,8 @@ const PMProfile = () => {
                         type="url"
                         value={formData.website_url}
                         onChange={handleInputChange}
-                        disabled={!isEditing || loading}
+                        // disabled={!isEditing || loading}
+                        disabled
                         placeholder="https://yourcompany.com"
                         className="h-10"
                       />
@@ -479,8 +480,9 @@ const PMProfile = () => {
                         type="url"
                         value={formData.linkedin_url}
                         onChange={handleInputChange}
-                        disabled={!isEditing || loading}
-                        placeholder="https://linkedin.com/company/..."
+                        // disabled={!isEditing || loading}
+                        disabled
+                        placeholder="https://linkedin.com/name/..."
                         className="h-10"
                       />
                     </div>
@@ -503,7 +505,7 @@ const PMProfile = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="gap-2"
+                  className="gap-2 text-white"
                 >
                   {loading ? (
                     <>

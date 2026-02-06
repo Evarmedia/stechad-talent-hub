@@ -256,6 +256,8 @@ const EngineerVetting = () => {
                 <tr className="text-left border-b">
                   <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">City</th>
+                  <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
                   <th className="p-3 text-sm font-medium text-muted-foreground">Vetted</th>
@@ -288,6 +290,8 @@ const EngineerVetting = () => {
                         </div>
                       </td>
                       <td className="p-3">{engineer.years_of_experience} years</td>
+                      <td className="p-3">{engineer.user.city}</td>
+                      <td className="p-3">{engineer.user.country}</td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
                           {engineer.specialization.slice(0, 2).map(skill => (
@@ -346,7 +350,7 @@ const EngineerVetting = () => {
                                     </div>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-bold">Skills</label>
+                                    <label className="text-sm font-bold">Skills:</label>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                       {selectedEngineer?.specialization.map(skill => (
                                         <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
@@ -357,6 +361,12 @@ const EngineerVetting = () => {
                                       {selectedEngineer?.languages.map(lang => (
                                         <Badge key={lang} variant="outline" className="text-xs">{lang}</Badge>
                                       ))}
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-bold">Language Proficiency:</label>
+                                      <p className="text-sm capitalize">
+                                        {selectedEngineer?.language_proficiency || 'Not provided'}
+                                      </p>
                                     </div>
                                   </div>
                                   <div className="space-y-2">
@@ -370,12 +380,6 @@ const EngineerVetting = () => {
                                       <label className="text-sm font-bold">Authorized to work:</label>
                                       <p className="text-sm capitalize">
                                         {selectedEngineer?.work_authorized ? "Yes" : "No"}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Language Proficiency:</label>
-                                      <p className="text-sm capitalize">
-                                        {selectedEngineer?.language_proficiency || 'Not provided'}
                                       </p>
                                     </div>
                                     <label className="text-sm font-bold">Certifications:</label>
@@ -425,6 +429,7 @@ const EngineerVetting = () => {
                             <Button
                               size="sm"
                               onClick={() => handleVetEngineer(engineer.engineer_id)}
+                                className="text-white"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Vet

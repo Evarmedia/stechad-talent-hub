@@ -429,7 +429,7 @@ const AdminProfile = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="gap-2"
+                  className="gap-2 text-white"
                 >
                   {loading ? (
                     <>
