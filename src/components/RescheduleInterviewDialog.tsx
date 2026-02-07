@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
 import { useDataContext } from '@/hooks/useDataContext';
+import React, { useState } from 'react';
 
 interface RescheduleInterviewDialogProps {
   isOpen: boolean;
@@ -117,7 +117,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="dateTime">New Date & Time *</Label>
+            <Label htmlFor="dateTime">New Date & Time <span className='text-red-600'>*</span></Label>
             <Input
               id="dateTime"
               name="date_time"
@@ -126,6 +126,32 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
               onChange={handleChange}
               required
               min={new Date().toISOString().slice(0, 16)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="zoom_link">Zoom Link (Optional) </Label>
+            <Input
+              id="zoom_link"
+              name="zoom_link"
+              type="text"
+              placeholder='Add meeting link here(Optional)'
+              value={formData.zoom_link}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="phone_number">Phone Number (Optional) </Label>
+            <Input
+              id="phone_number"
+              name="phone_number"
+              type="text"
+              placeholder='Your phone number'
+              value={formData.phone_number}
+              onChange={handleChange}
+              required
             />
           </div>
 
@@ -145,7 +171,7 @@ const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({
             <Button type="button" variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className='text-white'>
               {loading ? "Rescheduling..." : "Reschedule"}
             </Button>
           </DialogFooter>
