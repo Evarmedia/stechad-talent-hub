@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from '@/hooks/use-toast';
 import { Camera, FileText, Loader2, X, ZoomIn } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { toast } from '@/hooks/use-toast';
 import { useAuthContext } from "../../../hooks/useAuthContext";
 
 // Utility function to extract filename from object path
@@ -661,7 +661,7 @@ const Profile = () => {
                         value={formData.specialization}
                         onChange={handleInputChange}
                         disabled={!isEditing || loading}
-                        placeholder="e.g., React, Node.js, Python"
+                        placeholder="e.g., Networking, Installation, etc"
                         className="h-10"
                       />
                     </div>
@@ -676,7 +676,7 @@ const Profile = () => {
                         value={formData.project_types}
                         onChange={handleInputChange}
                         disabled={!isEditing || loading}
-                        placeholder="e.g., Web Development, Mobile, DevOps"
+                        placeholder="e.g. Web Development, Mobile, DevOps"
                         className="h-10"
                       />
                     </div>
@@ -764,7 +764,7 @@ const Profile = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="gap-2"
+                  className="gap-2 text-white"
                 >
                   {loading ? (
                     <>

@@ -343,8 +343,8 @@ const EngineerVetting = () => {
                               {selectedEngineer && (
                                 <div className="space-y-4">
                                   <div>
-                                    <h3 className="font-bold">{selectedEngineer.user.first_name} {selectedEngineer.user.last_name}</h3>
-                                    <p className="text-sm text-muted-foreground">{selectedEngineer.user.email}</p>
+                                    <h3 className="font-bold">{selectedEngineer?.user?.first_name} {selectedEngineer?.user?.last_name}</h3>
+                                    <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.email}</p>
                                   </div>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -353,7 +353,7 @@ const EngineerVetting = () => {
                                     </div>
                                     <div>
                                       <label className="text-sm font-bold">Country:</label>
-                                      <p className="text-sm">{selectedEngineer?.user.country}</p>
+                                      <p className="text-sm">{selectedEngineer?.user?.country}</p>
                                     </div>
                                     <div>
                                       <label className="text-sm font-bold">Remark:</label>
@@ -461,7 +461,7 @@ const EngineerVetting = () => {
                                 <DialogHeader>
                                   <DialogTitle>Add Remark</DialogTitle>
                                     <div>
-                                      <Label className="block font-semibold text-blue-400 mb-2">Remark for {selectedEngineer.user?.first_name}</Label>
+                                      <Label className="block font-semibold text-blue-400 mb-2">Remark for {selectedEngineer?.user?.first_name}</Label>
                                       <Textarea
                                         name="remark"
                                         value={remark}

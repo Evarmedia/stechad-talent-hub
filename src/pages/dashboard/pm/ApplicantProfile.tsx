@@ -8,7 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Award, Briefcase, Code, FileText, Mail } from "lucide-react";
+import { Award, Briefcase, Code, FileText, Mail, Star } from "lucide-react";
 
 interface ApplicantProfileProps {
     open: boolean;
@@ -74,6 +74,19 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({
                                 </Badge>
                             </div>
                         </div>
+
+                        {/* Remark */}
+                        {(
+                            <div>
+                                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <Star className="w-5 h-5 text-pink-600" />
+                                    <span className="text-red-800">Admin's Remark!!!</span>
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedApplicant?.remark || `Not Provided yet`}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Specializations */}
                         {selectedApplicant?.specialization && selectedApplicant.specialization.length > 0 && (

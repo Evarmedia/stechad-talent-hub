@@ -1,9 +1,7 @@
 
-import React from "react";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Home, User, ClipboardList, Settings, Briefcase, FileText, Users, FolderKanban, Calendar, MessageSquare } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
-
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { Briefcase, Calendar, ClipboardList, FileText, FolderKanban, Home, Pickaxe, Settings, User, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 const engineerMenu = [
   { icon: Home,    label: "Dashboard", to: "/dashboard/engineer" },
   { icon: Briefcase, label: "Jobs",     to: "/dashboard/engineer/jobs" },
@@ -18,6 +16,7 @@ const pmMenu = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
+  { icon: Pickaxe, label: "Engineers", to: "dashboard/pm/engineers" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
   // { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
@@ -27,7 +26,7 @@ const pmMenu = [
 
 const adminMenu = [
   { icon: Home, label: "Overview", to: "/admin" },
-  { icon: Users, label: "Engineers", to: "/admin/engineers" },
+  { icon: Pickaxe, label: "Engineers", to: "/admin/engineers" },
   { icon: User, label: "Project Managers", to: "/admin/project-managers" },
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },

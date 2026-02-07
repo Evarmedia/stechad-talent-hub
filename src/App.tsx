@@ -131,6 +131,11 @@ const App = () => (
                         <PMManageJobs />
                       </ProtectedRoute>
                     } />
+                  <Route path="/dashboard/pm/engineers" element={
+                    <ProtectedRoute requiredRole="project_manager">
+                      <AdminEngineers />
+                    </ProtectedRoute>
+                  } />
                     <Route path="/dashboard/pm/projects" element={
                       <ProtectedRoute requiredRole="project_manager">
                         <PMProjects />
