@@ -1,4 +1,6 @@
-import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -8,10 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Mail, Briefcase, MapPin, ShieldCheck } from "lucide-react";
+import { Briefcase, Mail, MapPin, ShieldCheck } from "lucide-react";
+import React from "react";
 
 type EngineerReviewDialogDesktopProps = {
   engineer: any;
@@ -180,12 +180,12 @@ const EngineerReviewDialogDesktop: React.FC<EngineerReviewDialogDesktopProps> = 
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          {selectedEngineer && !selectedEngineer.is_vetted && (
+          {/* {selectedEngineer && !selectedEngineer.is_vetted && (
             <Button onClick={() => onVet(selectedEngineer.engineer_id)} className="text-white">
               <CheckCircle className="w-4 h-4 mr-1" />
               Vet Engineer
             </Button>
-          )}
+          )} */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,4 @@
-import React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,10 +8,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle } from "lucide-react";
+import React from "react";
 
 type VetRemarkDialogProps = {
   engineer: any;
@@ -32,6 +32,8 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
   onVet,
   onResetRemark,
 }) => {
+  const isRemarkProvided = remark.trim().length > 0;
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -56,7 +58,8 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
               value={remark}
               onChange={onRemarkChange}
               placeholder="Add Remarks about Engineer"
-              rows={3}
+              required
+              rows={4}
             />
           </div>
         </DialogHeader>
@@ -68,7 +71,11 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
           </DialogClose>
 
           {selectedEngineer && !selectedEngineer.is_vetted && (
-            <Button onClick={() => onVet(selectedEngineer.engineer_id)} className="text-white">
+            <Button
+              onClick={() => isRemarkProvided && onVet(selectedEngineer.engineer_id)}
+              className="text-white"
+              disabled={!isRemarkProvided}
+            >
               <CheckCircle className="w-4 h-4 mr-1" />
               Vet Engineer
             </Button>
