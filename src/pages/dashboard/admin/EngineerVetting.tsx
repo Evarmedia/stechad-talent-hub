@@ -2,22 +2,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
-import { CheckCircle, Eye, User } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle, User } from "lucide-react";
+import React, { useState } from "react";
+import EngineerReviewDialogMobile from "./EngineerReviewDialogMobile";
+import EngineerReviewDialogDesktop from "./EngineerReviewDialogDesktop";
+import VetRemarkDialog from "./VetRemarkDialog";
 
 const EngineerVetting = () => {
   const [selectedEngineer, setSelectedEngineer] = useState(null);
@@ -60,9 +52,9 @@ const EngineerVetting = () => {
       });
     }
   };
-  const handleRemarkChange = async (e) => {
-    setRemark(e.target.value)
-  }
+  const handleRemarkChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setRemark(e.target.value);
+  };
 
   return (
     <div className="p-4 md:p-8">
@@ -131,106 +123,12 @@ const EngineerVetting = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedEngineer(engineer)}
-                          className="flex-1"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Review
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md mx-4">
-                        <DialogHeader>
-                          <DialogTitle>Review Engineer</DialogTitle>
-                        </DialogHeader>
-                        {selectedEngineer && (
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="font-bold">{selectedEngineer.user.first_name} {selectedEngineer.user.last_name}</h3>
-                              <p className="text-sm text-muted-foreground">{selectedEngineer.user.email}</p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-sm font-bold">Experience:</label>
-                                <p className="text-sm">{selectedEngineer.years_of_experience} years</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-bold">Country:</label>
-                                <p className="text-sm">{selectedEngineer.country}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-bold">Skills</label>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {selectedEngineer.specialization.map(skill => (
-                                  <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
-                                ))}
-                              </div>
-                              <label className="text-sm font-bold">Languages:</label>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {selectedEngineer.languages.map(lang => (
-                                  <Badge key={lang} variant="outline" className="text-xs">{lang}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div>
-                                <label className="text-sm font-bold">Open to work in Nearby cities:</label>
-                                <p className="text-sm">
-                                  {selectedEngineer?.open_to_nearby_cities ? "Yes" : "No"}
-                                </p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-bold">Authorized to work:</label>
-                                <p className="text-sm capitalize">
-                                  {selectedEngineer?.work_authorized ? "Yes" : "No"}
-                                </p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-bold">Language Proficiency:</label>
-                                <p className="text-sm capitalize">
-                                  {selectedEngineer?.language_proficiency || 'Not provided'}
-                                </p>
-                              </div>
-                              <label className="text-sm font-bold">Certifications:</label>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {selectedEngineer?.certifications.map(cert => (
-                                  <Badge key={cert} variant="outline" className="text-xs">{cert}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                            {/* Add CV url preview */}
-                            {selectedEngineer.cv_url && (
-                              <Card>
-                                <CardContent className="p-4">
-                                  <div className="mb-3">
-                                    <span className="text-sm font-bold">CV Preview</span>
-                                  </div>
-                                  <a href={engineer?.cv_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
-                                    View CV
-                                  </a>
-                                </CardContent>
-                              </Card>
-                            )}
-                          </div>
-                        )}
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
-                          </DialogClose>
-                          {selectedEngineer && !selectedEngineer.is_vetted && (
-                            <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white" >
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Vet Engineer
-                            </Button>
-                          )}
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <EngineerReviewDialogMobile
+                      engineer={engineer}
+                      selectedEngineer={selectedEngineer}
+                      setSelectedEngineer={setSelectedEngineer}
+                      onVet={handleVetEngineer}
+                    />
                     {engineer.is_vetted ? (
                       <Button
                         size="sm"
@@ -325,113 +223,12 @@ const EngineerVetting = () => {
                       </td>
                       <td className="p-3">
                         <div className="flex gap-2">
-                          {/* Engineer Profile Dialog */}
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setSelectedEngineer(engineer)}
-                              >
-                                Review
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle>Review Engineer</DialogTitle>
-                              </DialogHeader>
-                              {selectedEngineer && (
-                                <div className="space-y-4">
-                                  <div>
-                                    <h3 className="font-bold">{selectedEngineer?.user?.first_name} {selectedEngineer?.user?.last_name}</h3>
-                                    <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.email}</p>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <label className="text-sm font-bold">Experience:</label>
-                                      <p className="text-sm">{selectedEngineer?.years_of_experience} years</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Country:</label>
-                                      <p className="text-sm">{selectedEngineer?.user?.country}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Remark:</label>
-                                      <p className="text-sm">{selectedEngineer?.remark || "None Provided Yet"}</p>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-bold">Skills:</label>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                      {selectedEngineer?.specialization.map(skill => (
-                                        <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
-                                      ))}
-                                    </div>
-                                    <label className="text-sm font-bold">Languages:</label>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                      {selectedEngineer?.languages.map(lang => (
-                                        <Badge key={lang} variant="outline" className="text-xs">{lang}</Badge>
-                                      ))}
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Language Proficiency:</label>
-                                      <p className="text-sm capitalize">
-                                        {selectedEngineer?.language_proficiency || 'Not provided'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <div>
-                                      <label className="text-sm font-bold">Open to work in Nearby cities:</label>
-                                      <p className="text-sm">
-                                        {selectedEngineer?.open_to_nearby_cities ? "Yes" : "No"}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Authorized to work:</label>
-                                      <p className="text-sm capitalize">
-                                        {selectedEngineer?.work_authorized ? "Yes" : "No"}
-                                      </p>
-                                    </div>
-                                    <label className="text-sm font-bold">Certifications:</label>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                      {selectedEngineer?.certifications.map(cert => (
-                                        <Badge key={cert} variant="outline" className="text-xs">{cert}</Badge>
-                                      ))}
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-bold">Vetted:</label>
-                                      <p>{selectedEngineer.is_vetted ? "Yes" : "No"}</p>
-                                    </div>
-                                  </div>
-                                  {/* Add CV url preview */}
-                                  {selectedEngineer.cv_url && (
-                                    <Card>
-                                      <CardContent className="p-4">
-                                        <div className="mb-3">
-                                          <span className="text-sm font-bold">CV Preview</span>
-                                        </div>
-                                        <a href={engineer?.cv_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
-                                          View CV
-                                        </a>
-                                      </CardContent>
-                                    </Card>
-                                  )}
-                                </div>
-                              )}
-                              <DialogFooter>
-                                <DialogClose asChild>
-                                  <Button variant="outline">Close</Button>
-                                </DialogClose>
-                                {selectedEngineer && !selectedEngineer.is_vetted && (
-                                  <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white" >
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Vet Engineer
-                                  </Button>
-                                )}
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                          <EngineerReviewDialogDesktop
+                            engineer={engineer}
+                            selectedEngineer={selectedEngineer}
+                            setSelectedEngineer={setSelectedEngineer}
+                            onVet={handleVetEngineer}
+                          />
                           {engineer.is_vetted ? (
                             <Button
                               size="sm"
@@ -441,54 +238,15 @@ const EngineerVetting = () => {
                               Remove Vetting
                             </Button>
                           ) : (
-                            // <Button
-                            //   size="sm"
-                            //   onClick={() => handleVetEngineer(engineer.engineer_id)}
-                            //     className="text-white"
-                            // >
-                            //   <CheckCircle className="w-4 h-4 mr-1" />
-                            //   Vet
-                            // </Button>
-                            // Dialog for Vet Button
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    // onClick={() => handleVetEngineer(engineer.engineer_id)}
-                                    className="text-white"
-                                  >
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Vet
-                                  </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle>Add Remark</DialogTitle>
-                                    <div>
-                                      <Label className="block font-semibold text-blue-400 mb-2">Remark for {selectedEngineer?.user?.first_name}</Label>
-                                      <Textarea
-                                        name="remark"
-                                        value={remark}
-                                        onChange={handleRemarkChange}
-                                        placeholder="Add Remarks about Engineer"
-                                        rows={3}
-                                      />
-                                    </div>
-                                </DialogHeader>
-                                <DialogFooter className="flex justify-end gap-2">
-                                    <DialogClose asChild>
-                                      <Button variant="outline" onClick={() => setRemark("")}>Close</Button>
-                                    </DialogClose>
-
-                                    {selectedEngineer && !selectedEngineer.is_vetted && (
-                                      <Button onClick={() => handleVetEngineer(selectedEngineer.engineer_id)} className="text-white">
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Vet Engineer
-                                      </Button>
-                                    )}
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                            <VetRemarkDialog
+                              engineer={engineer}
+                              selectedEngineer={selectedEngineer}
+                              setSelectedEngineer={setSelectedEngineer}
+                              remark={remark}
+                              onRemarkChange={handleRemarkChange}
+                              onVet={handleVetEngineer}
+                              onResetRemark={() => setRemark("")}
+                            />
                           )}
                         </div>
                       </td>
