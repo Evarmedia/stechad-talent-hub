@@ -7,8 +7,8 @@ import { toast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
 import { CheckCircle, User } from "lucide-react";
 import React, { useState } from "react";
-import EngineerReviewDialogMobile from "./EngineerReviewDialogMobile";
 import EngineerReviewDialogDesktop from "./EngineerReviewDialogDesktop";
+import EngineerReviewDialogMobile from "./EngineerReviewDialogMobile";
 import VetRemarkDialog from "./VetRemarkDialog";
 
 const EngineerVetting = () => {
@@ -139,15 +139,16 @@ const EngineerVetting = () => {
                         Remove Vetting
                       </Button>
                     ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleVetEngineer(engineer.engineer_id)}
-                        className="flex-1"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Vet
-                      </Button>
-                    )}
+                      <VetRemarkDialog
+                        engineer={engineer}
+                        selectedEngineer={selectedEngineer}
+                        setSelectedEngineer={setSelectedEngineer}
+                        remark={remark}
+                        onRemarkChange={handleRemarkChange}
+                        onVet={handleVetEngineer}
+                        onResetRemark={() => setRemark("")}
+                      />
+                    ) }
                   </div>
                 </div>
               ))}
@@ -158,13 +159,13 @@ const EngineerVetting = () => {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b">
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">City</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Vetted</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Engineer</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">City</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Country</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Skills</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Status</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Vetted</th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
@@ -193,9 +194,9 @@ const EngineerVetting = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="p-3">{engineer.years_of_experience} years</td>
-                      <td className="p-3">{engineer.user.city}</td>
-                      <td className="p-3">{engineer.user.country}</td>
+                      <td className="p-3">{engineer?.years_of_experience} years</td>
+                      <td className="p-3">{engineer?.user?.city}</td>
+                      <td className="p-3">{engineer?.user?.country}</td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
                           {engineer.specialization.slice(0, 2).map(skill => (

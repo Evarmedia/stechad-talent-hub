@@ -8,6 +8,7 @@ import { useDataContext } from "@/hooks/useDataContext";
 import { Download, Eye, Search, User } from "lucide-react";
 import { useState } from "react";
 import { exportToXLSX } from "./exportUtils";
+import VetRemarkDialog from "./VetRemarkDialog";
 // import EngineerTable from "./EngineerTable";
 // import { exportToXLSX } from "./exportToXlsx";
 
@@ -231,14 +232,14 @@ const Engineers = () => {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b">
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Engineer</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Skills</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Experience</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">City</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Country</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Joined</th>
-                  <th className="p-3 text-sm font-medium text-muted-foreground">Action</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Engineer</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Skills</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Experience</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">City</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Country</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Status</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Joined</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -290,9 +291,9 @@ const Engineers = () => {
                           )}
                         </div>
                       </td>
-                      <td className="p-3 text-sm">{engineer.years_of_experience}</td>
-                      <td className="p-3 text-sm">{engineer.user.city || "Remote"}</td>
-                      <td className="p-3 text-sm">{engineer.user.country || "Remote"}</td>
+                      <td className="p-3 text-sm">{engineer?.years_of_experience}</td>
+                      <td className="p-3 text-sm">{engineer?.user?.city || "Remote"}</td>
+                      <td className="p-3 text-sm">{engineer?.user?.country || "Remote"}</td>
                       <td className="p-3">
                         <Badge className={getStatusColor(engineer.status)}>
                           {engineer.status}
@@ -320,6 +321,7 @@ const Engineers = () => {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
       />
+      
     </div>
   );
 };

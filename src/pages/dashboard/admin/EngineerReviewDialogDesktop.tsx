@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Mail, Briefcase, MapPin, ShieldCheck } from "lucide-react";
 
 type EngineerReviewDialogDesktopProps = {
   engineer: any;
@@ -37,80 +37,126 @@ const EngineerReviewDialogDesktop: React.FC<EngineerReviewDialogDesktopProps> = 
           Review
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Review Engineer</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-primary">Review Engineer</DialogTitle>
         </DialogHeader>
         {selectedEngineer && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-bold">
+          <div className="space-y-6 py-2">
+            <div className="border-b pb-4">
+              <h3 className="text-2xl font-bold">
                 {selectedEngineer?.user?.first_name} {selectedEngineer?.user?.last_name}
               </h3>
-              <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.email}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-bold">Experience:</label>
-                <p className="text-sm">{selectedEngineer?.years_of_experience} years</p>
-              </div>
-              <div>
-                <label className="text-sm font-bold">Country:</label>
-                <p className="text-sm">{selectedEngineer?.user?.country}</p>
-              </div>
-              <div>
-                <label className="text-sm font-bold">Remark:</label>
-                <p className="text-sm">{selectedEngineer?.remark || "None Provided Yet"}</p>
+              <div className="flex items-center gap-2 mt-2 text-muted-foreground">
+                <Mail className="w-4 h-4" />
+                <span className="text-sm">{selectedEngineer?.user?.email}</span>
+                <Badge variant={selectedEngineer.is_vetted ? "secondary" : "outline"} className="text-xs">
+                  <ShieldCheck className="w-3 h-3 mr-1" />
+                  {selectedEngineer.is_vetted ? "Vetted" : "Pending"}
+                </Badge>
               </div>
             </div>
-            <div>
-              <label className="text-sm font-bold">Skills:</label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {selectedEngineer?.specialization.map((skill: string) => (
-                  <Badge key={skill} variant="outline" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-              <label className="text-sm font-bold">Languages:</label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {selectedEngineer?.languages.map((lang: string) => (
-                  <Badge key={lang} variant="outline" className="text-xs">
-                    {lang}
-                  </Badge>
-                ))}
-              </div>
-              <div>
-                <label className="text-sm font-bold">Language Proficiency:</label>
-                <p className="text-sm capitalize">
-                  {selectedEngineer?.language_proficiency || "Not provided"}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-900">Experience</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-700">
+                    {selectedEngineer?.years_of_experience} years
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Status:{" "}
+                    <span className="font-semibold capitalize">{selectedEngineer?.status || "N/A"}</span>
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-green-700" />
+                    <span className="text-sm font-semibold text-gray-900">Location</span>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {selectedEngineer?.user?.city || "City not set"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.country}</p>
+                </CardContent>
+              </Card>
             </div>
-            <div className="space-y-2">
-              <div>
-                <label className="text-sm font-bold">Open to work in Nearby cities:</label>
-                <p className="text-sm">{selectedEngineer?.open_to_nearby_cities ? "Yes" : "No"}</p>
-              </div>
-              <div>
-                <label className="text-sm font-bold">Authorized to work:</label>
-                <p className="text-sm capitalize">
-                  {selectedEngineer?.work_authorized ? "Yes" : "No"}
-                </p>
-              </div>
-              <label className="text-sm font-bold">Certifications:</label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {selectedEngineer?.certifications.map((cert: string) => (
-                  <Badge key={cert} variant="outline" className="text-xs">
-                    {cert}
-                  </Badge>
-                ))}
-              </div>
-              <div>
-                <label className="text-sm font-bold">Vetted:</label>
-                <p>{selectedEngineer.is_vetted ? "Yes" : "No"}</p>
-              </div>
-            </div>
+
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div>
+                  <span className="text-sm font-semibold">Skills</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedEngineer?.specialization.map((skill: string) => (
+                      <Badge key={skill} variant="outline" className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold">Languages</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedEngineer?.languages.map((lang: string) => (
+                      <Badge key={lang} variant="outline" className="text-xs">
+                        {lang}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Proficiency:{" "}
+                    <span className="capitalize font-semibold">
+                      {selectedEngineer?.language_proficiency || "Not provided"}
+                    </span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Open to nearby cities</p>
+                    <p className="font-semibold">
+                      {selectedEngineer?.open_to_nearby_cities ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Authorized to work</p>
+                    <p className="font-semibold">
+                      {selectedEngineer?.work_authorized ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Certifications</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedEngineer?.certifications.map((cert: string) => (
+                        <Badge key={cert} variant="outline" className="text-xs">
+                          {cert}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Remark</p>
+                    <p className="font-semibold">
+                      {selectedEngineer?.remark || "None Provided Yet"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Vetted</p>
+                  <p className="font-semibold">{selectedEngineer.is_vetted ? "Yes" : "No"}</p>
+                </div>
+              </CardContent>
+            </Card>
+
             {selectedEngineer.cv_url && (
               <Card>
                 <CardContent className="p-4">

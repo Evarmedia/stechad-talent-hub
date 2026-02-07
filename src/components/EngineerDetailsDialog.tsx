@@ -3,7 +3,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, Calendar, MapPin } from "lucide-react";
+import { User, Mail, Calendar, MapPin, Briefcase, ShieldCheck } from "lucide-react";
 
 interface Engineer {
   engineer_id: number;
@@ -32,91 +32,104 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl mx-4">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
+          <DialogTitle className="text-2xl font-bold text-primary">Engineer Profile</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 py-2">
+          <div className="border-b pb-4 flex items-start gap-3">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <User className="w-6 h-6 text-primary" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span>{engineer.user.first_name} {engineer.user.last_name}</span>
-                {engineer.is_vetted && (
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                    Vetted
-                  </Badge>
-                )}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xl font-semibold">
+                  {engineer.user.first_name} {engineer.user.last_name}
+                </span>
+                <Badge
+                  variant={engineer.is_vetted ? "secondary" : "outline"}
+                  className="text-xs flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-3 h-3" />
+                  {engineer.is_vetted ? "Vetted" : "Pending"}
+                </Badge>
               </div>
-              <p className="text-sm text-muted-foreground font-normal">{engineer.user.email}</p>
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <Mail className="w-4 h-4" />
+                <span className="text-sm">{engineer.user.email}</span>
+              </div>
             </div>
-          </DialogTitle>
-        </DialogHeader>
+          </div>
 
-        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Contact</span>
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-900">Experience</span>
                 </div>
-                <p className="text-sm">{engineer.user.email}</p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {engineer.years_of_experience} years
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Status:{" "}
+                  <span className="font-semibold capitalize">{engineer.status || "N/A"}</span>
+                </p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Joined</span>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-green-700" />
+                  <span className="text-sm font-semibold text-gray-900">Location</span>
                 </div>
-                <p className="text-sm">{engineer.onboarded_at.split("T")[0]}</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {engineer.user?.country || "Not specified"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Onboarded: {engineer.onboarded_at.split("T")[0]}
+                </p>
               </CardContent>
             </Card>
           </div>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="mb-3">
-                <span className="text-sm font-medium">Experience</span>
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <span className="text-sm font-semibold">Skills</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {engineer.specialization.map(skill => (
+                    <Badge key={skill} variant="outline" className="text-xs">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">{engineer.years_of_experience}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="mb-3">
-                <span className="text-sm font-medium">Skills</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {engineer.specialization.map(skill => (
-                  <Badge key={skill} variant="outline" className="text-xs">
-                    {skill}
+              <div>
+                <span className="text-sm font-semibold">Status</span>
+                <div className="mt-2">
+                  <Badge className={engineer.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                    {engineer.status}
                   </Badge>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="mb-3">
-                <span className="text-sm font-medium">Status</span>
-              </div>
-              <Badge className={engineer.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                {engineer.status}
-              </Badge>
-            </CardContent>
-          </Card>
-          {/* Add CV url preview */}
           {engineer.cv_url && (
             <Card>
               <CardContent className="p-4">
                 <div className="mb-3">
-                  <span className="text-sm font-medium">CV Preview</span>
+                  <span className="text-sm font-semibold">CV Preview</span>
                 </div>
-                <a href={engineer.cv_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                <a
+                  href={engineer.cv_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline"
+                >
                   View CV
                 </a>
               </CardContent>
