@@ -244,7 +244,7 @@ const AdminApplications = () => {
                 </div>
 
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Experience Level: {application.experience || "None Provided"}</p>
+                  <p className="text-sm text-gray-600 mb-2">Experience: {`${application.experience || 'X'} years`}</p>
                   {application.skills && (
                     <div className="flex flex-wrap gap-1">
                       {application.skills.map((skill, index) => (
@@ -269,6 +269,7 @@ const AdminApplications = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleStatusUpdate(application.applications_id, "accepted")}
+                        className="bg-green-800"
                       >
                         Accept
                       </Button>
@@ -286,11 +287,30 @@ const AdminApplications = () => {
                       <Button 
                         size="sm"
                         onClick={() => handleStatusUpdate(application.applications_id, "accepted")}
+                        className="bg-green-800"
                       >
                         Accept
                       </Button>
                       <Button 
                         size="sm" 
+                        variant="destructive"
+                        onClick={() => handleStatusUpdate(application.applications_id, "rejected")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  {application.status === "reviewed" && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusUpdate(application.applications_id, "accepted")}
+                        className="bg-green-800"
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleStatusUpdate(application.applications_id, "rejected")}
                       >
