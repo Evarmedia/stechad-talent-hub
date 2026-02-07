@@ -399,6 +399,10 @@ const EngineerVetting = () => {
                                         <Badge key={cert} variant="outline" className="text-xs">{cert}</Badge>
                                       ))}
                                     </div>
+                                    <div>
+                                      <label className="text-sm font-bold">Vetted:</label>
+                                      <p>{selectedEngineer.is_vetted ? "Yes" : "No"}</p>
+                                    </div>
                                   </div>
                                   {/* Add CV url preview */}
                                   {selectedEngineer.cv_url && (
