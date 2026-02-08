@@ -145,6 +145,7 @@ const DataProviderInner = ({ children }) => {
     markAllAsRead: notificationContext.markAllAsRead,
     notifications: notificationContext.notifications,
     unreadCount: notificationContext.unreadCount,
+    notificationsEligible: notificationContext.isEligibleRole,
     resetNotificationState: notificationContext.resetNotificationState,
   };
 

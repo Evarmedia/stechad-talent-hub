@@ -12,8 +12,12 @@ export const NotificationsProvider = ({ children }) => {
 
   const token = apiService.getToken(); // ensures only fetch when logged in
   const { user } = useAuthContext();
+  const isEligibleRole =
+    user?.role === "engineer" || user?.role === "project_manager";
 
   const getNotifications = async (filters = {}) => {
+    if (!token || !isEligibleRole) return [];
+
     setLoading(true);
     try {
       let params = {
@@ -38,8 +42,9 @@ export const NotificationsProvider = ({ children }) => {
 
       // Calculate unread count
       // const unread = notificationsData.filter((n) => !n.is_read).length;
-      setUnreadCount(response.data.unread_count);
+      setUnreadCount(response?.data?.unread_count ?? 0);
 
+      console.log(notificationsData);
       return notificationsData;
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -51,6 +56,8 @@ export const NotificationsProvider = ({ children }) => {
   };
 
   const markAsRead = async (notificationId) => {
+    if (!token || !isEligibleRole) return { success: false };
+
     try {
       const response = await apiService.request(
         `/notifications/${notificationId}/read`,
@@ -78,6 +85,8 @@ export const NotificationsProvider = ({ children }) => {
   };
 
   const markAllAsRead = async () => {
+    if (!token || !isEligibleRole) return { success: false };
+
     try {
       const response = await apiService.request("/notifications/read-all", {
         method: "PUT",
@@ -102,7 +111,7 @@ export const NotificationsProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!token || !user || initialized) return;
+    if (!token || !user || initialized || !isEligibleRole) return;
 
     const init = async () => {
       setLoading(true);
@@ -132,6 +141,7 @@ export const NotificationsProvider = ({ children }) => {
     notifications,
     unreadCount,
     loading,
+    isEligibleRole,
     getNotifications,
     markAsRead,
     markAllAsRead,
