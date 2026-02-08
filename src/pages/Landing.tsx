@@ -1,6 +1,7 @@
 import STECHADLogo from "@/components/STECHADLogo";
 import {
   ArrowRight,
+  ArrowUp,
   BadgeCheck,
   Cable,
   Cloud,
@@ -8,8 +9,11 @@ import {
   Handshake,
   Layers,
   Lock,
+  Mail,
+  MapPin,
   MonitorSmartphone,
   Network,
+  Phone,
   Server,
   ShieldCheck,
   Sparkles,
@@ -109,7 +113,7 @@ const stats: Stat[] = [
   { label: "Countries covered", value: 50, suffix: "+" },
   { label: "Avg. response time", value: 1, suffix: " min" },
   { label: "Certified engineers", value: 1400, suffix: "+" },
-  { label: "Projects delivered", value: 3200, suffix: "+" },
+  { label: "Projects delivered", value: 600, suffix: "+" },
 ];
 
 const steps = [
@@ -185,7 +189,7 @@ const CTAButtons = () => (
       to="/engineer-signup"
       className="inline-flex items-center justify-center gap-2 border border-primary text-primary bg-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition"
     >
-      Join as engineer
+      Join as an Engineer
     </Link>
   </div>
 );
@@ -222,17 +226,59 @@ const HowItWorks = () => (
   </section>
 );
 
+type FloatingVariant = "circle" | "square" | "diamond" | "kite" | "star" | "sparkle";
+
+const floatingStyles: Record<FloatingVariant, React.CSSProperties> = {
+  circle: { borderRadius: "9999px" },
+  square: { borderRadius: "12px" },
+  diamond: { borderRadius: "10px", transform: "rotate(45deg)" },
+  kite: { clipPath: "polygon(50% 0%, 90% 50%, 50% 100%, 10% 50%)" },
+  star: { clipPath: "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)" },
+  sparkle: { clipPath: "polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%)" },
+};
+
+const FloatingShape = ({
+  className,
+  variant = "circle",
+  color = "bg-primary/25",
+}: {
+  className?: string;
+  variant?: FloatingVariant;
+  color?: string;
+}) => (
+  <span
+    className={`pointer-events-none absolute animate-bounce mix-blend-multiply shadow-md ${color} ${className ?? ""}`}
+    style={floatingStyles[variant]}
+    aria-hidden
+  />
+);
+
 const Landing = () => {
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShowTop(window.scrollY > 240);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
   return (
-    <div className="bg-background text-text-main">
+    <div className="bg-background text-text-main font-montserrat">
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-light via-white to-white">
-        <div className="absolute -right-10 top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl animate-float-slow" />
-        <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl animate-float-slow" />
+        <div className="absolute -right-10 top-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl animate-float-slow" />
+        <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-primary/10 blur-3xl animate-float-slow" />
+        <FloatingShape className="top-14 left-80 w-12 h-12" variant="sparkle" color="bg-primary/25" />
+        <FloatingShape className="bottom-36 right-80 w-20 h-20 animate-[bounce_5.4s_ease-in-out_infinite]" variant="kite" color="bg-[#fcb8b8]" />
+        {/* <FloatingShape className="top-1/3 right-1/3 w-10 h-10 animate-[bounce_3s_ease-in-out_infinite]" variant="star" color="bg-[#ffd166]/80" /> */}
+        <FloatingShape className="top-6 right-14 w-8 h-8 animate-[bounce_2.6s_ease-in-out_infinite]" variant="sparkle" color="bg-primary/20" />
         <div className="max-w-7xl mx-auto px-4 md:px-0 pt-16 lg:pt-20 pb-24 grid md:grid-cols-2 gap-16 items-center relative z-10">
           <div className="space-y-6 animate-fade-up">
             <div className="flex items-center gap-3">
               <STECHADLogo size={62} />
-              <div className="text-sm uppercase tracking-[0.2em] text-primary font-semibold">IT Outsourcing Partner</div>
+              {/* <div className="text-sm uppercase tracking-[0.2em] text-primary font-semibold">IT Outsourcing Partner</div> */}
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
               Transforming businesses with innovative IT solutions.
@@ -286,7 +332,9 @@ const Landing = () => {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 md:px-0 py-14" aria-labelledby="services">
+      <section className="relative max-w-6xl mx-auto px-4 md:px-0 py-14 overflow-visible" aria-labelledby="services">
+        <FloatingShape className="top-8 left-4 w-9 h-9 animate-[bounce_2.2s_ease-in-out_infinite]" variant="sparkle" color="bg-primary/25" />
+        <FloatingShape className="bottom-6 right-0 w-14 h-14 animate-[bounce_3.2s_ease-in-out_infinite]" variant="kite" color="bg-[#ffd8d8]" />
         <div className="space-y-3 max-w-3xl">
           <p className="uppercase tracking-[0.18em] text-sm text-primary font-semibold">What we do</p>
           <h2 id="services" className="text-3xl font-extrabold">Full-spectrum IT services, one partner.</h2>
@@ -425,9 +473,53 @@ const Landing = () => {
               Tell us the skills, locations, and timelines you need. We will respond with a clear plan, vetted talent, and a go-live date.
             </p>
           </div>
-          <div className="text-sm text-text-muted">Use the hero buttons above to start.</div>
+          <div className="text-sm text-text-muted space-y-3 md:text-left">
+            <p className="font-semibold text-text-main">Contact Us</p>
+            <div>
+              <p className="text-text-main font-bold">UK Office</p>
+              <div className="flex md:justify-start items-center gap-2">
+                <Phone className="h-4 w-4 text-primary" />
+                <span>+44-(203) 4049376</span>
+              </div>
+              <div className="flex md:justify-start items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                <span>sales@stechad.com</span>
+              </div>
+              <div className="flex md:justify-start items-start gap-2">
+                <MapPin className="h-6 w-6 text-primary mt-0.5" />
+                <span>71-75 Shelton Street, Covent Garden, WC2H 9JQ, London, United Kingdom</span>
+              </div>
+            </div>
+            <div className="pt-2">
+              <p className="text-text-main font-bold">Nigeria Office</p>
+              <div className="flex md:justify-start items-center gap-2">
+                <Phone className="h-4 w-4 text-primary" />
+                <span>+234 80 8272 1797</span>
+              </div>
+              <div className="flex md:justify-start items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                <span>sales@stechad.com</span>
+              </div>
+              <div className="flex md:justify-start items-start gap-2">
+                <MapPin className="h-4 w-4 text-primary mt-0.5" />
+                <span>135, 6th Avenue, Gwarinpa 900108, Abuja, Nigeria.</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Back to top button */}
+      {showTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Back to top"
+          className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-40 flex items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary-faint transition transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white w-12 h-12 md:w-14 md:h-14"
+        >
+          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
+        </button>
+      )}
     </div>
   );
 };

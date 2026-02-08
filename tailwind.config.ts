@@ -21,6 +21,7 @@ export default {
     },
     fontFamily: {
       inter: ["Inter", "Roboto", "sans-serif"],
+      montserrat: ["Montserrat", "Inter", "Roboto", "sans-serif"],
     },
     extend: {
       colors: {
