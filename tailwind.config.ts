@@ -57,9 +57,19 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease",
+        "fade-up": "fade-up 0.6s ease forwards",
+        "float-slow": "float 6s ease-in-out infinite",
       },
     },
   },
