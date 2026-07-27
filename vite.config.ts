@@ -10,10 +10,10 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     allowedHosts: [
       "stechad-talent-hub.onrender.com", // Add this host
-      "https://stechad-talent-hub-ps0n.onrender.com/",
+      "stechad-talent-hub-ps0n.onrender.com",
     ],
   },
-  plugins: [react(),],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
