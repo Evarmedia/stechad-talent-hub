@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Eye, MapPin, Calendar } from "lucide-react";
 import { JobDetailsDialog } from "@/components/JobDetailsDialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
+import { Calendar, Eye, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const AdminJobs = () => {
   const [loading, setLoading] = useState(true);
@@ -95,7 +95,7 @@ const AdminJobs = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>Posted: {job.posted_at.split("T")[0]}</span>
+                      <span>Posted: {job.posted_at?.split("T")[0]}</span>
                       </div>
                       <div>
                         <span className="font-medium">Salary: </span>
@@ -163,7 +163,7 @@ const AdminJobs = () => {
                             {job.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-sm text-muted-foreground">{job.posted_at.split("T")[0]}</td>
+                        <td className="p-3 text-sm text-muted-foreground">{job.posted_at?.split("T")[0]}</td>
                         <td className="p-3">
                           <Button size="sm" variant="outline" onClick={() => handleViewJob(job)}>
                             <Eye className="w-4 h-4 mr-1" />

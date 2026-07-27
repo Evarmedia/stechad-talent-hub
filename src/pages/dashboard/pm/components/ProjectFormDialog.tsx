@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useEffect, useState } from "react";
 import { ProjectForm } from "./ProjectForm";
 
 interface ProjectFormDialogProps {
@@ -39,7 +39,7 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
   useEffect(() => {
     const normalizeDate = (value: string | undefined) => {
       if (!value) return '';
-      return value.includes('T') ? value.split('T')[0] : value;
+      return value.includes('T') ? value?.split('T')[0] : value;
     };
 
     const normalizedTasks = (initialData?.tasks || []).map((task: any, index: number) => ({

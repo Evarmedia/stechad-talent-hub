@@ -89,7 +89,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   {engineer.user?.country || "Not specified"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Onboarded: {engineer.onboarded_at.split("T")[0]}
+                  Onboarded: {engineer.onboarded_at?.split("T")[0]}
                 </p>
               </CardContent>
             </Card>

@@ -1,7 +1,6 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -57,7 +56,7 @@ export const JobsGrid = ({
             </div>
             <div>
               <span className="font-medium">Posted:</span>
-              <span>{job.posted_at.split("T")[0]}</span>
+              <span>{job.posted_at?.split("T")[0]}</span>
             </div>
             <div>
               <span className="font-medium">Application: </span>

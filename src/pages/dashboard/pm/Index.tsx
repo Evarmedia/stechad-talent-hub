@@ -134,7 +134,7 @@ const PMDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Posted: {job.posted_at.split("T")[0]}</span>
+                      <span>Posted: {job.posted_at?.split("T")[0]}</span>
                       <span>{job.applications_count} applicants</span>
                     </div>
                   </div>
@@ -194,7 +194,7 @@ const PMDashboard = () => {
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{project.team?.length || 0} team members</span>
-                      <span>Due: {project.deadline.split("T")[0]}</span>
+                      <span>Due: {project.deadline?.split("T")[0]}</span>
                     </div>
                   </div>
                 ))}

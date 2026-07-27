@@ -103,7 +103,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Posted</span>
                 </div>
-                <p className="text-sm">{displayDate.split('T')[0]}</p>
+                <p className="text-sm">{displayDate?.split('T')[0]}</p>
               </CardContent>
             </Card>
 

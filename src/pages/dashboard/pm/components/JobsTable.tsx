@@ -96,7 +96,7 @@ export const JobsTable = ({
 
               <div>
                 <span className="text-muted-foreground">Posted</span>
-                <p>{job.posted_at.split("T")[0]}</p>
+                <p>{job.posted_at?.split("T")[0]}</p>
               </div>
             </div>
 
@@ -177,7 +177,7 @@ export const JobsTable = ({
                   {job.status}
                 </Badge>
               </td>
-              <td className="p-3 text-sm text-muted-foreground">{job.posted_at.split("T")[0]}</td>
+              <td className="p-3 text-sm text-muted-foreground">{job.posted_at?.split("T")[0]}</td>
               <td className="p-3">
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => onViewJob(job)}>

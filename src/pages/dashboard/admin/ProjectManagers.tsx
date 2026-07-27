@@ -196,7 +196,7 @@ const ProjectManagers = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Joined: </span>
-                      <span className="font-medium">{pm.created_at.split("T")[0]}</span>
+                      <span className="font-medium">{pm.created_at?.split("T")[0]}</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
@@ -255,7 +255,7 @@ const ProjectManagers = () => {
                           {pm.status}
                         </span>
                       </td>
-                      <td className="p-3 text-muted-foreground">{pm.created_at.split("T")[0]}</td>
+                      <td className="p-3 text-muted-foreground">{pm.created_at?.split("T")[0]}</td>
                       <td className="p-3">
                         <Button size="sm" variant="outline" className="text-xs" onClick={() => handleViewProjects(pm)}>
                           View Projects

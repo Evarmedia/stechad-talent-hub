@@ -1,8 +1,8 @@
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 import { Link } from "react-router-dom";
 
 interface LatestJobsProps {
@@ -44,7 +44,7 @@ const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
               <div key={idx} className="space-y-1">
                 <div className="font-medium text-sm">{j.title}</div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Posted: {j.posted_at.split("T")[0]}</span>
+                  <span>Posted: {j.posted_at?.split("T")[0]}</span>
                   <span>{j.applications_count} applications</span>
                 </div>
               </div>

@@ -209,7 +209,7 @@ const ChatInterface = () => {
                     <Avatar className="w-6 h-6 mr-2">
                       <AvatarImage src={availableUser.avatar} />
                       <AvatarFallback className="text-xs">
-                        {availableUser.name.split(' ').map(n => n[0]).join('')}
+                        {availableUser.name?.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
@@ -258,7 +258,7 @@ const ChatInterface = () => {
                     <div className="flex items-center">
                       <Avatar className="w-8 h-8 mr-3 flex-shrink-0">
                         <AvatarFallback className="text-xs">
-                          {getChatDisplayName(chat).split(' ').map(n => n[0]).join('')}
+                          {getChatDisplayName(chat)?.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -319,7 +319,7 @@ const ChatInterface = () => {
                 )}
                 <Avatar className="w-8 h-8 mr-3">
                   <AvatarFallback className="text-xs">
-                    {getChatDisplayName(selectedChat).split(' ').map(n => n[0]).join('')}
+                    {getChatDisplayName(selectedChat)?.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>

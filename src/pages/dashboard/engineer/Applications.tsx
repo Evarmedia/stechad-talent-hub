@@ -62,7 +62,7 @@ const Applications = () => {
                   <div key={idx} className="border rounded-lg p-4 space-y-3">
                     <div>
                       <h3 className="font-medium text-base">{app.title}</h3>
-                      <p className="text-sm text-muted-foreground">Applied: {app.applied_at.split('T')[0]}</p>
+                      <p className="text-sm text-muted-foreground">Applied: {app.applied_at?.split('T')[0]}</p>
                     </div>
                     <Badge className={statusColor(app.status)}>{app.status}</Badge>
                   </div>
@@ -96,7 +96,7 @@ const Applications = () => {
                   : engrApplications?.map((app, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="p-2">{app.job_title}</td>
-                      <td className="p-2">{app.applied_at.split('T')[0]}</td>
+                      <td className="p-2">{app.applied_at?.split('T')[0]}</td>
                       <td className="p-2">
                         <Badge className={statusColor(app.status)}>{app.status}</Badge>
                       </td>

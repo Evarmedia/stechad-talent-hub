@@ -40,6 +40,7 @@ export function AppNavbar() {
     resetPMsState,
     resetInterviewState,
     resetNotificationState,
+    resetProjectsState,
     notifications,
     unreadCount,
     getNotifications,
@@ -119,6 +120,7 @@ export function AppNavbar() {
     resetJobsState();
     resetApplicationState();
     resetPMsState();
+    resetProjectsState();
     resetInterviewState();
     resetNotificationState();
     navigate("/login");

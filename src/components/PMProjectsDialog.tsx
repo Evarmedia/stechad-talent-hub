@@ -1,10 +1,10 @@
 
-import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { CalendarDays, Users } from "lucide-react";
+import React from "react";
 
 interface PM {
   project_managers_id: string;
@@ -78,7 +78,7 @@ export const PMProjectsDialog: React.FC<PMProjectsDialogProps> = ({
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <CalendarDays className="w-4 h-4" />
-                            {project.deadline.split("T")[0]}
+                            {project.deadline?.split("T")[0]}
                           </span>
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" />

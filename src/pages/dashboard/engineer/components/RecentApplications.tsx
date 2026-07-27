@@ -1,9 +1,9 @@
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 import { Link } from "react-router-dom";
 
 interface RecentApplicationsProps {
@@ -59,7 +59,7 @@ const RecentApplications: React.FC<RecentApplicationsProps> = ({ loading, applic
                   </Badge>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Applied: {app.applied_at.split('T')[0]}</span>
+                  <span>Applied: {app.applied_at?.split('T')[0]}</span>
                 </div>
               </div>
             ))}
