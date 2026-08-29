@@ -280,7 +280,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     </SelectContent>
                   </Select>
                   <Button size="sm" className="text-white" onClick={saveTaskEdit}>Save</Button>
-                  <Button size="sm" className="text-white" variant="outline" onClick={cancelTaskEdit}>Cancel</Button>
+                  <Button size="sm" className="text-black" variant="outline" onClick={cancelTaskEdit}>Cancel</Button>
                 </div>
               ) : (
                 <>
