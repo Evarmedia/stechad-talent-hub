@@ -90,7 +90,7 @@ const EngineerVetting = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</h3>
+                          <h3 className="font-medium">{engineer?.user?.first_name} {engineer?.user?.last_name}</h3>
                           {engineer.is_vetted && (
                             <Badge variant="secondary" className="text-xs">
                               <CheckCircle className="w-3 h-3 mr-1" />
@@ -98,26 +98,26 @@ const EngineerVetting = () => {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{engineer.email}</p>
+                        <p className="text-sm text-muted-foreground">{engineer?.user?.email}</p>
                       </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Experience: </span>
-                      <span className="font-medium">{engineer.years_of_experience} years</span>
+                      <span className="font-medium">{engineer?.years_of_experience || "Nil"} years</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Status: </span>
-                      <span className={`font-medium ${engineer.status === 'active' ? 'bg-green-100 text-green-800' : 'text-yellow-800'}`}>
-                        {engineer.status}
+                      <span className={`font-medium ${engineer?.status === 'active' ? 'bg-green-100 text-green-800' : 'text-yellow-800'}`}>
+                        {engineer?.status}
                       </span>
                     </div>
                   </div>
                   <div>
                     <span className="text-muted-foreground text-sm">Skills: </span>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {engineer.specialization.map(skill => (
+                      {engineer?.specialization?.map(skill => (
                         <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                       ))}
                     </div>
@@ -189,31 +189,35 @@ const EngineerVetting = () => {
                             <User className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <div className="font-medium">{`${engineer.user.first_name} ${engineer.user.last_name}`}</div>
-                            <div className="text-sm text-muted-foreground">{engineer.user.email}</div>
+                            <div className="font-medium">{`${engineer?.user?.first_name} ${engineer?.user?.last_name}`}</div>
+                            <div className="text-sm text-muted-foreground">{engineer?.user?.email}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-3">{engineer?.years_of_experience} years</td>
-                      <td className="p-3">{engineer?.user?.city}</td>
-                      <td className="p-3">{engineer?.user?.country}</td>
+                      <td className="p-3">{engineer?.years_of_experience || "Nil"} years</td>
+                      <td className="p-3">{engineer?.user?.city || "Nil"}</td>
+                      <td className="p-3">{engineer?.user?.country || "Nil"}</td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
-                          {engineer.specialization.slice(0, 2).map(skill => (
-                            <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
-                          ))}
-                          {engineer.specialization.length > 2 && (
-                            <span className="text-xs text-muted-foreground">+{engineer.specialization.length - 2} more</span>
+                          {engineer?.specialization && engineer?.specialization.length > 0 ? (
+                            engineer?.specialization?.slice(0, 2).map(skill => (
+                              <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm">No skills listed</span>
+                          )}
+                          {engineer?.specialization?.length > 2 && (
+                            <span className="text-xs text-muted-foreground">+{engineer?.specialization?.length - 2} more</span>
                           )}
                         </div>
                       </td>
                       <td className="p-3">
-                        <span className={`text-sm ${engineer.status === 'active' ? 'bg-green-100 text-green-800 font-bold rounded-lg p-2' : 'text-yellow-600'}`}>
-                          {engineer.status}
+                        <span className={`text-sm ${engineer?.status === 'active' ? 'bg-green-100 text-green-800 font-bold rounded-lg p-2' : 'text-yellow-600'}`}>
+                          {engineer?.status}
                         </span>
                       </td>
                       <td className="p-3">
-                        {engineer.is_vetted ? (
+                        {engineer?.is_vetted ? (
                           <Badge variant="secondary">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Vetted

@@ -185,22 +185,22 @@ const ProjectManagers = () => {
                       <User className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-medium">{`${pm.user.first_name} ${pm.user.last_name}`}</h3>
-                      <p className="text-sm text-muted-foreground">{pm.user.email}</p>
+                      <h3 className="font-medium">{`${pm.user?.first_name} ${pm.user?.last_name}`}</h3>
+                      <p className="text-sm text-muted-foreground">{pm.user?.email}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Projects: </span>
-                      <span className="font-medium">{pm.total_projects}</span>
+                      <span className="font-medium">{pm.pm_projects?.length}</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Joined: </span>
-                      <span className="font-medium">{pm.created_at?.split("T")[0]}</span>
+                      <span className="font-medium">{pm?.created_at?.split("T")[0]}</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={`px-2 py-1 rounded text-xs ${pm.is_active === true ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                    <span className={`px-2 py-1 rounded text-xs ${pm?.is_active === true ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
                       }`}>
                       {pm.is_active === true ? "Active" : "Inactive"}
                     </span>
@@ -244,11 +244,11 @@ const ProjectManagers = () => {
                           <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                             <User className="w-4 h-4 text-primary" />
                           </div>
-                          <span className="font-medium">{`${pm.user.first_name} ${pm.user.last_name}`}</span>
+                          <span className="font-medium">{`${pm.user?.first_name} ${pm.user?.last_name}`}</span>
                         </div>
                       </td>
-                      <td className="p-3 text-muted-foreground">{pm.user.email}</td>
-                      <td className="p-3">{pm.total_projects}</td>
+                      <td className="p-3 text-muted-foreground">{pm.user?.email}</td>
+                      <td className="p-3">{pm?.pm_projects?.length}</td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded text-xs ${pm.status === "active" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
                           }`}>
