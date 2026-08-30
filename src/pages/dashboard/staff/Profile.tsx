@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/apiService";
+import { requestBrowserLocationPermission } from "@/utils/locationPermission";
 import { MapPin, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -43,7 +44,13 @@ const StaffProfile = () => {
   };
 
   const toggleLocation = async (enabled: boolean) => {
-    try { await apiService.putNoId("staff/location-sharing", { enabled }); setProfile((current: any) => ({ ...current, location_sharing_enabled: enabled })); }
+    try {
+      const permissionStatus = enabled ? await requestBrowserLocationPermission() : profile?.location_permission_status;
+      const canEnable = enabled && permissionStatus === "granted";
+      await apiService.putNoId("staff/location-sharing", { enabled: canEnable, ...(permissionStatus ? { permission_status: permissionStatus } : {}) });
+      setProfile((current: any) => ({ ...current, location_sharing_enabled: canEnable, location_permission_status: permissionStatus }));
+      if (enabled && !canEnable) toast({ title: "Location permission not granted", description: "Allow location access in your browser settings to enable this feature." });
+    }
     catch (error: any) { toast({ title: "Could not update location consent", description: error.message, variant: "destructive" }); }
   };
 

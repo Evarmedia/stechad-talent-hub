@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewActionDialog from "@/components/ReviewActionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,8 @@ import { useEffect, useState } from "react";
 const emptyInvite = { first_name: "", last_name: "", email: "", department_id: "", job_title: "", role: "staff" };
 const emptyDepartment = { name: "", code: "", description: "", location: "", manager_user_id: "" };
 const emptyHoliday = { name: "", date: "", type: "Public holiday", region: "" };
-const emptyKpi = { assigned_to_user_id: "", title: "", target: "", review_cycle: "Quarterly", period_start: "", period_end: "", progress: "0" };
+const createCriterion = () => ({ id: globalThis.crypto?.randomUUID?.() || `criterion-${Date.now()}-${Math.random()}`, title: "" });
+const createEmptyKpi = () => ({ assigned_to_user_id: "", title: "", description: "", review_cycle: "Monthly", criteria: [createCriterion()] });
 
 const AdminWorkforce = () => {
   const { toast } = useToast();
@@ -33,15 +35,16 @@ const AdminWorkforce = () => {
   const [invite, setInvite] = useState(emptyInvite);
   const [holiday, setHoliday] = useState(emptyHoliday);
   const [department, setDepartment] = useState(emptyDepartment);
-  const [kpi, setKpi] = useState(emptyKpi);
+  const [kpi, setKpi] = useState(createEmptyKpi);
+  const [editingKpiId, setEditingKpiId] = useState<string | null>(null);
   const [editingDepartmentId, setEditingDepartmentId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [permissionDialog, setPermissionDialog] = useState<any>(null);
-  const [permissionValue, setPermissionValue] = useState("");
+  const [permissionValue, setPermissionValue] = useState<string[]>([]);
   const [approvalDialog, setApprovalDialog] = useState<{ item: any; action: string } | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
   const [appraisalDialog, setAppraisalDialog] = useState<any>(null);
-  const [appraisal, setAppraisal] = useState({ progress: "0", score: "" });
+  const [appraisal, setAppraisal] = useState<{ scores: Record<string, string>; notes: string }>({ scores: {}, notes: "" });
 
   const loadWorkforce = async () => {
     try {
@@ -89,15 +92,14 @@ const AdminWorkforce = () => {
   );
 
   const manageMemberPermissions = (member: any) => {
-    setPermissionValue((member.permissions || []).join(", "));
+    setPermissionValue(member.permissions || []);
     setPermissionDialog(member);
   };
 
   const saveMemberPermissions = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!permissionDialog) return;
-    const workforce_permissions = permissionValue.split(",").map((item) => item.trim()).filter(Boolean);
-    const saved = await updateMember(permissionDialog.id, { workforce_permissions });
+    const saved = await updateMember(permissionDialog.id, { workforce_permissions: permissionValue });
     if (saved) setPermissionDialog(null);
   };
 
@@ -147,12 +149,33 @@ const AdminWorkforce = () => {
 
   const handleKpi = async (event: React.FormEvent) => {
     event.preventDefault();
-    await mutate(() => apiService.post("admin/kpis", { ...kpi, progress: Number(kpi.progress), period_start: kpi.period_start || null, period_end: kpi.period_end || null }), "KPI assigned");
-    setKpi(emptyKpi);
+    const criteria = kpi.criteria.map((criterion) => ({ ...criterion, title: criterion.title.trim() })).filter((criterion) => criterion.title);
+    if (!criteria.length) return toast({ title: "Success criteria required", description: "Add at least one KPI line item.", variant: "destructive" });
+    const payload = { ...kpi, title: kpi.title.trim(), description: kpi.description.trim(), criteria };
+    const saved = await mutate(
+      () => editingKpiId ? apiService.put("admin/kpis", editingKpiId, payload) : apiService.post("admin/kpis", payload),
+      editingKpiId ? "KPI assignment updated" : "Reusable KPI assigned",
+    );
+    if (saved) {
+      setKpi(createEmptyKpi());
+      setEditingKpiId(null);
+    }
+  };
+
+  const editKpiTemplate = (item: any) => {
+    setEditingKpiId(item.id);
+    setKpi({
+      assigned_to_user_id: item.assignedToUserId,
+      title: item.title || "",
+      description: item.description || "",
+      review_cycle: item.review || "Monthly",
+      criteria: item.criteria?.length ? item.criteria : [createCriterion()],
+    });
   };
 
   const editKpi = (item: any) => {
-    setAppraisal({ progress: String(item.progress ?? 0), score: item.score === null ? "" : String(item.score) });
+    const currentScores = Object.fromEntries((item.currentAppraisal?.criteriaScores || []).map((score: any) => [score.criterionId, String(score.score)]));
+    setAppraisal({ scores: currentScores, notes: item.currentAppraisal?.notes || "" });
     setAppraisalDialog(item);
   };
 
@@ -160,14 +183,21 @@ const AdminWorkforce = () => {
     event.preventDefault();
     if (!appraisalDialog) return;
     const saved = await mutate(
-      () => apiService.put("admin/kpis", appraisalDialog.id, {
-        progress: Math.min(100, Math.max(0, Number(appraisal.progress))),
-        appraisal_score: appraisal.score === "" ? null : Number(appraisal.score),
+      () => apiService.post(`admin/kpis/${appraisalDialog.id}/appraisals`, {
+        criteria_scores: appraisalDialog.criteria.map((criterion: any) => ({ criterion_id: criterion.id, score: Number(appraisal.scores[criterion.id]) })),
+        notes: appraisal.notes.trim(),
       }),
-      "KPI and appraisal updated",
+      appraisalDialog.currentAppraisal ? "Periodic appraisal updated" : "Periodic appraisal recorded",
     );
     if (saved) setAppraisalDialog(null);
   };
+
+  const appraisalScores = appraisalDialog?.criteria
+    ?.map((criterion: any) => Number(appraisal.scores[criterion.id]))
+    .filter((score: number) => Number.isFinite(score)) || [];
+  const calculatedAppraisalScore = appraisalDialog?.criteria?.length && appraisalScores.length === appraisalDialog.criteria.length
+    ? (appraisalScores.reduce((sum: number, score: number) => sum + score, 0) / appraisalScores.length).toFixed(1)
+    : null;
 
   const setPermission = (permission: any, role: string, value: boolean) => mutate(
     () => apiService.put("admin/role-permissions", permission.id, { [role]: value }),
@@ -261,32 +291,54 @@ const AdminWorkforce = () => {
           <Card><CardHeader><CardTitle>Add holiday</CardTitle></CardHeader><CardContent><form onSubmit={handleHoliday} className="space-y-3"><Input required placeholder="Holiday name" value={holiday.name} onChange={(e) => setHoliday((p) => ({ ...p, name: e.target.value }))} /><Input required type="date" value={holiday.date} onChange={(e) => setHoliday((p) => ({ ...p, date: e.target.value }))} /><select value={holiday.type} onChange={(e) => setHoliday((p) => ({ ...p, type: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option>Public holiday</option><option>Regional</option><option>Optional</option></select><Input placeholder="Region (optional)" value={holiday.region} onChange={(e) => setHoliday((p) => ({ ...p, region: e.target.value }))} /><Button className="w-full" disabled={busy}>Save and notify staff</Button></form></CardContent></Card>
         </div></TabsContent>
 
-        <TabsContent value="kpis"><div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
-          <Card><CardHeader><CardTitle>KPI and appraisal assignments</CardTitle></CardHeader><CardContent className="space-y-3">{kpis.map((item) => <div key={item.id} className="rounded-lg border p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{item.title}</p><p className="text-sm text-muted-foreground">{item.owner} · {item.review}</p><p className="mt-2 text-sm">Target: {item.target}</p></div><div className="space-x-2"><Button size="sm" variant="outline" onClick={() => editKpi(item)}>Appraise</Button><Button size="sm" variant="destructive" onClick={() => mutate(() => apiService.delete("admin/kpis", item.id), "KPI deleted")}>Delete</Button></div></div><div className="mt-3 h-2 rounded-full bg-red-50"><div className="h-2 rounded-full bg-primary" style={{ width: `${item.progress}%` }} /></div><p className="mt-1 text-right text-xs">{item.progress}%{item.score !== null ? ` · score ${item.score}` : ""}</p></div>)}</CardContent></Card>
-          <Card><CardHeader><CardTitle>Assign KPI</CardTitle></CardHeader><CardContent><form onSubmit={handleKpi} className="space-y-3"><select required value={kpi.assigned_to_user_id} onChange={(e) => setKpi((p) => ({ ...p, assigned_to_user_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">Select staff member</option>{staff.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select><Input required placeholder="KPI title" value={kpi.title} onChange={(e) => setKpi((p) => ({ ...p, title: e.target.value }))} /><Textarea required placeholder="Target and success criteria" value={kpi.target} onChange={(e) => setKpi((p) => ({ ...p, target: e.target.value }))} /><select value={kpi.review_cycle} onChange={(e) => setKpi((p) => ({ ...p, review_cycle: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option>Monthly</option><option>Quarterly</option><option>Annual</option></select><div className="grid grid-cols-2 gap-2"><Input type="date" value={kpi.period_start} onChange={(e) => setKpi((p) => ({ ...p, period_start: e.target.value }))} /><Input type="date" value={kpi.period_end} onChange={(e) => setKpi((p) => ({ ...p, period_end: e.target.value }))} /></div><Button className="w-full" disabled={busy}>Assign KPI</Button></form></CardContent></Card>
+        <TabsContent value="kpis"><div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
+          <Card><CardHeader><CardTitle>KPI and appraisal assignments</CardTitle></CardHeader><CardContent className="space-y-4">
+            {kpis.map((item) => <div key={item.id} className="rounded-lg border p-4">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                <div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{item.title}</p><Badge variant="outline">{item.review}</Badge><Badge variant={item.currentAppraisal ? "default" : "secondary"}>{item.currentPeriod?.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{item.owner}</p>{item.description && <p className="mt-2 text-sm">{item.description}</p>}</div>
+                <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => editKpiTemplate(item)}>Edit</Button><Button size="sm" onClick={() => editKpi(item)}>Appraise</Button><Button size="sm" variant="destructive" onClick={() => mutate(() => apiService.delete("admin/kpis", item.id), "KPI deleted")}>Delete</Button></div>
+              </div>
+              <div className="mt-4 space-y-2">{item.criteria.map((criterion: any, index: number) => {
+                const score = item.currentAppraisal?.criteriaScores?.find((entry: any) => entry.criterionId === criterion.id)?.score;
+                return <div key={criterion.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/50 px-3 py-2 text-sm"><span>{index + 1}. {criterion.title}</span><span className="shrink-0 font-semibold text-primary">{score === undefined ? "—" : `${score}%`}</span></div>;
+              })}</div>
+              {item.appraisals?.length > 0 && <details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-primary">Score history ({item.appraisals.length})</summary><div className="mt-2 space-y-2">{item.appraisals.map((record: any) => <div key={record.id} className="rounded-md border px-3 py-2 text-sm"><div className="flex justify-between"><span>{record.periodLabel}</span><strong>{record.overallScore}%</strong></div>{record.notes && <p className="mt-1 text-muted-foreground">{record.notes}</p>}</div>)}</div></details>}
+            </div>)}
+            {!kpis.length && <p className="py-8 text-center text-muted-foreground">No reusable KPI assignments yet.</p>}
+          </CardContent></Card>
+          <Card><CardHeader><CardTitle>{editingKpiId ? "Edit KPI assignment" : "Assign reusable KPI"}</CardTitle></CardHeader><CardContent><form onSubmit={handleKpi} className="space-y-4">
+            <div className="space-y-2"><Label htmlFor="kpi-assignee">Staff member</Label><select id="kpi-assignee" required value={kpi.assigned_to_user_id} onChange={(e) => setKpi((p) => ({ ...p, assigned_to_user_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">Select staff member</option>{staff.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></div>
+            <div className="space-y-2"><Label htmlFor="kpi-title">KPI title</Label><Input id="kpi-title" required placeholder="e.g. Customer delivery quality" value={kpi.title} onChange={(e) => setKpi((p) => ({ ...p, title: e.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="kpi-description">Description</Label><Textarea id="kpi-description" placeholder="Optional context for this recurring KPI" value={kpi.description} onChange={(e) => setKpi((p) => ({ ...p, description: e.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="kpi-cycle">Scoring cycle</Label><select id="kpi-cycle" value={kpi.review_cycle} onChange={(e) => setKpi((p) => ({ ...p, review_cycle: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option>Monthly</option><option>Quarterly</option><option>Annual</option></select><p className="text-xs text-muted-foreground">The same assignment is reused and receives a new score each period.</p></div>
+            <div className="space-y-3"><div className="flex items-center justify-between"><Label>Target and success criteria</Label><Button type="button" size="sm" variant="outline" onClick={() => setKpi((current) => ({ ...current, criteria: [...current.criteria, createCriterion()] }))}>Add line item</Button></div>
+              {kpi.criteria.map((criterion, index) => <div key={criterion.id} className="flex items-center gap-2"><span className="w-6 text-center text-sm text-muted-foreground">{index + 1}</span><Input required value={criterion.title} placeholder="Measurable KPI line item" onChange={(event) => setKpi((current) => ({ ...current, criteria: current.criteria.map((item) => item.id === criterion.id ? { ...item, title: event.target.value } : item) }))} /><Button type="button" size="sm" variant="destructive" disabled={kpi.criteria.length === 1} onClick={() => setKpi((current) => ({ ...current, criteria: current.criteria.filter((item) => item.id !== criterion.id) }))}>Remove</Button></div>)}
+            </div>
+            <div className="flex gap-2"><Button className="flex-1" disabled={busy}>{editingKpiId ? "Save KPI changes" : "Assign KPI"}</Button>{editingKpiId && <Button type="button" variant="outline" onClick={() => { setEditingKpiId(null); setKpi(createEmptyKpi()); }}>Cancel</Button>}</div>
+          </form></CardContent></Card>
         </div></TabsContent>
 
         <TabsContent value="zoho"><div className="space-y-4"><div className="flex items-center gap-2"><Badge variant={zohoConfigured ? "default" : "secondary"}>{zohoConfigured ? "Zoho configured" : "Zoho credentials required"}</Badge><span className="text-sm text-muted-foreground">Operational cards remain live from STECHAD Hub.</span></div><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">{zohoMetrics.map((metric) => <Card key={metric.label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{metric.label}</p><p className="mt-2 text-3xl font-bold text-primary">{metric.value}</p><p className="mt-2 text-sm text-success">{metric.delta}</p></CardContent></Card>)}</div></div></TabsContent>
 
-        <TabsContent value="permissions"><Card><CardHeader><CardTitle>Role permissions</CardTitle></CardHeader><CardContent><p className="mb-4 text-sm text-muted-foreground">This matrix is intentionally isolated to this Permissions tab. Super Admin access cannot be disabled.{user?.role !== "super_admin" ? " Only a super admin can change the matrix." : ""}</p><Table><TableHeader><TableRow><TableHead>Permission</TableHead><TableHead>Super Admin</TableHead><TableHead>Admin</TableHead><TableHead>Project Manager</TableHead><TableHead>Staff</TableHead></TableRow></TableHeader><TableBody>{permissions.map((item) => <TableRow key={item.id}><TableCell>{item.name}</TableCell><TableCell><Switch checked disabled /></TableCell>{["admin", "project_manager", "staff"].map((role) => <TableCell key={role}><Switch disabled={user?.role !== "super_admin"} checked={Boolean(item[role])} onCheckedChange={(value) => setPermission(item, role, value)} /></TableCell>)}</TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+        <TabsContent value="permissions"><Card><CardHeader><CardTitle>Role permissions</CardTitle></CardHeader><CardContent><p className="mb-4 text-sm text-muted-foreground">Admins can configure permissions for Admin, Project Manager, and Staff roles. Super Admin permissions are always enabled and cannot be changed.</p><Table><TableHeader><TableRow><TableHead>Permission</TableHead><TableHead>Super Admin</TableHead><TableHead>Admin</TableHead><TableHead>Project Manager</TableHead><TableHead>Staff</TableHead></TableRow></TableHeader><TableBody>{permissions.map((item) => <TableRow key={item.id}><TableCell>{item.name}</TableCell><TableCell><Switch checked disabled aria-label={`${item.name} for Super Admin`} /></TableCell>{["admin", "project_manager", "staff"].map((role) => <TableCell key={role}><Switch disabled={busy} checked={Boolean(item[role])} onCheckedChange={(value) => setPermission(item, role, value)} aria-label={`${item.name} for ${role.replace("_", " ")}`} /></TableCell>)}</TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
       </Tabs>
 
       <Dialog open={Boolean(permissionDialog)} onOpenChange={(open) => !busy && !open && setPermissionDialog(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-xl">
           <DialogHeader>
             <DialogTitle>Manage delegated access</DialogTitle>
-            <DialogDescription>Set individual permissions for {permissionDialog?.name}. Separate multiple permission keys with commas.</DialogDescription>
+            <DialogDescription>Select the individual permissions that should be granted to {permissionDialog?.name} in addition to their role defaults.</DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={saveMemberPermissions}>
             <div className="space-y-2">
-              <Label htmlFor="member-permissions">Permission keys</Label>
-              <Textarea id="member-permissions" className="min-h-[110px]" value={permissionValue} onChange={(event) => setPermissionValue(event.target.value)} placeholder="approve_leave, approve_expenses" autoFocus />
-            </div>
-            <div className="space-y-2">
               <p className="text-sm font-medium">Available permissions</p>
-              <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-lg border bg-muted/40 p-3">
-                {permissions.map((permission) => <code key={permission.key} className="rounded bg-white px-2 py-1 text-xs text-primary shadow-sm">{permission.key}</code>)}
+              <div className="max-h-80 space-y-2 overflow-y-auto rounded-lg border bg-muted/30 p-3">
+                {permissions.map((permission) => {
+                  const selected = permissionValue.includes(permission.key);
+                  return <label key={permission.key} className="flex cursor-pointer items-start gap-3 rounded-md border bg-white p-3 transition hover:border-primary/40"><Checkbox checked={selected} onCheckedChange={(checked) => setPermissionValue((current) => checked ? [...current, permission.key] : current.filter((key) => key !== permission.key))} /><span><span className="block text-sm font-medium">{permission.name}</span><code className="text-xs text-muted-foreground">{permission.key}</code></span></label>;
+                })}
               </div>
+              <p className="text-xs text-muted-foreground">{permissionValue.length} permission{permissionValue.length === 1 ? "" : "s"} selected.</p>
             </div>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" disabled={busy} onClick={() => setPermissionDialog(null)}>Cancel</Button>
@@ -308,27 +360,20 @@ const AdminWorkforce = () => {
       />
 
       <Dialog open={Boolean(appraisalDialog)} onOpenChange={(open) => !busy && !open && setAppraisalDialog(null)}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Update KPI appraisal</DialogTitle>
-            <DialogDescription>{appraisalDialog?.title} · {appraisalDialog?.owner}</DialogDescription>
+            <DialogTitle>{appraisalDialog?.currentAppraisal ? "Update" : "Record"} periodic KPI appraisal</DialogTitle>
+            <DialogDescription>{appraisalDialog?.title} · {appraisalDialog?.owner} · {appraisalDialog?.currentPeriod?.label}. Score each KPI line item from 0 to 100.</DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={saveKpiAppraisal}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="appraisal-progress">Progress (%)</Label>
-                <Input id="appraisal-progress" type="number" min="0" max="100" step="1" required value={appraisal.progress} onChange={(event) => setAppraisal((current) => ({ ...current, progress: event.target.value }))} />
-                <p className="text-xs text-muted-foreground">Enter a value from 0 to 100.</p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="appraisal-score">Appraisal score</Label>
-                <Input id="appraisal-score" type="number" min="0" step="0.1" value={appraisal.score} onChange={(event) => setAppraisal((current) => ({ ...current, score: event.target.value }))} placeholder="Optional" />
-                <p className="text-xs text-muted-foreground">Leave blank if not yet scored.</p>
-              </div>
+            <div className="space-y-3">
+              {appraisalDialog?.criteria?.map((criterion: any, index: number) => <div key={criterion.id} className="grid grid-cols-[1fr_110px] items-center gap-3 rounded-lg border p-3"><Label htmlFor={`criterion-score-${criterion.id}`} className="leading-5">{index + 1}. {criterion.title}</Label><div className="relative"><Input id={`criterion-score-${criterion.id}`} type="number" min="0" max="100" step="0.1" required value={appraisal.scores[criterion.id] || ""} onChange={(event) => setAppraisal((current) => ({ ...current, scores: { ...current.scores, [criterion.id]: event.target.value } }))} className="pr-7" /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span></div></div>)}
             </div>
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4"><p className="text-sm text-muted-foreground">Calculated overall KPI score</p><p className="mt-1 text-3xl font-bold text-primary">{calculatedAppraisalScore === null ? "—" : `${calculatedAppraisalScore}%`}</p><p className="mt-1 text-xs text-muted-foreground">Average of all individual KPI line-item scores.</p></div>
+            <div className="space-y-2"><Label htmlFor="appraisal-notes">Appraisal note (optional)</Label><Textarea id="appraisal-notes" className="min-h-[100px]" placeholder="Add context, feedback, or follow-up actions..." value={appraisal.notes} onChange={(event) => setAppraisal((current) => ({ ...current, notes: event.target.value }))} /></div>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" disabled={busy} onClick={() => setAppraisalDialog(null)}>Cancel</Button>
-              <Button type="submit" disabled={busy}>{busy ? "Saving..." : "Save appraisal"}</Button>
+              <Button type="submit" disabled={busy || calculatedAppraisalScore === null}>{busy ? "Saving..." : appraisalDialog?.currentAppraisal ? "Update period score" : "Record period score"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

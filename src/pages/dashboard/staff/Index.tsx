@@ -2,12 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import AttendanceTimer from "@/components/AttendanceTimer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/apiService";
+import { requestBrowserLocationPermission } from "@/utils/locationPermission";
 import { CalendarDays, CheckCircle2, Clock3, DollarSign, MapPin, ReceiptText, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -71,9 +71,19 @@ const StaffDashboard = () => {
 
   const setLocationSharing = async (enabled: boolean) => {
     try {
-      await apiService.putNoId("staff/location-sharing", { enabled });
-      setData((current: any) => ({ ...current, user: { ...current.user, locationSharingEnabled: enabled } }));
-      toast({ title: enabled ? "Location sharing enabled" : "Location sharing disabled", description: "Location is only captured while you are clocked in." });
+      const permissionStatus = enabled
+        ? await requestBrowserLocationPermission()
+        : data?.user?.locationPermissionStatus;
+      const canEnable = enabled && permissionStatus === "granted";
+      await apiService.putNoId("staff/location-sharing", {
+        enabled: canEnable,
+        ...(permissionStatus ? { permission_status: permissionStatus } : {}),
+      });
+      setData((current: any) => ({ ...current, user: { ...current.user, locationSharingEnabled: canEnable, locationPermissionStatus: permissionStatus } }));
+      toast({
+        title: canEnable ? "Location sharing enabled" : enabled ? "Location permission not granted" : "Location sharing disabled",
+        description: enabled && !canEnable ? "Allow location access in your browser settings to enable this feature." : "Location is only captured while you are clocked in.",
+      });
     } catch (error: any) {
       toast({ title: "Could not update location consent", description: error.message, variant: "destructive" });
     }
@@ -84,7 +94,7 @@ const StaffDashboard = () => {
     { label: "Attendance", value: data?.summary?.attendance || "0%", icon: Clock3 },
     { label: "Leave balance", value: data?.summary?.leaveBalance || "0 days", icon: CalendarDays },
     { label: "Expenses", value: `$${Number(data?.summary?.expenseTotal || 0).toLocaleString()}`, icon: DollarSign },
-    { label: "KPI progress", value: data?.summary?.kpiProgress || "0%", icon: TrendingUp },
+    { label: "KPI score", value: data?.summary?.kpiScore || "Not scored", icon: TrendingUp },
   ];
 
   return (
@@ -102,7 +112,7 @@ const StaffDashboard = () => {
           <AttendanceTimer active={isClockedIn} startedAt={data?.attendanceSummary?.today?.clockInAt} compact />
           {isClockedIn && <div><label className="mb-2 block text-sm font-medium">Daily work summary</label><Textarea className="min-h-[110px]" placeholder="Summarize the work completed today..." value={workLog} onChange={(event) => setWorkLog(event.target.value)} /><p className="mt-2 text-xs text-muted-foreground">This summary is required before clock-out.</p></div>}
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 text-primary" /><p className="text-sm text-muted-foreground">{data?.user?.locationSharingEnabled ? "Your location may be captured only during an active work session." : "Location sharing is off. No coordinates are collected."}</p></div></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 text-primary" /><p className="text-sm text-muted-foreground">{data?.user?.locationSharingEnabled ? "Browser permission granted. Location may be captured only during an active work session." : data?.user?.locationPermissionStatus === "denied" ? "Browser permission was denied. You can change it in browser settings; the system will not prompt again." : "Location sharing is off. No coordinates are collected."}</p></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -112,7 +122,7 @@ const StaffDashboard = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card><CardHeader><CardTitle>Upcoming holidays</CardTitle></CardHeader><CardContent className="space-y-3">{(data?.holidays || []).map((item: any) => <div key={item.holiday_id} className="flex items-center justify-between rounded-lg border p-3"><div><p className="font-medium">{item.name}</p><p className="text-sm text-muted-foreground">{item.date}</p></div><Badge variant="outline">{item.region || item.type}</Badge></div>)}</CardContent></Card>
-        <Card><CardHeader><CardTitle>KPI & appraisal tracker</CardTitle></CardHeader><CardContent className="space-y-4">{(data?.kpis || []).map((item: any) => <div key={item.id} className="rounded-lg border p-4"><div className="mb-2 flex justify-between"><p className="font-medium">{item.title}</p><Badge variant="outline">{item.review}</Badge></div><p className="mb-3 text-sm text-muted-foreground">{item.target}</p><Progress value={item.progress} /><p className="mt-2 text-right text-xs">{item.progress}%{item.score !== null ? ` · appraisal ${item.score}` : ""}</p></div>)}</CardContent></Card>
+        <Card><CardHeader><CardTitle>KPI & appraisal tracker</CardTitle></CardHeader><CardContent className="space-y-4">{(data?.kpis || []).map((item: any) => <div key={item.id} className="rounded-lg border p-4"><div className="mb-3 flex flex-wrap justify-between gap-2"><p className="font-medium">{item.title}</p><Badge variant={item.currentAppraisal ? "default" : "secondary"}>{item.currentPeriod.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><div className="space-y-1">{item.criteria.map((criterion: any) => <p key={criterion.id} className="text-sm text-muted-foreground">• {criterion.title}</p>)}</div></div>)}</CardContent></Card>
       </div>
     </div>
   );

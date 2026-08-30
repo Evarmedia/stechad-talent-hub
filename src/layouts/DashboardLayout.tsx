@@ -4,9 +4,11 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppNavbar } from "@/components/app-navbar";
 import { Outlet } from "react-router-dom";
+import LocationPermissionManager from "@/components/LocationPermissionManager";
 
 const DashboardLayout: React.FC = () => (
   <SidebarProvider>
+    <LocationPermissionManager />
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar />
       <SidebarInset>
