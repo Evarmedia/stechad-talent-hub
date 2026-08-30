@@ -1,42 +1,65 @@
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Briefcase, Calendar, ClipboardList, FileText, FolderKanban, Home, Pickaxe, Settings, User, Users } from "lucide-react";
+import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, Pickaxe, ReceiptText, Settings, TrendingUp, User, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuthContext } from "@/hooks/useAuthContext";
 const engineerMenu = [
-  { icon: Home,    label: "Dashboard", to: "/dashboard/engineer" },
-  { icon: Briefcase, label: "Jobs",     to: "/dashboard/engineer/jobs" },
+  { icon: Home, label: "Dashboard", to: "/dashboard/engineer" },
+  { icon: Briefcase, label: "Jobs", to: "/dashboard/engineer/jobs" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
   { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
-  // { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
-  { icon: User,    label: "Profile",   to: "/dashboard/engineer/profile" },
+  { icon: DollarSign, label: "Invoices", to: "/dashboard/engineer/invoices" },
+  { icon: Clock3, label: "Attendance", to: "/dashboard/engineer/attendance" },
+  { icon: CalendarDays, label: "Leave", to: "/dashboard/engineer/leave" },
+  { icon: ReceiptText, label: "Expenses", to: "/dashboard/engineer/expenses" },
+  { icon: User, label: "Profile", to: "/dashboard/engineer/profile" },
+];
+
+const staffMenu = [
+  { icon: Home, label: "Dashboard", to: "/dashboard/staff" },
+  { icon: Clock3, label: "Attendance", to: "/dashboard/staff/attendance" },
+  { icon: CalendarDays, label: "Leave", to: "/dashboard/staff/leave" },
+  { icon: ReceiptText, label: "Expenses", to: "/dashboard/staff/expenses" },
+  { icon: ClipboardList, label: "Approvals", to: "/dashboard/staff/approvals", permission: "approvals" },
+  { icon: DollarSign, label: "Invoices", to: "/dashboard/staff/invoices" },
+  { icon: TrendingUp, label: "KPIs", to: "/dashboard/staff/kpis" },
+  { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/staff/holidays" },
+  { icon: User, label: "Profile", to: "/dashboard/staff/profile" },
 ];
 
 const pmMenu = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
-  { icon: Pickaxe, label: "Engineers", to: "dashboard/pm/engineers" },
+  { icon: Pickaxe, label: "Engineers", to: "/dashboard/pm/engineers" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
-  // { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
+  { icon: DollarSign, label: "Project Invoices", to: "/dashboard/pm/project-invoices" },
+  { icon: Clock3, label: "Attendance", to: "/dashboard/pm/attendance" },
+  { icon: CalendarDays, label: "Leave", to: "/dashboard/pm/leave" },
+  { icon: ReceiptText, label: "Expenses", to: "/dashboard/pm/expenses" },
+  { icon: TrendingUp, label: "KPIs", to: "/dashboard/pm/kpis" },
+  { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/pm/holidays" },
+  { icon: ClipboardList, label: "Approvals", to: "/dashboard/pm/approvals", permission: "approvals" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
-  // { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
 ];
 
 const adminMenu = [
   { icon: Home, label: "Overview", to: "/admin" },
   { icon: Pickaxe, label: "Engineers", to: "/admin/engineers" },
   { icon: User, label: "Project Managers", to: "/admin/project-managers" },
+  { icon: FolderKanban, label: "Projects", to: "/admin/projects" },
+  { icon: ClipboardList, label: "Workforce", to: "/admin/workforce" },
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
   { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
-  // { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
 ];
 
 function getRoleMenu(pathname: string) {
   if (pathname.startsWith("/dashboard/engineer")) return engineerMenu;
+  if (pathname.startsWith("/dashboard/staff")) return staffMenu;
   if (pathname.startsWith("/dashboard/pm")) return pmMenu;
   if (pathname.startsWith("/admin")) return adminMenu;
   return [];
@@ -44,7 +67,10 @@ function getRoleMenu(pathname: string) {
 
 export function AppSidebar() {
   const { pathname } = useLocation();
-  const menu = getRoleMenu(pathname);
+  const { user } = useAuthContext();
+  const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
+  const canApprove = user?.effective_permissions?.includes("*") || approvalPermissions.some((permission) => user?.effective_permissions?.includes(permission));
+  const menu = getRoleMenu(pathname).filter((item: any) => item.permission !== "approvals" || canApprove);
   
   return (
     <Sidebar>
@@ -53,6 +79,8 @@ export function AppSidebar() {
           <SidebarGroupLabel>
             {pathname.includes("/engineer")
               ? "Engineer"
+              : pathname.includes("/staff")
+              ? "Staff"
               : pathname.includes("/pm")
               ? "Project Manager"
               : pathname.includes("/admin")
@@ -62,7 +90,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menu.map((item) => {
-                const isActive = pathname === item.to;
+                const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`);
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive}>

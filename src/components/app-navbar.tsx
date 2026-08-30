@@ -2,22 +2,22 @@
 import STECHADLogo from "@/components/STECHADLogo";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useDataContext } from "@/hooks/useDataContext";
-import { AlertTriangle, Bell, CheckCircle2, Info, User, X, LogOut } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Info, LogOut, User, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const navRoles = [
   { name: "Engineer", path: "/dashboard/engineer" },
+  { name: "Staff", path: "/dashboard/staff" },
   { name: "PM", path: "/dashboard/pm" },
   { name: "Admin", path: "/admin" },
 ];
@@ -25,6 +25,7 @@ const navRoles = [
 // Helper function to get the route for the profile based on role and current route
 function getProfileRoute(pathname: string) {
   if (pathname.startsWith("/dashboard/engineer")) return "/dashboard/engineer/profile";
+  if (pathname.startsWith("/dashboard/staff")) return "/dashboard/staff/profile";
   if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm/profile";
   if (pathname.startsWith("/admin")) return "/admin/profile";
   return "/dashboard/engineer/profile"; // default fallback
@@ -56,7 +57,7 @@ export function AppNavbar() {
   const profileRoute = getProfileRoute(pathname);
   const showNotifications =
     notificationsEligible &&
-    (user?.role === "engineer" || user?.role === "project_manager");
+    (user?.role === "engineer" || user?.role === "project_manager" || user?.role === "staff");
   const notificationsToShow = useMemo(
     () => (notifications || []).slice(0, 10),
     [notifications]

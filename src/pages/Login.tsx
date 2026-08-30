@@ -19,7 +19,9 @@ const Login = () => {
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
     const r = params.get("role");
-    if (r === "engineer" || r === "project_manager" || r === "admin") setForm((f) => ({ ...f, role: r }));
+    if (r === "engineer" || r === "project_manager" || r === "admin" || r === "super_admin" || r === "staff") {
+      setForm((f) => ({ ...f, role: r }));
+    }
   }, [location.search]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -57,7 +59,9 @@ const Login = () => {
           // }
         } else if (response.data.user.role === "project_manager" || form.role === "project_manager") {
           navigate("/dashboard/pm");
-        } else if (response.data.user.role === "admin" ||form.role === "admin") {
+        } else if (response.data.user.role === "staff" || form.role === "staff") {
+          navigate("/dashboard/staff");
+        } else if (["admin", "super_admin"].includes(response.data.user.role) || ["admin", "super_admin"].includes(form.role)) {
           navigate("/admin");
         }
       }
@@ -86,7 +90,9 @@ const Login = () => {
           >
             <option value="engineer">Engineer</option>
             <option value="project_manager">Project Manager</option>
+            <option value="staff">Staff</option>
             <option value="admin">Admin</option>
+            <option value="super_admin">Super Admin</option>
           </select>
           <Input
             type="email"

@@ -10,6 +10,7 @@ import { AuthProvider } from "./hooks/useAuthContext";
 import { DataProvider } from "./hooks/useDataContext";
 import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
+import AcceptInvite from "./pages/AcceptInvites";
 import EngineerSignup from "./pages/EngineerSignup";
 import ForgotPassword from "./pages/ForgotPassword";
 import GoogleAuthHandler from "./pages/GoogleAuthHandler";
@@ -28,10 +29,13 @@ import AdminJobs from "./pages/dashboard/admin/Jobs";
 import AdminMessages from "./pages/dashboard/admin/Messages";
 import AdminProfile from "./pages/dashboard/admin/Profile";
 import AdminProjectManagers from "./pages/dashboard/admin/ProjectManagers";
+import AdminProjects from "./pages/dashboard/admin/Projects";
 import AdminSettings from "./pages/dashboard/admin/Settings";
+import AdminWorkforce from "./pages/dashboard/admin/Workforce";
 import EngineerApplications from "./pages/dashboard/engineer/Applications";
 import EngineerIndex from "./pages/dashboard/engineer/Index";
 import EngineerInterviews from "./pages/dashboard/engineer/Interviews";
+import EngineerInvoicesPage from "./pages/dashboard/engineer/Invoices";
 import EngineerJobs from "./pages/dashboard/engineer/Jobs";
 import EngineerMessages from "./pages/dashboard/engineer/Messages";
 import EngineerProfile from "./pages/dashboard/engineer/Profile";
@@ -44,8 +48,17 @@ import PMManageJobs from "./pages/dashboard/pm/ManageJobs";
 import PMMessages from "./pages/dashboard/pm/Messages";
 import PMPostJob from "./pages/dashboard/pm/PostJob";
 import PMProfile from "./pages/dashboard/pm/Profile";
+import PMProjectInvoicePage from "./pages/dashboard/pm/ProjectInvoices";
 import PMProjects from "./pages/dashboard/pm/Projects";
-import AcceptInvite from "./pages/AcceptInvites";
+import StaffAttendance from "./pages/dashboard/staff/Attendance";
+import StaffApprovals from "./pages/dashboard/staff/Approvals";
+import StaffExpenses from "./pages/dashboard/staff/Expenses";
+import StaffHolidays from "./pages/dashboard/staff/Holidays";
+import StaffDashboard from "./pages/dashboard/staff/Index";
+import StaffInvoices from "./pages/dashboard/staff/Invoices";
+import StaffKpis from "./pages/dashboard/staff/KPIs";
+import StaffLeave from "./pages/dashboard/staff/Leave";
+import StaffProfile from "./pages/dashboard/staff/Profile";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +117,20 @@ const App = () => (
                         <EngineerInterviews />
                       </ProtectedRoute>
                     } />
+                    <Route path="/dashboard/engineer/invoices" element={
+                      <ProtectedRoute requiredRole="engineer">
+                        <EngineerInvoicesPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/engineer/attendance" element={
+                      <ProtectedRoute requiredRole="engineer"><StaffAttendance /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/engineer/leave" element={
+                      <ProtectedRoute requiredRole="engineer"><StaffLeave /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/engineer/expenses" element={
+                      <ProtectedRoute requiredRole="engineer"><StaffExpenses /></ProtectedRoute>
+                    } />
                     <Route path="/dashboard/engineer/messages" element={
                       <ProtectedRoute requiredRole="engineer">
                         <EngineerMessages />
@@ -112,6 +139,53 @@ const App = () => (
                     <Route path="/dashboard/engineer/profile" element={
                       <ProtectedRoute requiredRole="engineer">
                         <EngineerProfile />
+                      </ProtectedRoute>
+                    } />
+
+                    {/* Staff Dashboard routes */}
+                    <Route path="/dashboard/staff" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffDashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/attendance" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffAttendance />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/approvals" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffApprovals />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/leave" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffLeave />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/expenses" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffExpenses />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/invoices" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffInvoices />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/kpis" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffKpis />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/holidays" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffHolidays />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/staff/profile" element={
+                      <ProtectedRoute requiredRole="staff">
+                        <StaffProfile />
                       </ProtectedRoute>
                     } />
 
@@ -141,6 +215,29 @@ const App = () => (
                         <PMProjects />
                       </ProtectedRoute>
                     } />
+                    <Route path="/dashboard/pm/project-invoices" element={
+                      <ProtectedRoute requiredRole="project_manager">
+                        <PMProjectInvoicePage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/attendance" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffAttendance /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/leave" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffLeave /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/expenses" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffExpenses /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/kpis" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffKpis /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/holidays" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffHolidays /></ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/pm/approvals" element={
+                      <ProtectedRoute requiredRole="project_manager"><StaffApprovals /></ProtectedRoute>
+                    } />
                     <Route path="/dashboard/pm/applicants/:jobId" element={
                       <ProtectedRoute requiredRole="project_manager">
                         <PMApplicants />
@@ -169,47 +266,57 @@ const App = () => (
 
                     {/* Admin Dashboard routes */}
                     <Route path="/admin" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminIndex />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/engineers" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminEngineers />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/project-managers" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminProjectManagers />
                       </ProtectedRoute>
                     } />
+                    <Route path="/admin/projects" element={
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
+                        <AdminProjects />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/workforce" element={
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
+                        <AdminWorkforce />
+                      </ProtectedRoute>
+                    } />
                     <Route path="/admin/jobs" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminJobs />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/applications" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminApplications />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/engineer-vetting" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminEngineerVetting />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/messages" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminMessages />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/settings" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminSettings />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/profile" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminProfile />
                       </ProtectedRoute>
                     } />

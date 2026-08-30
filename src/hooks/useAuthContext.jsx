@@ -205,7 +205,9 @@ export const AuthProvider = ({ children }) => {
         endpoint = "engineers/profile";
       } else if (user.role === "project_manager") {
         endpoint = "pm/profile";
-      } else if (user.role === "admin") {
+      } else if (user.role === "staff") {
+        endpoint = "staff/profile";
+      } else if (user.role === "admin" || user.role === "super_admin") {
         endpoint = "admin/profile";
       } else {
         throw new Error("Invalid user role");
