@@ -51,7 +51,7 @@ const AdminProfile = () => {
         city: user.city || "",
         country: user.country || "",
         permissions: user.admin?.permissions?.join(", ") || "",
-        is_super_admin: user.admin?.is_super_admin || false,
+        is_super_admin: user.role === "super_admin",
       }));
 
       if (user.avatar_url) {
@@ -144,7 +144,7 @@ const AdminProfile = () => {
         city: user.city || "",
         country: user.country || "",
         permissions: user.admin?.permissions?.join(", ") || "",
-        is_super_admin: user.admin?.is_super_admin || false,
+        is_super_admin: user.role === "super_admin",
         avatar: null,
       }));
 

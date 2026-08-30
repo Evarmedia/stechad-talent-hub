@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import apiService from "@/services/apiService";
+import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyInvite = { first_name: "", last_name: "", email: "", department_id: "", job_title: "", role: "staff" };
@@ -225,15 +226,16 @@ const AdminWorkforce = () => {
         <TabsContent value="people">
           <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_0.5fr] gap-6">
             <Card><CardHeader><CardTitle>Staff directory</CardTitle></CardHeader><CardContent>
-              <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+              <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                 <TableBody>{staff.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.jobTitle}</p></TableCell>
                     <TableCell><select value={member.departmentId || ""} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
-                    <TableCell>{member.roleKey === "super_admin" && user?.role !== "super_admin" ? <Badge>Super Admin</Badge> : <select value={member.roleKey} onChange={(event) => updateMember(member.id, { role: event.target.value })} className="rounded-md border px-2 py-1 text-sm">{user?.role === "super_admin" && <option value="super_admin">Super Admin</option>}<option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
+                    <TableCell>{member.roleKey === "super_admin" ? <Badge>Super Admin</Badge> : <select value={member.roleKey} onChange={(event) => updateMember(member.id, { role: event.target.value })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
+                    <TableCell>{member.browserLocation ? <a className="inline-flex items-center gap-1 text-sm text-primary underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${member.browserLocation.latitude},${member.browserLocation.longitude}`} target="_blank" rel="noreferrer"><MapPin className="h-3.5 w-3.5" />{member.location}</a> : <span className="text-sm text-muted-foreground">{member.location}</span>}</TableCell>
                     <TableCell><Badge variant="outline">{member.attendance}</Badge></TableCell>
                     <TableCell><Button size="sm" variant="outline" onClick={() => manageMemberPermissions(member)}>{member.permissions?.length || 0} grants</Button></TableCell>
-                    <TableCell><Button size="sm" variant={member.status === "Active" ? "outline" : "default"} disabled={busy} onClick={() => updateMember(member.id, { is_active: member.status !== "Active" })}>{member.status}</Button></TableCell>
+                    <TableCell><Button size="sm" variant={member.status === "Active" ? "outline" : "default"} disabled={busy || member.roleKey === "super_admin"} onClick={() => updateMember(member.id, { is_active: member.status !== "Active" })}>{member.status}</Button></TableCell>
                   </TableRow>
                 ))}</TableBody>
               </Table>
@@ -245,7 +247,7 @@ const AdminWorkforce = () => {
                 <Input required type="email" placeholder="Work email" value={invite.email} onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))} />
                 <Input placeholder="Job title" value={invite.job_title} onChange={(e) => setInvite((p) => ({ ...p, job_title: e.target.value }))} />
                 <select value={invite.department_id} onChange={(e) => setInvite((p) => ({ ...p, department_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">No department</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select>
-                <select value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm">{user?.role === "super_admin" && <option value="super_admin">Super Admin</option>}<option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>
+                <select value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>
                 <Button disabled={busy} type="submit" className="w-full">Send invitation</Button>
               </form>
             </CardContent></Card>
@@ -275,12 +277,14 @@ const AdminWorkforce = () => {
         <TabsContent value="approvals"><Card><CardHeader><CardTitle>Live approvals queue</CardTitle></CardHeader><CardContent>
           <Table><TableHeader><TableRow><TableHead>Request</TableHead><TableHead>Owner</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
             <TableBody>{approvals.map((item) => <TableRow key={`${item.type}-${item.id}`}><TableCell>{item.item}</TableCell><TableCell>{item.owner}</TableCell><TableCell className="capitalize">{item.type}</TableCell><TableCell><Badge variant="secondary">{item.status}</Badge></TableCell><TableCell className="space-x-2">
-              {item.type === "expense" && item.status.startsWith("Approved")
+              {item.type === "invoice" && item.status === "Accounts Approved"
+                ? <Button size="sm" variant="outline" disabled>Accounts approved</Button>
+                : item.type === "expense" && item.status.startsWith("Approved")
                 ? <Button size="sm" onClick={() => reviewApproval(item, "receipt_verified")}>Verify receipt</Button>
                 : item.type === "invoice" && item.status === "Approved"
                   ? <Button size="sm" onClick={() => reviewApproval(item, "accounts_approved")}>Accounts approve & sync</Button>
                   : <Button size="sm" onClick={() => reviewApproval(item, "approved")}>Approve</Button>}
-              <Button size="sm" variant="destructive" onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>
+              {!(item.type === "invoice" && item.status === "Accounts Approved") && <Button size="sm" variant="destructive" onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>}
             </TableCell></TableRow>)}</TableBody>
           </Table>
           {!approvals.length && <p className="py-8 text-center text-muted-foreground">There are no open approvals.</p>}

@@ -71,18 +71,27 @@ const StaffDashboard = () => {
 
   const setLocationSharing = async (enabled: boolean) => {
     try {
-      const permissionStatus = enabled
+      const result = enabled
         ? await requestBrowserLocationPermission()
-        : data?.user?.locationPermissionStatus;
-      const canEnable = enabled && permissionStatus === "granted";
-      await apiService.putNoId("staff/location-sharing", {
+        : { status: data?.user?.locationPermissionStatus };
+      const canEnable = enabled && result.status === "granted";
+      const response = await apiService.putNoId("staff/location-sharing", {
         enabled: canEnable,
-        ...(permissionStatus ? { permission_status: permissionStatus } : {}),
+        ...(result.status ? { permission_status: result.status } : {}),
+        ...result.location,
       });
-      setData((current: any) => ({ ...current, user: { ...current.user, locationSharingEnabled: canEnable, locationPermissionStatus: permissionStatus } }));
+      setData((current: any) => ({
+        ...current,
+        user: {
+          ...current.user,
+          locationSharingEnabled: canEnable,
+          locationPermissionStatus: result.status,
+          browserLocation: response?.data?.browserLocation || (canEnable ? current.user.browserLocation : null),
+        },
+      }));
       toast({
         title: canEnable ? "Location sharing enabled" : enabled ? "Location permission not granted" : "Location sharing disabled",
-        description: enabled && !canEnable ? "Allow location access in your browser settings to enable this feature." : "Location is only captured while you are clocked in.",
+        description: enabled && !canEnable ? "Allow location access in your browser settings to enable this feature." : canEnable ? "Location consent saved." : "Location sharing is off.",
       });
     } catch (error: any) {
       toast({ title: "Could not update location consent", description: error.message, variant: "destructive" });
@@ -90,6 +99,7 @@ const StaffDashboard = () => {
   };
 
   const isClockedIn = Boolean(data?.attendanceSummary?.today?.isOpen);
+  const browserLocation = data?.user?.browserLocation;
   const stats = [
     { label: "Attendance", value: data?.summary?.attendance || "0%", icon: Clock3 },
     { label: "Leave balance", value: data?.summary?.leaveBalance || "0 days", icon: CalendarDays },
@@ -112,7 +122,7 @@ const StaffDashboard = () => {
           <AttendanceTimer active={isClockedIn} startedAt={data?.attendanceSummary?.today?.clockInAt} compact />
           {isClockedIn && <div><label className="mb-2 block text-sm font-medium">Daily work summary</label><Textarea className="min-h-[110px]" placeholder="Summarize the work completed today..." value={workLog} onChange={(event) => setWorkLog(event.target.value)} /><p className="mt-2 text-xs text-muted-foreground">This summary is required before clock-out.</p></div>}
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 text-primary" /><p className="text-sm text-muted-foreground">{data?.user?.locationSharingEnabled ? "Browser permission granted. Location may be captured only during an active work session." : data?.user?.locationPermissionStatus === "denied" ? "Browser permission was denied. You can change it in browser settings; the system will not prompt again." : "Location sharing is off. No coordinates are collected."}</p></div></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 shrink-0 text-primary" /><div className="text-sm">{data?.user?.locationSharingEnabled && browserLocation ? <><p className="font-medium text-foreground">Location consent</p><a className="text-muted-foreground underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${browserLocation.latitude},${browserLocation.longitude}`} target="_blank" rel="noreferrer">{Number(browserLocation.latitude).toFixed(6)}, {Number(browserLocation.longitude).toFixed(6)}</a>{browserLocation.accuracy !== null && browserLocation.accuracy !== undefined && <p className="mt-1 text-xs text-muted-foreground">Accuracy: approximately {Math.round(Number(browserLocation.accuracy))} m</p>}</> : <p className="text-muted-foreground">{data?.user?.locationPermissionStatus === "granted" ? "Location consent accepted. Waiting for a browser location fix." : data?.user?.locationPermissionStatus === "denied" ? "Browser permission was denied. You can change it in browser settings; the system will not prompt again." : "Location sharing is off. No coordinates are collected."}</p>}</div></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

@@ -45,10 +45,20 @@ const StaffProfile = () => {
 
   const toggleLocation = async (enabled: boolean) => {
     try {
-      const permissionStatus = enabled ? await requestBrowserLocationPermission() : profile?.location_permission_status;
-      const canEnable = enabled && permissionStatus === "granted";
-      await apiService.putNoId("staff/location-sharing", { enabled: canEnable, ...(permissionStatus ? { permission_status: permissionStatus } : {}) });
-      setProfile((current: any) => ({ ...current, location_sharing_enabled: canEnable, location_permission_status: permissionStatus }));
+      const result = enabled ? await requestBrowserLocationPermission() : { status: profile?.location_permission_status };
+      const canEnable = enabled && result.status === "granted";
+      const response = await apiService.putNoId("staff/location-sharing", { enabled: canEnable, ...(result.status ? { permission_status: result.status } : {}), ...result.location });
+      setProfile((current: any) => ({
+        ...current,
+        location_sharing_enabled: canEnable,
+        location_permission_status: result.status,
+        ...(response?.data?.browserLocation ? {
+          browser_latitude: response.data.browserLocation.latitude,
+          browser_longitude: response.data.browserLocation.longitude,
+          browser_location_accuracy: response.data.browserLocation.accuracy,
+          browser_location_updated_at: response.data.browserLocation.updatedAt,
+        } : {}),
+      }));
       if (enabled && !canEnable) toast({ title: "Location permission not granted", description: "Allow location access in your browser settings to enable this feature." });
     }
     catch (error: any) { toast({ title: "Could not update location consent", description: error.message, variant: "destructive" }); }
@@ -72,7 +82,7 @@ const StaffProfile = () => {
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Employee ID</p><p className="font-medium">{profile?.employee_id || "Pending assignment"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Department</p><p className="font-medium">{profile?.department?.name || "Unassigned"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Reports to</p><p className="font-medium">{profile?.reporting_manager ? `${profile.reporting_manager.first_name || ""} ${profile.reporting_manager.last_name || ""}`.trim() || profile.reporting_manager.email : "Unassigned"}</p></div>
-          <div className="flex justify-between rounded-lg border p-3"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>
+          <div className="rounded-lg border p-3"><div className="flex justify-between"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>{profile?.location_sharing_enabled && profile?.browser_latitude !== null && profile?.browser_latitude !== undefined && profile?.browser_longitude !== null && profile?.browser_longitude !== undefined && <a className="mt-2 block text-sm text-muted-foreground underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${profile.browser_latitude},${profile.browser_longitude}`} target="_blank" rel="noreferrer">{Number(profile.browser_latitude).toFixed(6)}, {Number(profile.browser_longitude).toFixed(6)}</a>}</div>
         </CardContent></Card>
       </div>
       <Card><CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Assignment & work context</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input placeholder="Current assignment" value={form.current_assignment} onChange={(e) => setForm((p) => ({ ...p, current_assignment: e.target.value }))} /><Input placeholder="Work region" value={form.work_region} onChange={(e) => setForm((p) => ({ ...p, work_region: e.target.value }))} /></CardContent></Card>

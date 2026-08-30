@@ -68,6 +68,9 @@ export function AppSidebar() {
   const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
   const canApprove = user?.effective_permissions?.includes("*") || approvalPermissions.some((permission) => user?.effective_permissions?.includes(permission));
   const menu = getRoleMenu(pathname).filter((item: any) => item.permission !== "approvals" || canApprove);
+  const activeMenuPath = menu
+    .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
+    .sort((first, second) => second.to.length - first.to.length)[0]?.to;
   
   return (
     <Sidebar>
@@ -87,7 +90,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menu.map((item) => {
-                const isActive = pathname === item.to || pathname.startsWith(`${item.to}/`);
+                const isActive = item.to === activeMenuPath;
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive}>
