@@ -1,7 +1,10 @@
 import { Badge } from "@/components/ui/badge";
+import ReviewActionDialog from "@/components/ReviewActionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,6 +36,12 @@ const AdminWorkforce = () => {
   const [kpi, setKpi] = useState(emptyKpi);
   const [editingDepartmentId, setEditingDepartmentId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [permissionDialog, setPermissionDialog] = useState<any>(null);
+  const [permissionValue, setPermissionValue] = useState("");
+  const [approvalDialog, setApprovalDialog] = useState<{ item: any; action: string } | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [appraisalDialog, setAppraisalDialog] = useState<any>(null);
+  const [appraisal, setAppraisal] = useState({ progress: "0", score: "" });
 
   const loadWorkforce = async () => {
     try {
@@ -59,8 +68,10 @@ const AdminWorkforce = () => {
       await work();
       toast({ title: success });
       await loadWorkforce();
+      return true;
     } catch (error: any) {
       toast({ title: "Action failed", description: error.message, variant: "destructive" });
+      return false;
     } finally {
       setBusy(false);
     }
@@ -78,11 +89,16 @@ const AdminWorkforce = () => {
   );
 
   const manageMemberPermissions = (member: any) => {
-    const available = permissions.map((item) => item.key).join(", ");
-    const value = window.prompt(`Individual permission keys (comma-separated). Available: ${available}`, (member.permissions || []).join(", "));
-    if (value === null) return;
-    const workforce_permissions = value.split(",").map((item) => item.trim()).filter(Boolean);
-    return updateMember(member.id, { workforce_permissions });
+    setPermissionValue((member.permissions || []).join(", "));
+    setPermissionDialog(member);
+  };
+
+  const saveMemberPermissions = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!permissionDialog) return;
+    const workforce_permissions = permissionValue.split(",").map((item) => item.trim()).filter(Boolean);
+    const saved = await updateMember(permissionDialog.id, { workforce_permissions });
+    if (saved) setPermissionDialog(null);
   };
 
   const handleDepartmentSubmit = async (event: React.FormEvent) => {
@@ -110,11 +126,17 @@ const AdminWorkforce = () => {
   };
 
   const reviewApproval = (item: any, action: string) => {
-    const notes = window.prompt(action === "rejected" || action === "disputed" ? "Add feedback for the requester:" : "Optional review notes:", "") || "";
-    return mutate(
-      () => apiService.put(`admin/workforce/approvals/${item.type}`, item.id, { action, notes }),
+    setReviewNotes("");
+    setApprovalDialog({ item, action });
+  };
+
+  const submitApprovalReview = async () => {
+    if (!approvalDialog) return;
+    const saved = await mutate(
+      () => apiService.put(`admin/workforce/approvals/${approvalDialog.item.type}`, approvalDialog.item.id, { action: approvalDialog.action, notes: reviewNotes.trim() }),
       "Approval updated",
     );
+    if (saved) setApprovalDialog(null);
   };
 
   const handleHoliday = async (event: React.FormEvent) => {
@@ -130,13 +152,21 @@ const AdminWorkforce = () => {
   };
 
   const editKpi = (item: any) => {
-    const progress = window.prompt("Progress (0–100)", String(item.progress ?? 0));
-    if (progress === null) return;
-    const score = window.prompt("Appraisal score (optional)", item.score === null ? "" : String(item.score));
-    return mutate(
-      () => apiService.put("admin/kpis", item.id, { progress: Math.min(100, Math.max(0, Number(progress))), appraisal_score: score ? Number(score) : null }),
+    setAppraisal({ progress: String(item.progress ?? 0), score: item.score === null ? "" : String(item.score) });
+    setAppraisalDialog(item);
+  };
+
+  const saveKpiAppraisal = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!appraisalDialog) return;
+    const saved = await mutate(
+      () => apiService.put("admin/kpis", appraisalDialog.id, {
+        progress: Math.min(100, Math.max(0, Number(appraisal.progress))),
+        appraisal_score: appraisal.score === "" ? null : Number(appraisal.score),
+      }),
       "KPI and appraisal updated",
     );
+    if (saved) setAppraisalDialog(null);
   };
 
   const setPermission = (permission: any, role: string, value: boolean) => mutate(
@@ -240,6 +270,69 @@ const AdminWorkforce = () => {
 
         <TabsContent value="permissions"><Card><CardHeader><CardTitle>Role permissions</CardTitle></CardHeader><CardContent><p className="mb-4 text-sm text-muted-foreground">This matrix is intentionally isolated to this Permissions tab. Super Admin access cannot be disabled.{user?.role !== "super_admin" ? " Only a super admin can change the matrix." : ""}</p><Table><TableHeader><TableRow><TableHead>Permission</TableHead><TableHead>Super Admin</TableHead><TableHead>Admin</TableHead><TableHead>Project Manager</TableHead><TableHead>Staff</TableHead></TableRow></TableHeader><TableBody>{permissions.map((item) => <TableRow key={item.id}><TableCell>{item.name}</TableCell><TableCell><Switch checked disabled /></TableCell>{["admin", "project_manager", "staff"].map((role) => <TableCell key={role}><Switch disabled={user?.role !== "super_admin"} checked={Boolean(item[role])} onCheckedChange={(value) => setPermission(item, role, value)} /></TableCell>)}</TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
       </Tabs>
+
+      <Dialog open={Boolean(permissionDialog)} onOpenChange={(open) => !busy && !open && setPermissionDialog(null)}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Manage delegated access</DialogTitle>
+            <DialogDescription>Set individual permissions for {permissionDialog?.name}. Separate multiple permission keys with commas.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-5" onSubmit={saveMemberPermissions}>
+            <div className="space-y-2">
+              <Label htmlFor="member-permissions">Permission keys</Label>
+              <Textarea id="member-permissions" className="min-h-[110px]" value={permissionValue} onChange={(event) => setPermissionValue(event.target.value)} placeholder="approve_leave, approve_expenses" autoFocus />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Available permissions</p>
+              <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-lg border bg-muted/40 p-3">
+                {permissions.map((permission) => <code key={permission.key} className="rounded bg-white px-2 py-1 text-xs text-primary shadow-sm">{permission.key}</code>)}
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" disabled={busy} onClick={() => setPermissionDialog(null)}>Cancel</Button>
+              <Button type="submit" disabled={busy}>{busy ? "Saving..." : "Save permissions"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ReviewActionDialog
+        open={Boolean(approvalDialog)}
+        action={approvalDialog?.action || ""}
+        requestLabel={approvalDialog ? `${approvalDialog.item.owner}: ${approvalDialog.item.item}` : ""}
+        notes={reviewNotes}
+        busy={busy}
+        onNotesChange={setReviewNotes}
+        onOpenChange={(open) => !open && setApprovalDialog(null)}
+        onConfirm={submitApprovalReview}
+      />
+
+      <Dialog open={Boolean(appraisalDialog)} onOpenChange={(open) => !busy && !open && setAppraisalDialog(null)}>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Update KPI appraisal</DialogTitle>
+            <DialogDescription>{appraisalDialog?.title} · {appraisalDialog?.owner}</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-5" onSubmit={saveKpiAppraisal}>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="appraisal-progress">Progress (%)</Label>
+                <Input id="appraisal-progress" type="number" min="0" max="100" step="1" required value={appraisal.progress} onChange={(event) => setAppraisal((current) => ({ ...current, progress: event.target.value }))} />
+                <p className="text-xs text-muted-foreground">Enter a value from 0 to 100.</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="appraisal-score">Appraisal score</Label>
+                <Input id="appraisal-score" type="number" min="0" step="0.1" value={appraisal.score} onChange={(event) => setAppraisal((current) => ({ ...current, score: event.target.value }))} placeholder="Optional" />
+                <p className="text-xs text-muted-foreground">Leave blank if not yet scored.</p>
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" disabled={busy} onClick={() => setAppraisalDialog(null)}>Cancel</Button>
+              <Button type="submit" disabled={busy}>{busy ? "Saving..." : "Save appraisal"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

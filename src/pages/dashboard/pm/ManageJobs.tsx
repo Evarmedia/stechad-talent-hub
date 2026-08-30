@@ -16,7 +16,7 @@ import { useState } from "react";
 
 const ManageJobs = () => {
   const { toast } = useToast();
-  const { jobs, applications, loading, updateJob, deleteJob } = useDataContext();
+  const { jobs, applications, loading, updateJob } = useDataContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -141,16 +141,6 @@ const ManageJobs = () => {
       await updateJob(job.jobs_id, { status: newStatus });
     } catch (error) {
       console.error('Error updating job status:', error);
-    }
-  };
-
-  const handleDeleteJob = async (jobId: string) => {
-    if (window.confirm('Are you sure you want to delete this job?')) {
-      try {
-        await deleteJob(jobId);
-      } catch (error) {
-        console.error('Error deleting job:', error);
-      }
     }
   };
 

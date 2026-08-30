@@ -10,9 +10,6 @@ const engineerMenu = [
   { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
   { icon: DollarSign, label: "Invoices", to: "/dashboard/engineer/invoices" },
-  { icon: Clock3, label: "Attendance", to: "/dashboard/engineer/attendance" },
-  { icon: CalendarDays, label: "Leave", to: "/dashboard/engineer/leave" },
-  { icon: ReceiptText, label: "Expenses", to: "/dashboard/engineer/expenses" },
   { icon: User, label: "Profile", to: "/dashboard/engineer/profile" },
 ];
 

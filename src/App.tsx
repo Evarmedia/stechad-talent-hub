@@ -122,15 +122,6 @@ const App = () => (
                         <EngineerInvoicesPage />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/attendance" element={
-                      <ProtectedRoute requiredRole="engineer"><StaffAttendance /></ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/engineer/leave" element={
-                      <ProtectedRoute requiredRole="engineer"><StaffLeave /></ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/engineer/expenses" element={
-                      <ProtectedRoute requiredRole="engineer"><StaffExpenses /></ProtectedRoute>
-                    } />
                     <Route path="/dashboard/engineer/messages" element={
                       <ProtectedRoute requiredRole="engineer">
                         <EngineerMessages />

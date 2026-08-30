@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import AttendanceTimer from "@/components/AttendanceTimer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -26,7 +27,11 @@ const StaffDashboard = () => {
     }
   };
 
-  useEffect(() => { loadDashboard(); }, []);
+  useEffect(() => {
+    loadDashboard();
+    const interval = window.setInterval(loadDashboard, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   const getLocation = () => new Promise<Record<string, number>>((resolve) => {
     if (!data?.user?.locationSharingEnabled || !navigator.geolocation) return resolve({});
@@ -92,8 +97,9 @@ const StaffDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">{stats.map((stat) => <Card key={stat.label}><CardContent className="p-4 flex items-center justify-between"><div><p className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</p><p className="text-2xl font-bold text-primary mt-2">{stat.value}</p></div><div className="rounded-full bg-primary/10 p-2 text-primary"><stat.icon className="w-5 h-5" /></div></CardContent></Card>)}</div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card className="xl:col-span-2"><CardHeader><CardTitle className="flex items-center justify-between"><span>Attendance</span>{isClockedIn ? <Button disabled={busy} variant="outline" onClick={clockOut}>Clock out</Button> : <Button disabled={busy || Boolean(data?.attendanceSummary?.today)} onClick={clockIn}>{data?.attendanceSummary?.today ? "Completed today" : "Clock in"}</Button>}</CardTitle></CardHeader><CardContent className="space-y-4">
+        <Card className="xl:col-span-2"><CardHeader><CardTitle className="flex items-center justify-between"><span>Attendance</span>{isClockedIn ? <Button disabled={busy} variant="outline" onClick={clockOut}>Clock out</Button> : <Button disabled={busy || Boolean(data?.attendanceSummary?.today)} onClick={clockIn}>{data?.attendanceSummary?.today ? (data.attendanceSummary.today.status === "Absent" ? "Marked absent" : "Completed today") : "Clock in"}</Button>}</CardTitle></CardHeader><CardContent className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border bg-red-50 p-3"><div><p className="text-sm text-muted-foreground">Current status</p><p className="font-semibold text-primary">{data?.attendanceSummary?.currentStatus || "Not clocked in"}</p></div><CheckCircle2 className={`w-5 h-5 ${isClockedIn ? "text-success" : "text-muted-foreground"}`} /></div>
+          <AttendanceTimer active={isClockedIn} startedAt={data?.attendanceSummary?.today?.clockInAt} compact />
           {isClockedIn && <div><label className="mb-2 block text-sm font-medium">Daily work summary</label><Textarea className="min-h-[110px]" placeholder="Summarize the work completed today..." value={workLog} onChange={(event) => setWorkLog(event.target.value)} /><p className="mt-2 text-xs text-muted-foreground">This summary is required before clock-out.</p></div>}
         </CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 text-primary" /><p className="text-sm text-muted-foreground">{data?.user?.locationSharingEnabled ? "Your location may be captured only during an active work session." : "Location sharing is off. No coordinates are collected."}</p></div></CardContent></Card>

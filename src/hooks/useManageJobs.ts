@@ -11,7 +11,7 @@ export const useManageJobs = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const { jobs, getJobs, getApplications, updateJob, deleteJob } = useDataContext();
+  const { jobs, getJobs, getApplications, updateJob } = useDataContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,17 +66,6 @@ export const useManageJobs = () => {
     }
   };
 
-  const handleDeleteJob = async (jobId: number) => {
-    if (window.confirm('Are you sure you want to delete this job?')) {
-      try {
-        await deleteJob(jobId);
-        // setJobs(prev => prev.filter(j => j.id !== jobId));
-      } catch (error) {
-        console.error('Error deleting job:', error);
-      }
-    }
-  };
-
   return {
     loading,
     filteredJobs,
@@ -89,7 +78,6 @@ export const useManageJobs = () => {
     isDetailsOpen,
     setIsDetailsOpen,
     handleViewJob,
-    handleToggleStatus,
-    handleDeleteJob
+    handleToggleStatus
   };
 };
