@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import ReviewActionDialog from "@/components/ReviewActionDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import apiService from "@/services/apiService";
-import { MapPin } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyInvite = { first_name: "", last_name: "", email: "", department_id: "", job_title: "", role: "staff" };
@@ -206,7 +206,7 @@ const AdminWorkforce = () => {
   );
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-4">
+    <div className="p-4 md:p-8">
       <div className="mb-6">
         <p className="text-sm uppercase tracking-[0.2em] text-primary/80">HR & Finance Controls</p>
         <h1 className="text-2xl font-bold text-primary">Workforce operations</h1>
@@ -232,7 +232,7 @@ const AdminWorkforce = () => {
                     <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.jobTitle}</p></TableCell>
                     <TableCell><select value={member.departmentId || ""} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
                     <TableCell>{member.roleKey === "super_admin" ? <Badge>Super Admin</Badge> : <select value={member.roleKey} onChange={(event) => updateMember(member.id, { role: event.target.value })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
-                    <TableCell>{member.browserLocation ? <a className="inline-flex items-center gap-1 text-sm text-primary underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${member.browserLocation.latitude},${member.browserLocation.longitude}`} target="_blank" rel="noreferrer"><MapPin className="h-3.5 w-3.5" />{member.location}</a> : <span className="text-sm text-muted-foreground">{member.location}</span>}</TableCell>
+                    <TableCell><span className={`inline-flex items-center gap-1 text-sm ${member.browserLocation ? "text-primary" : "text-muted-foreground"}`} title={member.browserLocation?.formattedAddress || undefined}><MapPin className="h-3.5 w-3.5" />{member.location}</span></TableCell>
                     <TableCell><Badge variant="outline">{member.attendance}</Badge></TableCell>
                     <TableCell><Button size="sm" variant="outline" onClick={() => manageMemberPermissions(member)}>{member.permissions?.length || 0} grants</Button></TableCell>
                     <TableCell><Button size="sm" variant={member.status === "Active" ? "outline" : "default"} disabled={busy || member.roleKey === "super_admin"} onClick={() => updateMember(member.id, { is_active: member.status !== "Active" })}>{member.status}</Button></TableCell>
@@ -297,17 +297,20 @@ const AdminWorkforce = () => {
 
         <TabsContent value="kpis"><div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
           <Card><CardHeader><CardTitle>KPI and appraisal assignments</CardTitle></CardHeader><CardContent className="space-y-4">
-            {kpis.map((item) => <div key={item.id} className="rounded-lg border p-4">
-              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-                <div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{item.title}</p><Badge variant="outline">{item.review}</Badge><Badge variant={item.currentAppraisal ? "default" : "secondary"}>{item.currentPeriod?.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{item.owner}</p>{item.description && <p className="mt-2 text-sm">{item.description}</p>}</div>
-                <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => editKpiTemplate(item)}>Edit</Button><Button size="sm" onClick={() => editKpi(item)}>Appraise</Button><Button size="sm" variant="destructive" onClick={() => mutate(() => apiService.delete("admin/kpis", item.id), "KPI deleted")}>Delete</Button></div>
+            {kpis.map((item) => <details key={item.id} className="group rounded-lg border bg-card">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
+                <div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{item.title}</p><Badge variant="outline">{item.review}</Badge><Badge variant={item.currentAppraisal ? "default" : "secondary"}>{item.currentPeriod?.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{item.owner}</p></div>
+                <ChevronDown className="mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="border-t p-4">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div>{item.description && <p className="text-sm">{item.description}</p>}</div><div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => editKpiTemplate(item)}>Edit</Button><Button size="sm" onClick={() => editKpi(item)}>Appraise</Button><Button size="sm" variant="destructive" onClick={() => mutate(() => apiService.delete("admin/kpis", item.id), "KPI deleted")}>Delete</Button></div></div>
+                <div className="mt-4 space-y-2">{item.criteria.map((criterion: any, index: number) => {
+                  const score = item.currentAppraisal?.criteriaScores?.find((entry: any) => entry.criterionId === criterion.id)?.score;
+                  return <div key={criterion.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/50 px-3 py-2 text-sm"><span>{index + 1}. {criterion.title}</span><span className="shrink-0 font-semibold text-primary">{score === undefined ? "—" : `${score}%`}</span></div>;
+                })}</div>
+                {item.appraisals?.length > 0 && <details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-primary">Score history ({item.appraisals.length})</summary><div className="mt-2 space-y-2">{item.appraisals.map((record: any) => <div key={record.id} className="rounded-md border px-3 py-2 text-sm"><div className="flex justify-between"><span>{record.periodLabel}</span><strong>{record.overallScore}%</strong></div>{record.notes && <p className="mt-1 text-muted-foreground">{record.notes}</p>}</div>)}</div></details>}
               </div>
-              <div className="mt-4 space-y-2">{item.criteria.map((criterion: any, index: number) => {
-                const score = item.currentAppraisal?.criteriaScores?.find((entry: any) => entry.criterionId === criterion.id)?.score;
-                return <div key={criterion.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/50 px-3 py-2 text-sm"><span>{index + 1}. {criterion.title}</span><span className="shrink-0 font-semibold text-primary">{score === undefined ? "—" : `${score}%`}</span></div>;
-              })}</div>
-              {item.appraisals?.length > 0 && <details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-primary">Score history ({item.appraisals.length})</summary><div className="mt-2 space-y-2">{item.appraisals.map((record: any) => <div key={record.id} className="rounded-md border px-3 py-2 text-sm"><div className="flex justify-between"><span>{record.periodLabel}</span><strong>{record.overallScore}%</strong></div>{record.notes && <p className="mt-1 text-muted-foreground">{record.notes}</p>}</div>)}</div></details>}
-            </div>)}
+            </details>)}
             {!kpis.length && <p className="py-8 text-center text-muted-foreground">No reusable KPI assignments yet.</p>}
           </CardContent></Card>
           <Card><CardHeader><CardTitle>{editingKpiId ? "Edit KPI assignment" : "Assign reusable KPI"}</CardTitle></CardHeader><CardContent><form onSubmit={handleKpi} className="space-y-4">

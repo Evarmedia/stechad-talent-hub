@@ -82,9 +82,9 @@ const EngineerReviewDialogMobile: React.FC<EngineerReviewDialogMobileProps> = ({
                     <span className="text-sm font-semibold text-gray-900">Location</span>
                   </div>
                   <p className="text-lg font-semibold text-gray-900">
-                    {selectedEngineer?.user?.city || "City not set"}
+                    {selectedEngineer?.user?.browser_location_city || selectedEngineer?.user?.browser_location_state || selectedEngineer?.user?.city || "City not set"}
                   </p>
-                  <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.country}</p>
+                  <p className="text-sm text-muted-foreground">{selectedEngineer?.user?.browser_location_country || selectedEngineer?.user?.country}</p>
                 </CardContent>
               </Card>
             </div>

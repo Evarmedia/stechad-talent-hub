@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import AttendanceTimer from "@/components/AttendanceTimer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,7 +46,7 @@ const StaffAttendancePage = () => {
   };
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-4 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div><p className="text-xs uppercase tracking-[0.2em] text-primary/80">STECHAD People</p><h1 className="text-2xl font-bold text-primary">Attendance</h1></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><CardContent className="p-5 flex items-center justify-between"><div><p className="text-xs uppercase text-muted-foreground">Current status</p><p className="text-2xl font-bold text-primary mt-2">{summary.currentStatus || "Not clocked in"}</p></div><CheckCircle2 className="w-6 h-6 text-emerald-700" /></CardContent></Card>
@@ -58,7 +58,7 @@ const StaffAttendancePage = () => {
         {summary.today?.isOpen ? <><AttendanceTimer active startedAt={summary.today.clockInAt} /><Textarea className="min-h-[100px]" placeholder="Daily work summary required before clock-out" value={workLog} onChange={(event) => setWorkLog(event.target.value)} /><Button disabled={busy} onClick={() => submitClock(true)}>Clock out and save summary</Button></> : <Button disabled={busy || Boolean(summary.today)} onClick={() => submitClock(false)}>{summary.today ? (summary.today.status === "Absent" ? "Marked absent" : "Workday completed") : "Clock in"}</Button>}
       </CardContent></Card>
 
-      <Card><CardHeader><CardTitle>Attendance history</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Clock in</TableHead><TableHead>Clock out</TableHead><TableHead>Work log</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>{attendance.map((entry) => <TableRow key={entry.id}><TableCell>{entry.date}</TableCell><TableCell>{entry.clockIn || "—"}</TableCell><TableCell>{entry.clockOut || "—"}</TableCell><TableCell className="max-w-sm whitespace-normal">{entry.workLog || (entry.status === "Absent" ? "Clock-out missed" : "In progress")}</TableCell><TableCell><Badge variant={entry.status === "Absent" ? "destructive" : entry.status === "Late" ? "secondary" : "default"}>{entry.status}</Badge></TableCell></TableRow>)}</TableBody></Table>{!attendance.length && <p className="py-8 text-center text-muted-foreground">No attendance records yet.</p>}</CardContent></Card>
+      <Card><CardHeader><CardTitle>Attendance history</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Clock in</TableHead><TableHead>Clock out</TableHead><TableHead>Total time</TableHead><TableHead>Work log</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>{attendance.map((entry) => <TableRow key={entry.id}><TableCell>{entry.date}</TableCell><TableCell>{entry.clockIn || "—"}</TableCell><TableCell>{entry.clockOut || "—"}</TableCell><TableCell className="font-medium">{entry.workedDuration || (entry.isOpen ? "In progress" : "—")}</TableCell><TableCell className="max-w-sm whitespace-normal">{entry.workLog || (entry.status === "Absent" ? "Clock-out missed" : "In progress")}</TableCell><TableCell><Badge variant={entry.status === "Absent" ? "destructive" : entry.status === "Late" ? "secondary" : "default"}>{entry.status}</Badge></TableCell></TableRow>)}</TableBody></Table>{!attendance.length && <p className="py-8 text-center text-muted-foreground">No attendance records yet.</p>}</CardContent></Card>
     </div>
   );
 };

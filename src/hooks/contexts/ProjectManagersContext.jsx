@@ -80,7 +80,7 @@ export const ProjectManagersProvider = ({ children }) => {
           await getPmDashboard();
         }
 
-        if (user.role === "admin") {
+        if (["admin", "super_admin"].includes(user.role)) {
           // Admins fetch pm list ONLY
           await getProjectManagers();
         }
@@ -106,6 +106,7 @@ export const ProjectManagersProvider = ({ children }) => {
     projectManagers,
     loading,
     pmDashboardData,
+    getProjectManagers,
     getPmDashboard,
     resetPMsState,
   };

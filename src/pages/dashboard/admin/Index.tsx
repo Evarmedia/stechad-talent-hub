@@ -1,11 +1,10 @@
 
-import React, { useEffect, useState } from "react";
+import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar } from "lucide-react";
 import AdminStats from "./components/AdminStats";
-import RecentEngineers from "./components/RecentEngineers";
 import LatestJobs from "./components/LatestJobs";
+import RecentEngineers from "./components/RecentEngineers";
 import RecentProjects from "./components/RecentProjects";
-import { useDataContext } from "@/hooks/useDataContext";
 
 const AdminDashboard = () => {
   // const [loading, setLoading] = useState(true);
@@ -21,7 +20,7 @@ const AdminDashboard = () => {
 
   return (
       <>
-      { adminDashboardData && <div className="py-8 max-w-6xl mx-auto px-4">
+      { adminDashboardData && <div className="p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

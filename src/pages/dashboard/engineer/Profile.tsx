@@ -545,6 +545,8 @@ const Profile = () => {
                       />
                     </div>
 
+                    {user?.location_sharing_enabled && user?.browser_location_country && <div className="col-span-2 rounded-lg border bg-slate-50 p-3"><p className="text-sm font-medium text-slate-700">Browser location</p><p className="mt-1 text-sm text-slate-600">{[user.browser_location_city || user.browser_location_state, user.browser_location_country].filter(Boolean).join(", ")}</p></div>}
+
                     {/* City */}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">

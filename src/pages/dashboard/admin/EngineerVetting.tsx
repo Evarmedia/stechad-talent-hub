@@ -195,8 +195,8 @@ const EngineerVetting = () => {
                         </div>
                       </td>
                       <td className="p-3">{engineer?.years_of_experience || "Nil"} years</td>
-                      <td className="p-3">{engineer?.user?.city || "Nil"}</td>
-                      <td className="p-3">{engineer?.user?.country || "Nil"}</td>
+                      <td className="p-3">{engineer?.user?.browser_location_city || engineer?.user?.browser_location_state || engineer?.user?.city || "Nil"}</td>
+                      <td className="p-3">{engineer?.user?.browser_location_country || engineer?.user?.country || "Nil"}</td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
                           {engineer?.specialization && engineer?.specialization.length > 0 ? (

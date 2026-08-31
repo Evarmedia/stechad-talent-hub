@@ -125,7 +125,7 @@ const DataProviderInner = ({ children }) => {
     resetProjectsState: projectsContext.resetProjectsState,
 
     // Project Managers
-    // getProjectManagers: projectManagersContext.getProjectManagers,
+    getProjectManagers: projectManagersContext.getProjectManagers,
     getPmDashboard: projectManagersContext.getPmDashboardData,
     resetPMsState: projectManagersContext.resetPMsState,
 

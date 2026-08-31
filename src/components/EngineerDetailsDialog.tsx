@@ -13,7 +13,7 @@ interface Engineer {
   is_vetted: boolean;
   onboarded_at: string;
   user: {
-    first_name: string; last_name: string; country?: string; email?: string; }
+    first_name: string; last_name: string; city?: string; country?: string; browser_location_city?: string; browser_location_state?: string; browser_location_country?: string; email?: string; }
   cv_url?: string;
 }
 
@@ -86,7 +86,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   <span className="text-sm font-semibold text-gray-900">Location</span>
                 </div>
                 <p className="text-lg font-semibold text-gray-900">
-                  {engineer.user?.country || "Not specified"}
+                  {[engineer.user?.browser_location_city || engineer.user?.browser_location_state || engineer.user?.city, engineer.user?.browser_location_country || engineer.user?.country].filter(Boolean).join(", ") || "Not specified"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Onboarded: {engineer.onboarded_at?.split("T")[0]}

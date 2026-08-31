@@ -47,7 +47,7 @@ const StaffExpensesPage = () => {
   const total = claims.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const approved = claims.filter((item) => ["Approved", "Receipt Verified", "Paid"].includes(item.status)).reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
-  return <div className="py-8 max-w-7xl mx-auto px-4 space-y-6">
+  return <div className="p-4 md:p-8 mx-auto space-y-6">
     <div><p className="text-xs uppercase tracking-[0.2em] text-primary/80">STECHAD People</p><h1 className="text-2xl font-bold text-primary">Expenses</h1></div>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><Card><CardContent className="p-5 flex justify-between"><div><p className="text-xs uppercase text-muted-foreground">Claim total</p><p className="text-2xl font-bold text-primary mt-2">${total.toLocaleString()}</p></div><DollarSign className="w-5 h-5 text-primary" /></CardContent></Card><Card><CardContent className="p-5 flex justify-between"><div><p className="text-xs uppercase text-muted-foreground">Approved</p><p className="text-2xl font-bold text-primary mt-2">${approved.toLocaleString()}</p></div><ReceiptText className="w-5 h-5 text-emerald-700" /></CardContent></Card><Card><CardContent className="p-5 flex justify-between"><div><p className="text-xs uppercase text-muted-foreground">Pending</p><p className="text-2xl font-bold text-primary mt-2">{claims.filter((item) => item.status === "Pending").length}</p></div><ReceiptText className="w-5 h-5 text-amber-700" /></CardContent></Card></div>
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

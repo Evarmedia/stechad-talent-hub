@@ -18,7 +18,7 @@ interface Engineer {
   years_of_experience: number;
   status?: string;
   onboarded_at?: string;
-  user: { first_name: string; last_name: string; country?: string; email?: string; phone_number?: string; };
+  user: { first_name: string; last_name: string; city?: string; country?: string; browser_location_city?: string; browser_location_state?: string; browser_location_country?: string; email?: string; phone_number?: string; };
 }
 
 const Engineers = () => {
@@ -40,7 +40,9 @@ const Engineers = () => {
 
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
-      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || engineer.user?.country.toLowerCase().includes(searchTerm.toLowerCase());
+      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      engineer.user?.browser_location_country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      engineer.user?.country?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "All" ||
@@ -85,7 +87,7 @@ const Engineers = () => {
       skills: engineer.specialization.join(", "),
       languages: engineer.languages.join(", "),
       language_Proficiency: engineer.language_proficiency,
-      country: engineer.user.country,
+      country: engineer.user.browser_location_country || engineer.user.country,
       experience: engineer.years_of_experience,
       status: engineer.status,
       open_To_Nearby_Cities: engineer.open_to_nearby_cities ? 'Yes' : 'No',
@@ -180,7 +182,7 @@ const Engineers = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</h3>
+                        <h3 className="font-medium">{engineer?.user?.first_name} {engineer?.user?.last_name}</h3>
                         {engineer.is_vetted ? (
                           <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                             Vetted
@@ -189,7 +191,7 @@ const Engineers = () => {
                           Not Vetted
                         </Badge>)}
                       </div>
-                      <p className="text-sm text-muted-foreground">{engineer.user.email}</p>
+                      <p className="text-sm text-muted-foreground">{engineer?.user?.email}</p>
                     </div>
                   </div>
 
@@ -197,6 +199,11 @@ const Engineers = () => {
                     <div>
                       <span className="text-sm font-medium">Skills: </span>
                       <div className="flex flex-wrap gap-1 mt-1">
+                        {engineer.specialization.length === 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            N/A
+                          </Badge>
+                        )}
                         {engineer.specialization.map(skill => (
                           <Badge key={skill} variant="outline" className="text-xs">
                             {skill}
@@ -206,11 +213,11 @@ const Engineers = () => {
                     </div>
                     <div className="text-sm">
                       <span className="text-muted-foreground">Experience: </span>
-                      <span className="font-medium">{engineer.years_of_experience}</span>
+                      <span className="font-medium">{engineer?.years_of_experience || "N/A"}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-muted-foreground">Country: </span>
-                      <span className="font-medium">{engineer.user.country || "Remote"}</span>
+                      <span className="font-medium">{engineer.user.country || engineer.user.browser_location_country || "Remote"}</span>
                     </div>
                   </div>
 
@@ -264,7 +271,7 @@ const Engineers = () => {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{engineer.user.first_name} {engineer.user.last_name}</span>
+                              <span className="font-medium">{engineer?.user?.first_name} {engineer?.user?.last_name}</span>
                               {engineer.is_vetted ? (
                                 <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                                   Vetted
@@ -273,12 +280,17 @@ const Engineers = () => {
                                 Not Vetted
                               </Badge>)}
                             </div>
-                            <span className="text-sm text-muted-foreground">{engineer.email}</span>
+                            <span className="text-sm text-muted-foreground">{engineer?.user?.email}</span>
                           </div>
                         </div>
                       </td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
+                          {engineer.specialization.length === 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              N/A
+                            </Badge>
+                          )}
                           {engineer.specialization.slice(0, 2).map(skill => (
                             <Badge key={skill} variant="outline" className="text-xs">
                               {skill}
@@ -291,15 +303,15 @@ const Engineers = () => {
                           )}
                         </div>
                       </td>
-                      <td className="p-3 text-sm">{engineer?.years_of_experience}</td>
-                      <td className="p-3 text-sm">{engineer?.user?.city || "Remote"}</td>
-                      <td className="p-3 text-sm">{engineer?.user?.country || "Remote"}</td>
+                      <td className="p-3 text-sm">{engineer?.years_of_experience || "N/A"}</td>
+                      <td className="p-3 text-sm">{engineer?.user?.browser_location_city || engineer?.user?.browser_location_state || engineer?.user?.city || "Remote"}</td>
+                      <td className="p-3 text-sm">{engineer?.user?.country || engineer?.user?.browser_location_country || "Remote"}</td>
                       <td className="p-3">
                         <Badge className={getStatusColor(engineer.status)}>
                           {engineer.status}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at?.split("T")[0]}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at?.split("T")[0] || 'N/A'}</td>
                       <td className="p-3">
                         <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
                           <Eye className="w-4 h-4 mr-1" />

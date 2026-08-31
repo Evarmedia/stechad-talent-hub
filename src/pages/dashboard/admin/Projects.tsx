@@ -19,8 +19,10 @@ const AdminProjects = () => {
   const [form, setForm] = useState(defaultValues);
 
   useEffect(() => {
-    getProjectManagers();
-    getProjects();
+    void Promise.all([getProjectManagers(), getProjects()]).catch((error) => {
+      const message = error instanceof Error ? error.message : "Could not load project data.";
+      toast({ title: "Project data unavailable", description: message, variant: "destructive" });
+    });
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

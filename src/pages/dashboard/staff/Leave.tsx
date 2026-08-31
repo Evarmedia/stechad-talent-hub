@@ -39,7 +39,7 @@ const StaffLeavePage = () => {
     }
   };
 
-  return <div className="py-8 max-w-7xl mx-auto px-4 space-y-6">
+  return <div className="p-4 md:p-8 space-y-6">
     <div><p className="text-xs uppercase tracking-[0.2em] text-primary/80">STECHAD People</p><h1 className="text-2xl font-bold text-primary">Leave</h1></div>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card><CardContent className="p-5 flex justify-between"><div><p className="text-xs uppercase text-muted-foreground">Remaining</p><p className="text-2xl font-bold text-primary mt-2">{balance.remaining} days</p></div><CalendarDays className="w-5 h-5 text-primary" /></CardContent></Card>

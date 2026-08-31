@@ -154,7 +154,7 @@ export const ProjectsProvider = ({ children }) => {
     const init = async () => {
       setLoading(true);
       try {
-        if (user.role === "admin" || user.role === "project_manager") {
+        if (["admin", "super_admin", "project_manager"].includes(user.role)) {
           // adjust this if Pm need to see all projects(check backend access too)
           getProjects();
           setInitialized(true);

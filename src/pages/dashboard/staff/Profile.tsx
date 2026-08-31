@@ -10,6 +10,7 @@ import { MapPin, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyForm = { first_name: "", last_name: "", phone_number: "", country: "", city: "", current_assignment: "", work_region: "", date_of_birth: "" };
+const locationLabel = (profile: any) => [...new Set([profile?.browser_location_city, profile?.browser_location_state, profile?.browser_location_country].filter(Boolean))].join(", ");
 
 const StaffProfile = () => {
   const { toast } = useToast();
@@ -35,7 +36,11 @@ const StaffProfile = () => {
       toast({ title: "Could not load profile", description: error.message, variant: "destructive" });
     }
   };
-  useEffect(() => { loadProfile(); }, []);
+  useEffect(() => {
+    loadProfile();
+    window.addEventListener("stechad:location-updated", loadProfile);
+    return () => window.removeEventListener("stechad:location-updated", loadProfile);
+  }, []);
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -53,10 +58,12 @@ const StaffProfile = () => {
         location_sharing_enabled: canEnable,
         location_permission_status: result.status,
         ...(response?.data?.browserLocation ? {
-          browser_latitude: response.data.browserLocation.latitude,
-          browser_longitude: response.data.browserLocation.longitude,
-          browser_location_accuracy: response.data.browserLocation.accuracy,
           browser_location_updated_at: response.data.browserLocation.updatedAt,
+          browser_location_address: response.data.browserLocation.formattedAddress,
+          browser_location_city: response.data.browserLocation.city,
+          browser_location_state: response.data.browserLocation.state,
+          browser_location_country: response.data.browserLocation.country,
+          browser_location_country_code: response.data.browserLocation.countryCode,
         } : {}),
       }));
       if (enabled && !canEnable) toast({ title: "Location permission not granted", description: "Allow location access in your browser settings to enable this feature." });
@@ -65,7 +72,7 @@ const StaffProfile = () => {
   };
 
   return (
-    <form onSubmit={save} className="py-8 max-w-6xl mx-auto px-4 space-y-6">
+    <form onSubmit={save} className="p-4 md:p-8 mx-auto space-y-6">
       <div><p className="text-sm uppercase tracking-[0.2em] text-primary/80">Profile</p><h1 className="text-2xl font-bold text-primary">Staff profile</h1></div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2"><CardHeader><CardTitle className="flex items-center gap-2"><UserRound className="w-5 h-5" />Personal details</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -82,7 +89,7 @@ const StaffProfile = () => {
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Employee ID</p><p className="font-medium">{profile?.employee_id || "Pending assignment"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Department</p><p className="font-medium">{profile?.department?.name || "Unassigned"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Reports to</p><p className="font-medium">{profile?.reporting_manager ? `${profile.reporting_manager.first_name || ""} ${profile.reporting_manager.last_name || ""}`.trim() || profile.reporting_manager.email : "Unassigned"}</p></div>
-          <div className="rounded-lg border p-3"><div className="flex justify-between"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>{profile?.location_sharing_enabled && profile?.browser_latitude !== null && profile?.browser_latitude !== undefined && profile?.browser_longitude !== null && profile?.browser_longitude !== undefined && <a className="mt-2 block text-sm text-muted-foreground underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${profile.browser_latitude},${profile.browser_longitude}`} target="_blank" rel="noreferrer">{Number(profile.browser_latitude).toFixed(6)}, {Number(profile.browser_longitude).toFixed(6)}</a>}</div>
+          <div className="rounded-lg border p-3"><div className="flex justify-between"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>{profile?.location_sharing_enabled && <div className="mt-2 text-sm"><p className="font-medium">{locationLabel(profile) || "Resolving current address"}</p>{profile?.browser_location_address && <p className="mt-1 text-xs text-muted-foreground">{profile.browser_location_address}</p>}</div>}</div>
         </CardContent></Card>
       </div>
       <Card><CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Assignment & work context</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input placeholder="Current assignment" value={form.current_assignment} onChange={(e) => setForm((p) => ({ ...p, current_assignment: e.target.value }))} /><Input placeholder="Work region" value={form.work_region} onChange={(e) => setForm((p) => ({ ...p, work_region: e.target.value }))} /></CardContent></Card>

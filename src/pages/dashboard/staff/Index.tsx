@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import AttendanceTimer from "@/components/AttendanceTimer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -30,7 +30,11 @@ const StaffDashboard = () => {
   useEffect(() => {
     loadDashboard();
     const interval = window.setInterval(loadDashboard, 60_000);
-    return () => window.clearInterval(interval);
+    window.addEventListener("stechad:location-updated", loadDashboard);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("stechad:location-updated", loadDashboard);
+    };
   }, []);
 
   const getLocation = () => new Promise<Record<string, number>>((resolve) => {
@@ -108,7 +112,7 @@ const StaffDashboard = () => {
   ];
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-4 space-y-8">
+    <div className="p-4 md:p-8 space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div><p className="text-sm uppercase tracking-[0.2em] text-primary/80">STECHAD People</p><h1 className="text-2xl font-bold text-primary">Welcome, {data?.user?.name || "Staff member"}</h1></div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="w-4 h-4" />Today: {data?.user?.today || new Date().toLocaleDateString()}</div>
@@ -122,7 +126,7 @@ const StaffDashboard = () => {
           <AttendanceTimer active={isClockedIn} startedAt={data?.attendanceSummary?.today?.clockInAt} compact />
           {isClockedIn && <div><label className="mb-2 block text-sm font-medium">Daily work summary</label><Textarea className="min-h-[110px]" placeholder="Summarize the work completed today..." value={workLog} onChange={(event) => setWorkLog(event.target.value)} /><p className="mt-2 text-xs text-muted-foreground">This summary is required before clock-out.</p></div>}
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 shrink-0 text-primary" /><div className="text-sm">{data?.user?.locationSharingEnabled && browserLocation ? <><p className="font-medium text-foreground">Location consent</p><a className="text-muted-foreground underline-offset-2 hover:underline" href={`https://www.google.com/maps?q=${browserLocation.latitude},${browserLocation.longitude}`} target="_blank" rel="noreferrer">{Number(browserLocation.latitude).toFixed(6)}, {Number(browserLocation.longitude).toFixed(6)}</a>{browserLocation.accuracy !== null && browserLocation.accuracy !== undefined && <p className="mt-1 text-xs text-muted-foreground">Accuracy: approximately {Math.round(Number(browserLocation.accuracy))} m</p>}</> : <p className="text-muted-foreground">{data?.user?.locationPermissionStatus === "granted" ? "Location consent accepted. Waiting for a browser location fix." : data?.user?.locationPermissionStatus === "denied" ? "Browser permission was denied. You can change it in browser settings; the system will not prompt again." : "Location sharing is off. No coordinates are collected."}</p>}</div></div></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex items-center justify-between"><span>Location consent</span><Switch checked={Boolean(data?.user?.locationSharingEnabled)} onCheckedChange={setLocationSharing} /></CardTitle></CardHeader><CardContent><div className="flex items-start gap-3 rounded-lg border bg-slate-50 p-3"><MapPin className="w-5 h-5 shrink-0 text-primary" /><div className="text-sm">{data?.user?.locationSharingEnabled && browserLocation ? <><p className="font-medium text-foreground">{browserLocation.label || "Location consent"}</p>{browserLocation.formattedAddress && <p className="mt-1 text-xs text-muted-foreground">{browserLocation.formattedAddress}</p>}</> : <p className="text-muted-foreground">{data?.user?.locationPermissionStatus === "granted" ? "Location consent accepted. Resolving the current address." : data?.user?.locationPermissionStatus === "denied" ? "Browser permission was denied. You can change it in browser settings; the system will not prompt again." : "Location sharing is off. No coordinates are collected."}</p>}</div></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
