@@ -36,7 +36,7 @@ const EngineerDashboard = () => {
     engrDashboardData?.activeProjects ?? [];
 
   return (
-    <div className="py-8 max-w-6xl mx-auto px-4">
+    <div className="p-4 md:p-8 mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold text-primary">

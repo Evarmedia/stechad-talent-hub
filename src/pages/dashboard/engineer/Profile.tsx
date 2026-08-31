@@ -388,8 +388,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="p-4 md:p-8 mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">My Profile</h1>
