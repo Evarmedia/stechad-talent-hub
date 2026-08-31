@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AttendanceTimer from "@/components/AttendanceTimer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

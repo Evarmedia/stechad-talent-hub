@@ -69,10 +69,10 @@ const AdminWorkforce = () => {
   const mutate = async (work: () => Promise<any>, success: string) => {
     setBusy(true);
     try {
-      await work();
-      toast({ title: success });
+      const result = await work();
+      if (success) toast({ title: success });
       await loadWorkforce();
-      return true;
+      return result || true;
     } catch (error: any) {
       toast({ title: "Action failed", description: error.message, variant: "destructive" });
       return false;
@@ -83,8 +83,11 @@ const AdminWorkforce = () => {
 
   const handleInvite = async (event: React.FormEvent) => {
     event.preventDefault();
-    await mutate(() => apiService.post("admin/workforce/invite", { ...invite, department_id: invite.department_id || null }), "Invitation sent");
-    setInvite(emptyInvite);
+    const result = await mutate(() => apiService.post("admin/workforce/invite", { ...invite, department_id: invite.department_id || null }), "");
+    if (result) {
+      toast({ title: "Invitation sent", description: result?.data?.employee_id ? `Employee ID ${result.data.employee_id} has been reserved.` : undefined });
+      setInvite(emptyInvite);
+    }
   };
 
   const updateMember = (memberId: string, updates: Record<string, unknown>) => mutate(
@@ -229,7 +232,7 @@ const AdminWorkforce = () => {
               <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                 <TableBody>{staff.map((member) => (
                   <TableRow key={member.id}>
-                    <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.jobTitle}</p></TableCell>
+                    <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.employeeId ? `${member.employeeId} · ` : ""}{member.jobTitle}</p></TableCell>
                     <TableCell><select value={member.departmentId || ""} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
                     <TableCell>{member.roleKey === "super_admin" ? <Badge>Super Admin</Badge> : <select value={member.roleKey} onChange={(event) => updateMember(member.id, { role: event.target.value })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
                     <TableCell><span className={`inline-flex items-center gap-1 text-sm ${member.browserLocation ? "text-primary" : "text-muted-foreground"}`} title={member.browserLocation?.formattedAddress || undefined}><MapPin className="h-3.5 w-3.5" />{member.location}</span></TableCell>

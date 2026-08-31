@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,22 +7,28 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/apiService";
 import { requestBrowserLocationPermission } from "@/utils/locationPermission";
-import { MapPin, ShieldCheck, UserRound } from "lucide-react";
+import { Camera, MapPin, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyForm = { first_name: "", last_name: "", phone_number: "", country: "", city: "", current_assignment: "", work_region: "", date_of_birth: "" };
-const locationLabel = (profile: any) => [...new Set([profile?.browser_location_city, profile?.browser_location_state, profile?.browser_location_country].filter(Boolean))].join(", ");
+const locationLabel = (profile: any) => [...new Set([profile?.browser_location_country].filter(Boolean))].join(", ");
 
+
+// [profile?.browser_location_city, profile?.browser_location_state, profile?.browser_location_country]
 const StaffProfile = () => {
   const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [form, setForm] = useState(emptyForm);
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const loadProfile = async () => {
     try {
       const response = await apiService.get("staff/profile");
       const user = response?.data || response;
       setProfile(user);
+      setAvatarPreview(user.avatar_url || "");
       setForm({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
@@ -44,8 +51,33 @@ const StaffProfile = () => {
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
-    try { await apiService.putNoId("staff/profile", form); toast({ title: "Profile updated" }); await loadProfile(); }
+    setSaving(true);
+    try {
+      const payload = new FormData();
+      Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+      if (avatar) payload.append("avatar", avatar);
+      await apiService.putNoId("staff/profile", payload, true);
+      setAvatar(null);
+      toast({ title: "Profile updated" });
+      await loadProfile();
+    }
     catch (error: any) { toast({ title: "Could not update profile", description: error.message, variant: "destructive" }); }
+    finally { setSaving(false); }
+  };
+
+  const selectAvatar = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid image", description: "Choose an image file for your profile photo.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Profile images must be 2MB or smaller.", variant: "destructive" });
+      return;
+    }
+    setAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
   const toggleLocation = async (enabled: boolean) => {
@@ -76,6 +108,20 @@ const StaffProfile = () => {
       <div><p className="text-sm uppercase tracking-[0.2em] text-primary/80">Profile</p><h1 className="text-2xl font-bold text-primary">Staff profile</h1></div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2"><CardHeader><CardTitle className="flex items-center gap-2"><UserRound className="w-5 h-5" />Personal details</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2 flex flex-col items-center gap-3 rounded-lg border bg-muted/20 p-5 sm:flex-row">
+            <Avatar className="h-24 w-24 border-2 border-background shadow">
+              <AvatarImage src={avatarPreview} alt={`${form.first_name} ${form.last_name}`.trim() || "Staff profile"} />
+              <AvatarFallback className="text-xl">{`${form.first_name?.[0] || "S"}${form.last_name?.[0] || ""}`.toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="text-center sm:text-left">
+              <label htmlFor="staff-avatar" className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent">
+                <Camera className="h-4 w-4" />Choose profile image
+              </label>
+              <Input id="staff-avatar" type="file" accept="image/*" className="hidden" onChange={selectAvatar} />
+              <p className="mt-2 text-xs text-muted-foreground">JPG, PNG, WebP or another image format, up to 2MB.</p>
+              {avatar && <p className="mt-1 text-xs font-medium text-primary">Selected: {avatar.name}</p>}
+            </div>
+          </div>
           <Input required placeholder="First name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} />
           <Input required placeholder="Last name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} />
           <Input placeholder="Phone" value={form.phone_number} onChange={(e) => setForm((p) => ({ ...p, phone_number: e.target.value }))} />
@@ -89,11 +135,15 @@ const StaffProfile = () => {
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Employee ID</p><p className="font-medium">{profile?.employee_id || "Pending assignment"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Department</p><p className="font-medium">{profile?.department?.name || "Unassigned"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Reports to</p><p className="font-medium">{profile?.reporting_manager ? `${profile.reporting_manager.first_name || ""} ${profile.reporting_manager.last_name || ""}`.trim() || profile.reporting_manager.email : "Unassigned"}</p></div>
-          <div className="rounded-lg border p-3"><div className="flex justify-between"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>{profile?.location_sharing_enabled && <div className="mt-2 text-sm"><p className="font-medium">{locationLabel(profile) || "Resolving current address"}</p>{profile?.browser_location_address && <p className="mt-1 text-xs text-muted-foreground">{profile.browser_location_address}</p>}</div>}</div>
+          <div className="rounded-lg border p-3"><div className="flex justify-between"><span>Location consent</span><Switch checked={Boolean(profile?.location_sharing_enabled)} onCheckedChange={toggleLocation} /></div>
+          {profile?.location_sharing_enabled && <div className="mt-2 text-sm"><p className="font-medium">{locationLabel(profile) || "Resolving current address"}</p>
+          
+          {/* {profile?.browser_location_address && <p className="mt-1 text-xs text-muted-foreground">{profile.browser_location_address}</p>} */}
+          </div>}</div>
         </CardContent></Card>
       </div>
       <Card><CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Assignment & work context</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4"><Input placeholder="Current assignment" value={form.current_assignment} onChange={(e) => setForm((p) => ({ ...p, current_assignment: e.target.value }))} /><Input placeholder="Work region" value={form.work_region} onChange={(e) => setForm((p) => ({ ...p, work_region: e.target.value }))} /></CardContent></Card>
-      <div className="flex justify-end"><Button>Save profile changes</Button></div>
+      <div className="flex justify-end"><Button disabled={saving}>{saving ? "Saving..." : "Save profile changes"}</Button></div>
     </form>
   );
 };

@@ -12,11 +12,15 @@ const defaultValues = {
   status: "planning",
   priority: "medium",
   project_manager_id: "",
+  progress: "0",
+  start_date: "",
+  deadline: "",
 };
 
 const AdminProjects = () => {
-  const { createProject, getProjects, getProjectManagers, projects, projectManagers, loading } = useDataContext();
+  const { createProject, updateProject, getProjects, getProjectManagers, projects, projectManagers, loading } = useDataContext();
   const [form, setForm] = useState(defaultValues);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     void Promise.all([getProjectManagers(), getProjects()]).catch((error) => {
@@ -30,7 +34,7 @@ const AdminProjects = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCreateProject = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleProjectSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!form.title.trim()) {
@@ -39,21 +43,46 @@ const AdminProjects = () => {
     }
 
     try {
-      await createProject({
+      const payload = {
         title: form.title,
         description: form.description,
         status: form.status,
         priority: form.priority,
-        project_manager_id: form.project_manager_id || undefined,
-      });
+        progress: Number(form.progress),
+        project_manager_id: form.project_manager_id || null,
+        start_date: form.start_date || null,
+        deadline: form.deadline || null,
+      };
 
-      toast({ title: "Project created", description: "The project has been created successfully." });
+      if (editingProjectId) await updateProject(editingProjectId, payload);
+      else await createProject(payload);
+
+      toast({
+        title: editingProjectId ? "Project updated" : "Project created",
+        description: editingProjectId ? "The project changes have been saved." : "The project has been created successfully.",
+      });
       setForm(defaultValues);
+      setEditingProjectId(null);
       await getProjects();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to create project.";
+      const message = error instanceof Error ? error.message : `Failed to ${editingProjectId ? "update" : "create"} project.`;
       toast({ title: "Error", description: message, variant: "destructive" });
     }
+  };
+
+  const editProject = (project: any) => {
+    setEditingProjectId(project.projects_id || project.id);
+    setForm({
+      title: project.title || "",
+      description: project.description || "",
+      status: project.status || "planning",
+      priority: project.priority || "medium",
+      project_manager_id: project.project_managers_id || project.project_manager?.project_managers_id || "",
+      progress: String(project.progress ?? 0),
+      start_date: project.start_date ? String(project.start_date).slice(0, 10) : "",
+      deadline: project.deadline ? String(project.deadline).slice(0, 10) : "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -68,10 +97,10 @@ const AdminProjects = () => {
       <div className="grid grid-cols-1 xl:grid-cols-[0.8fr_1.2fr] gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Create project</CardTitle>
+            <CardTitle>{editingProjectId ? "Edit project" : "Create project"}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4" onSubmit={handleCreateProject}>
+            <form className="space-y-4" onSubmit={handleProjectSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Project title</label>
                 <Input name="title" value={form.title} onChange={handleChange} placeholder="Customer onboarding portal" />
@@ -117,7 +146,25 @@ const AdminProjects = () => {
                 </select>
               </div>
 
-              <Button type="submit" className="w-full text-white" disabled={loading}>Create project</Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Progress (%)</label>
+                  <Input name="progress" type="number" min="0" max="100" value={form.progress} onChange={handleChange} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Start date</label>
+                  <Input name="start_date" type="date" value={form.start_date} onChange={handleChange} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Deadline</label>
+                  <Input name="deadline" type="date" value={form.deadline} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1 text-white" disabled={loading}>{editingProjectId ? "Save project changes" : "Create project"}</Button>
+                {editingProjectId && <Button type="button" variant="outline" onClick={() => { setEditingProjectId(null); setForm(defaultValues); }}>Cancel</Button>}
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -137,7 +184,10 @@ const AdminProjects = () => {
                       <p className="font-semibold text-primary">{project.title}</p>
                       <p className="text-xs text-muted-foreground">{project.project_manager?.user?.first_name || "Unassigned"} {project.project_manager?.user?.last_name || "manager"}</p>
                     </div>
-                    <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">{project.status}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">{project.status}</span>
+                      <Button type="button" size="sm" variant="outline" onClick={() => editProject(project)}>Edit</Button>
+                    </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span>{project.priority}</span>
