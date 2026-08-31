@@ -34,7 +34,7 @@ const StaffExpensesPage = () => {
     payload.append("receipt", receipt);
     try {
       await apiService.post("staff/expenses", payload, true);
-      toast({ title: "Expense submitted", description: "The admin approval queue has been updated." });
+      toast({ title: "Expense submitted", description: "Expense claim submitted successfully." });
       setForm({ category: "Travel", amount: "", currency: "USD", description: "", expense_date: new Date().toISOString().slice(0, 10) });
       setReceipt(null);
       if (receiptInput.current) receiptInput.current.value = "";

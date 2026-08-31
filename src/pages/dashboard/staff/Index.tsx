@@ -447,7 +447,7 @@ const StaffDashboard = () => {
                 <div className='mb-3 flex flex-wrap justify-between gap-2'>
                   <p className='font-medium'>{item.title}</p>
                   <Badge
-                    variant={item.currentAppraisal ? "default" : "secondary"}
+                    variant={item.currentAppraisal ? "white" : "secondary"}
                   >
                     {item.currentPeriod.label}:{" "}
                     {item.currentAppraisal

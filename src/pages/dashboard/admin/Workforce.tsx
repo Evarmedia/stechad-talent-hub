@@ -302,7 +302,7 @@ const AdminWorkforce = () => {
           <Card><CardHeader><CardTitle>KPI and appraisal assignments</CardTitle></CardHeader><CardContent className="space-y-4">
             {kpis.map((item) => <details key={item.id} className="group rounded-lg border bg-card">
               <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
-                <div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{item.title}</p><Badge variant="outline">{item.review}</Badge><Badge variant={item.currentAppraisal ? "default" : "secondary"}>{item.currentPeriod?.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{item.owner}</p></div>
+                <div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{item.title}</p><Badge variant="outline">{item.review}</Badge><Badge variant={item.currentAppraisal ? "white" : "secondary"}>{item.currentPeriod?.label}: {item.currentAppraisal ? `${item.currentAppraisal.overallScore}%` : "Not scored"}</Badge></div><p className="mt-1 text-sm text-muted-foreground">{item.owner}</p></div>
                 <ChevronDown className="mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
               <div className="border-t p-4">
