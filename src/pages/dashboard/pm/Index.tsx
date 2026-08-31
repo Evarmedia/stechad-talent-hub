@@ -7,8 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Briefcase, Calendar, Clock, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ProjectManagerAttendanceWidget from "./AttendanceWidget";
 
 const PMDashboard = () => {
 
@@ -98,6 +98,8 @@ const PMDashboard = () => {
             </Card>
           ))}
       </div>
+
+      <ProjectManagerAttendanceWidget />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Your Jobs */}

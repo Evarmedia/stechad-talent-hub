@@ -1,9 +1,20 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
+import { Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const defaultValues = {
@@ -17,16 +28,40 @@ const defaultValues = {
   deadline: "",
 };
 
+type AdminProject = {
+  projects_id?: string;
+  id?: string;
+  title: string;
+  description?: string | null;
+  status?: string;
+  priority?: string;
+  progress?: number;
+  project_managers_id?: string | null;
+  project_manager?: {
+    project_managers_id?: string;
+    user?: {
+      first_name?: string;
+      last_name?: string;
+    };
+  } | null;
+  start_date?: string | null;
+  deadline?: string | null;
+};
+
 const AdminProjects = () => {
-  const { createProject, updateProject, getProjects, getProjectManagers, projects, projectManagers, loading } = useDataContext();
+  const { createProject, updateProject, deleteProject, getProjects, getProjectManagers, projects, projectManagers, loading } = useDataContext();
   const [form, setForm] = useState(defaultValues);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<AdminProject | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     void Promise.all([getProjectManagers(), getProjects()]).catch((error) => {
       const message = error instanceof Error ? error.message : "Could not load project data.";
       toast({ title: "Project data unavailable", description: message, variant: "destructive" });
     });
+  // The context actions are intentionally run once when this page mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -70,7 +105,7 @@ const AdminProjects = () => {
     }
   };
 
-  const editProject = (project: any) => {
+  const editProject = (project: AdminProject) => {
     setEditingProjectId(project.projects_id || project.id);
     setForm({
       title: project.title || "",
@@ -83,6 +118,26 @@ const AdminProjects = () => {
       deadline: project.deadline ? String(project.deadline).slice(0, 10) : "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const confirmProjectDelete = async () => {
+    if (!projectToDelete) return;
+    const projectId = projectToDelete.projects_id || projectToDelete.id;
+    setDeletingProjectId(projectId);
+
+    try {
+      await deleteProject(projectId);
+      if (editingProjectId === projectId) {
+        setEditingProjectId(null);
+        setForm(defaultValues);
+      }
+      toast({ title: "Project deleted", description: `${projectToDelete.title} has been deleted.` });
+      setProjectToDelete(null);
+    } catch {
+      return;
+    } finally {
+      setDeletingProjectId(null);
+    }
   };
 
   return (
@@ -187,6 +242,16 @@ const AdminProjects = () => {
                     <div className="flex items-center gap-2">
                       <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">{project.status}</span>
                       <Button type="button" size="sm" variant="outline" onClick={() => editProject(project)}>Edit</Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setProjectToDelete(project)}
+                        disabled={deletingProjectId === (project.projects_id || project.id)}
+                      >
+                        {deletingProjectId === (project.projects_id || project.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        <span className="sr-only">Delete {project.title}</span>
+                      </Button>
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -199,6 +264,31 @@ const AdminProjects = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={Boolean(projectToDelete)} onOpenChange={(open) => { if (!open && !deletingProjectId) setProjectToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes {projectToDelete?.title || "this project"} and its associated project data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(deletingProjectId)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              disabled={Boolean(deletingProjectId)}
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmProjectDelete();
+              }}
+            >
+              {deletingProjectId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {deletingProjectId ? "Deleting..." : "Delete project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

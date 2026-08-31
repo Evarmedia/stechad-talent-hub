@@ -1,9 +1,17 @@
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, Pickaxe, ReceiptText, Settings, TrendingUp, User, Users } from "lucide-react";
+import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, Pickaxe, ReceiptText, Settings, ShieldCheck, TrendingUp, User, Users, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthContext } from "@/hooks/useAuthContext";
-const engineerMenu = [
+type MenuItem = {
+  icon: LucideIcon;
+  label: string;
+  to: string;
+  permission?: "approvals";
+  superAdminOnly?: boolean;
+};
+
+const engineerMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/engineer" },
   { icon: Briefcase, label: "Jobs", to: "/dashboard/engineer/jobs" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
@@ -13,19 +21,18 @@ const engineerMenu = [
   { icon: User, label: "Profile", to: "/dashboard/engineer/profile" },
 ];
 
-const staffMenu = [
+const staffMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/staff" },
   { icon: Clock3, label: "Attendance", to: "/dashboard/staff/attendance" },
   { icon: CalendarDays, label: "Leave", to: "/dashboard/staff/leave" },
   { icon: ReceiptText, label: "Expenses", to: "/dashboard/staff/expenses" },
   { icon: ClipboardList, label: "Approvals", to: "/dashboard/staff/approvals", permission: "approvals" },
-  { icon: DollarSign, label: "Invoices", to: "/dashboard/staff/invoices" },
   { icon: TrendingUp, label: "KPIs", to: "/dashboard/staff/kpis" },
   { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/staff/holidays" },
   { icon: User, label: "Profile", to: "/dashboard/staff/profile" },
 ];
 
-const pmMenu = [
+const pmMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
@@ -42,11 +49,12 @@ const pmMenu = [
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
 ];
 
-const adminMenu = [
+const adminMenu: MenuItem[] = [
   { icon: Home, label: "Overview", to: "/admin" },
   { icon: Pickaxe, label: "Engineers", to: "/admin/engineers" },
   { icon: User, label: "Project Managers", to: "/admin/project-managers" },
   { icon: FolderKanban, label: "Projects", to: "/admin/projects" },
+  { icon: ShieldCheck, label: "Roles", to: "/admin/roles", superAdminOnly: true },
   { icon: ClipboardList, label: "Workforce", to: "/admin/workforce" },
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
@@ -54,7 +62,7 @@ const adminMenu = [
   { icon: Settings, label: "Settings", to: "/admin/settings" },
 ];
 
-function getRoleMenu(pathname: string) {
+function getRoleMenu(pathname: string): MenuItem[] {
   if (pathname.startsWith("/dashboard/engineer")) return engineerMenu;
   if (pathname.startsWith("/dashboard/staff")) return staffMenu;
   if (pathname.startsWith("/dashboard/pm")) return pmMenu;
@@ -67,7 +75,10 @@ export function AppSidebar() {
   const { user } = useAuthContext();
   const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
   const canApprove = user?.effective_permissions?.includes("*") || approvalPermissions.some((permission) => user?.effective_permissions?.includes(permission));
-  const menu = getRoleMenu(pathname).filter((item: any) => item.permission !== "approvals" || canApprove);
+  const menu = getRoleMenu(pathname).filter((item) =>
+    (item.permission !== "approvals" || canApprove) &&
+    (!item.superAdminOnly || user?.role === "super_admin"),
+  );
   const activeMenuPath = menu
     .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
     .sort((first, second) => second.to.length - first.to.length)[0]?.to;

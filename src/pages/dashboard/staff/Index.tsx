@@ -354,7 +354,7 @@ const StaffDashboard = () => {
                       <Badge
                         variant={
                           item.status === "Approved"
-                            ? "default"
+                            ? "white"
                             : item.status === "Rejected"
                               ? "destructive"
                               : "secondary"

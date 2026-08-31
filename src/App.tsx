@@ -30,6 +30,7 @@ import AdminMessages from "./pages/dashboard/admin/Messages";
 import AdminProfile from "./pages/dashboard/admin/Profile";
 import AdminProjectManagers from "./pages/dashboard/admin/ProjectManagers";
 import AdminProjects from "./pages/dashboard/admin/Projects";
+import AdminRoles from "./pages/dashboard/admin/Roles";
 import AdminSettings from "./pages/dashboard/admin/Settings";
 import AdminWorkforce from "./pages/dashboard/admin/Workforce";
 import EngineerApplications from "./pages/dashboard/engineer/Applications";
@@ -55,7 +56,6 @@ import StaffApprovals from "./pages/dashboard/staff/Approvals";
 import StaffExpenses from "./pages/dashboard/staff/Expenses";
 import StaffHolidays from "./pages/dashboard/staff/Holidays";
 import StaffDashboard from "./pages/dashboard/staff/Index";
-import StaffInvoices from "./pages/dashboard/staff/Invoices";
 import StaffKpis from "./pages/dashboard/staff/KPIs";
 import StaffLeave from "./pages/dashboard/staff/Leave";
 import StaffProfile from "./pages/dashboard/staff/Profile";
@@ -157,11 +157,6 @@ const App = () => (
                     <Route path="/dashboard/staff/expenses" element={
                       <ProtectedRoute requiredRole="staff">
                         <StaffExpenses />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/staff/invoices" element={
-                      <ProtectedRoute requiredRole="staff">
-                        <StaffInvoices />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/kpis" element={
@@ -274,6 +269,11 @@ const App = () => (
                     <Route path="/admin/projects" element={
                       <ProtectedRoute requiredRole={["admin", "super_admin"]}>
                         <AdminProjects />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/roles" element={
+                      <ProtectedRoute requiredRole="super_admin">
+                        <AdminRoles />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/workforce" element={
