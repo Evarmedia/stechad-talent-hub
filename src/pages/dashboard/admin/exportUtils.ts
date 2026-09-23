@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-export const exportToCSV = (data: Record<string, any>[]) => {
+export const exportToCSV = (data: Record<string, unknown>[]) => {
   if (!data || data.length === 0) return;
 
   const rawHeaders = Object.keys(data[0]);
@@ -13,7 +13,7 @@ export const exportToCSV = (data: Record<string, any>[]) => {
       .join(" ")
   );
 
-  const escapeValue = (value: any) => {
+  const escapeValue = (value: unknown) => {
     if (value === null || value === undefined) return "";
     return `"${String(value).replace(/"/g, '""')}"`;
   };
@@ -49,7 +49,7 @@ export const exportToCSV = (data: Record<string, any>[]) => {
 };
 
 export const exportToXLSX = (
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   fileName = "engineers"
 ) => {
   if (!data || data.length === 0) return;
@@ -62,7 +62,7 @@ export const exportToXLSX = (
       .join(" ");
 
   const formattedData = data.map((row) => {
-    const formattedRow: Record<string, any> = {};
+    const formattedRow: Record<string, unknown> = {};
     Object.entries(row).forEach(([key, value]) => {
       formattedRow[formatHeader(key)] = value ?? "";
     });

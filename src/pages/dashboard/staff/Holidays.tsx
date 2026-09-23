@@ -2,14 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 import apiService from "@/services/apiService";
 import { CalendarDays } from "lucide-react";
 import { useEffect, useState } from "react";
 
+type Holiday = { holiday_id: string; name: string; date: string; type: string; region?: string | null };
+type Birthday = { id: string; name: string; date: string; daysAway: number };
+
 const StaffHolidaysPage = () => {
   const { toast } = useToast();
-  const [holidays, setHolidays] = useState<any[]>([]);
-  const [birthdays, setBirthdays] = useState<any[]>([]);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [birthdays, setBirthdays] = useState<Birthday[]>([]);
 
   useEffect(() => {
     Promise.all([apiService.get("staff/holidays"), apiService.get("staff/birthdays")])
@@ -17,8 +21,8 @@ const StaffHolidaysPage = () => {
         setHolidays(holidayResponse?.data || holidayResponse || []);
         setBirthdays(birthdayResponse?.data || birthdayResponse || []);
       })
-      .catch((error) => toast({ title: "Could not load calendar", description: error.message, variant: "destructive" }));
-  }, []);
+      .catch((error) => toast({ title: "Could not load calendar", description: getErrorMessage(error), variant: "destructive" }));
+  }, [toast]);
 
   return (
     <div className="p-4 md:p-8 mx-auto space-y-6">

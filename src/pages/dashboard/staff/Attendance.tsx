@@ -5,32 +5,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 import apiService from "@/services/apiService";
 import { CalendarDays, CheckCircle2, Clock3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+type AttendanceEntry = {
+  id: string;
+  date: string;
+  clockIn?: string;
+  clockOut?: string;
+  workedDuration?: string;
+  workLog?: string;
+  isOpen?: boolean;
+  status: string;
+};
+
+type AttendanceSummary = {
+  currentStatus?: string;
+  attendanceRate?: number;
+  daysLogged?: number;
+  expectedDays?: number;
+  today?: { isOpen?: boolean; clockInAt?: string; status?: string } | null;
+};
 
 const StaffAttendancePage = () => {
   const { toast } = useToast();
-  const [attendance, setAttendance] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>({});
+  const [attendance, setAttendance] = useState<AttendanceEntry[]>([]);
+  const [summary, setSummary] = useState<AttendanceSummary>({});
   const [workLog, setWorkLog] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const loadAttendance = async () => {
+  const loadAttendance = useCallback(async () => {
     try {
       const response = await apiService.get("staff/attendance");
       const payload = response?.data || response;
       setAttendance(payload.entries || []);
       setSummary(payload.summary || {});
-    } catch (error: any) {
-      toast({ title: "Could not load attendance", description: error.message, variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Could not load attendance", description: getErrorMessage(error), variant: "destructive" });
     }
-  };
+  }, [toast]);
   useEffect(() => {
     loadAttendance();
     const interval = window.setInterval(loadAttendance, 60_000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [loadAttendance]);
 
   const submitClock = async (clockOut: boolean) => {
     if (clockOut && !workLog.trim()) return toast({ title: "Daily summary required", variant: "destructive" });
@@ -40,8 +60,8 @@ const StaffAttendancePage = () => {
       toast({ title: clockOut ? "Clocked out" : "Clocked in" });
       setWorkLog("");
       await loadAttendance();
-    } catch (error: any) {
-      toast({ title: "Attendance action failed", description: error.message, variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Attendance action failed", description: getErrorMessage(error), variant: "destructive" });
     } finally { setBusy(false); }
   };
 

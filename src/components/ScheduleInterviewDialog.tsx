@@ -49,7 +49,11 @@ interface Applicant {
   last_name?: string;
   email?: string;
   engineer?: Engineer;
-  user: any;
+  user: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
 }
 
 interface ApplicantData {

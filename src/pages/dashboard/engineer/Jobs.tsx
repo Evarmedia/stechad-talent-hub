@@ -1,16 +1,17 @@
 import { toast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useDataContext } from "@/hooks/useDataContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { DashboardApplication, DashboardJob } from "@/types/dashboard";
 import JobDetailsModal from "./components/JobDetailsModal";
 import JobsGrid from "./components/JobsGrid";
 import JobsHeader from "./components/JobsHeader";
 
 const EngineerJobs = () => {
   const [search, setSearch] = useState("");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<DashboardJob | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
-  const [userApplications, setUserApplications] = useState([]);
+  const [userApplications, setUserApplications] = useState<DashboardApplication[]>([]);
 
   const { 
     jobs, 
@@ -22,6 +23,10 @@ const EngineerJobs = () => {
   } = useDataContext();
 
   const { user } = useAuthContext();
+  const getApplicationsRef = useRef(getEngineersApplication);
+  const getJobsRef = useRef(getJobs);
+  getApplicationsRef.current = getEngineersApplication;
+  getJobsRef.current = getJobs;
 
   // -------------------------------------------------------------
   // FETCH USER'S APPLICATIONS ON LOGIN
@@ -29,7 +34,7 @@ const EngineerJobs = () => {
   useEffect(() => {
     const loadApplications = async () => {
       if (!user) return;
-      const apps = await getEngineersApplication();
+      const apps = await getApplicationsRef.current();
       setUserApplications(apps || []);
     };
 
@@ -44,7 +49,7 @@ const EngineerJobs = () => {
 
     const debounceTimer = setTimeout(() => {
       const filters = { search, status: 'active' };
-      getJobs(filters);   // updates global context
+      getJobsRef.current(filters);   // updates global context
     }, 3000);
 
     return () => clearTimeout(debounceTimer);

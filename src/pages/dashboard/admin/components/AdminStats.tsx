@@ -3,10 +3,11 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Briefcase, FileText, UserCheck, TrendingUp } from "lucide-react";
+import type { AdminStatistics } from "@/types/dashboard";
 
 interface AdminStatsProps {
   loading: boolean;
-  statistics: any;
+  statistics: AdminStatistics | null;
 
 }
 

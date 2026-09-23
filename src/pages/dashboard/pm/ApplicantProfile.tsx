@@ -9,11 +9,12 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Award, Briefcase, Code, FileText, Mail, Star } from "lucide-react";
+import type { DashboardApplicant } from "@/types/dashboard";
 
 interface ApplicantProfileProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    selectedApplicant: any | null;
+    selectedApplicant: DashboardApplicant | null;
     onViewResume: (url: string) => void;
 }
 

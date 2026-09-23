@@ -7,12 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar, Eye, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { DashboardJob } from "@/types/dashboard";
 
 const AdminJobs = () => {
   const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<DashboardJob[]>([]);
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedJob, setSelectedJob] = useState<DashboardJob | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const { getJobs } = useDataContext();
@@ -40,7 +41,7 @@ const AdminJobs = () => {
     return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
   };
 
-  const handleViewJob = (job: any) => {
+  const handleViewJob = (job: DashboardJob) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
   };

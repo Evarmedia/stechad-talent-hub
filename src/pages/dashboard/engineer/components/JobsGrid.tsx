@@ -3,14 +3,15 @@ import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import JobCard from "./JobCard";
+import type { DashboardApplication, DashboardJob } from "@/types/dashboard";
 
 interface JobsGridProps {
-  jobs: any[];
+  jobs: DashboardJob[];
   isLoading: boolean;
-  userApplications: any[];
+  userApplications: DashboardApplication[];
   applyingJobId: string | null;
   onApply: (jobId: string,) => void;
-  onViewDetails: (job: any) => void;
+  onViewDetails: (job: DashboardJob) => void;
 }
 
 const JobsGrid: React.FC<JobsGridProps> = ({

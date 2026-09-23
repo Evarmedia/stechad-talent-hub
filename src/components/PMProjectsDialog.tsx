@@ -8,11 +8,22 @@ import React from "react";
 
 interface PM {
   project_managers_id: string;
-  user: any;
+  user: {
+    first_name?: string;
+    last_name?: string;
+  };
   total_projects: number;
   status: string;
   created_at: string;
-  pm_projects: any[];
+  pm_projects: Array<{
+    projects_id: string;
+    title: string;
+    status: string;
+    deadline?: string | null;
+    team: string[];
+    progress: number;
+    is_unassigned?: boolean;
+  }>;
 }
 
 interface PMProjectsDialogProps {

@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, CheckCircle, Mail, Briefcase, MapPin, ShieldCheck } from "lucide-react";
+import type { ReviewEngineer } from "@/types/dashboard";
 
 type EngineerReviewDialogMobileProps = {
-  engineer: any;
-  selectedEngineer: any;
-  setSelectedEngineer: (eng: any) => void;
+  engineer: ReviewEngineer;
+  selectedEngineer: ReviewEngineer | null;
+  setSelectedEngineer: (engineer: ReviewEngineer) => void;
   onVet: (id: string) => void;
 };
 
@@ -94,7 +95,7 @@ const EngineerReviewDialogMobile: React.FC<EngineerReviewDialogMobileProps> = ({
                 <div>
                   <span className="text-sm font-semibold">Skills</span>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedEngineer.specialization.map((skill: string) => (
+                    {(selectedEngineer.specialization || []).map((skill) => (
                       <Badge key={skill} variant="outline" className="text-xs">
                         {skill}
                       </Badge>
@@ -104,7 +105,7 @@ const EngineerReviewDialogMobile: React.FC<EngineerReviewDialogMobileProps> = ({
                 <div>
                   <span className="text-sm font-semibold">Languages</span>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedEngineer.languages.map((lang: string) => (
+                    {(selectedEngineer.languages || []).map((lang) => (
                       <Badge key={lang} variant="outline" className="text-xs">
                         {lang}
                       </Badge>
@@ -138,7 +139,7 @@ const EngineerReviewDialogMobile: React.FC<EngineerReviewDialogMobileProps> = ({
                   <div>
                     <p className="text-muted-foreground">Certifications</p>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedEngineer?.certifications.map((cert: string) => (
+                      {(selectedEngineer.certifications || []).map((cert) => (
                         <Badge key={cert} variant="outline" className="text-xs">
                           {cert}
                         </Badge>

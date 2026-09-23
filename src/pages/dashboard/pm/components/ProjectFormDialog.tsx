@@ -1,13 +1,19 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import React, { useEffect, useState } from "react";
-import { ProjectForm } from "./ProjectForm";
+import { ProjectForm, type ProjectFormData, type Task } from "./ProjectForm";
+
+type ProjectFormSubmitData = ProjectFormData & { name: string };
+type ProjectInitialData = Partial<Omit<ProjectFormData, "tasks">> & {
+  name?: string;
+  tasks?: Array<Partial<Task> & { task_id?: number; name?: string }>;
+};
 
 interface ProjectFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (formData: any) => Promise<void>;
-  initialData: any;
+  onSubmit: (formData: ProjectFormSubmitData) => Promise<void>;
+  initialData: ProjectInitialData | null;
   mode: 'create' | 'edit';
 }
 
@@ -42,7 +48,7 @@ export const ProjectFormDialog: React.FC<ProjectFormDialogProps> = ({
       return value.includes('T') ? value?.split('T')[0] : value;
     };
 
-    const normalizedTasks = (initialData?.tasks || []).map((task: any, index: number) => ({
+    const normalizedTasks = (initialData?.tasks || []).map((task, index) => ({
       id: task.id ?? task.task_id ?? index,
       title: task.title || task.name || '',
       assignee: task.assignee || '',

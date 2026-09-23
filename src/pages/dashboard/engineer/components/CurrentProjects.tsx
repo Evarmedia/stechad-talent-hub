@@ -6,10 +6,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import type { DashboardProject } from "@/types/dashboard";
 
 interface CurrentProjectsProps {
   loading: boolean;
-  activeProjects: any[];
+  activeProjects: DashboardProject[];
 }
 
 const getStatusColor = (status: string) => {

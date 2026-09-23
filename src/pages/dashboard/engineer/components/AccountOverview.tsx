@@ -7,7 +7,12 @@ import { Progress } from "@/components/ui/progress";
 
 interface AccountOverviewProps {
   loading: boolean;
-  user: any;
+  user: {
+    engineer?: {
+      specialization?: string[];
+      availability?: string;
+    };
+  } | null;
 }
 
 const AccountOverview: React.FC<AccountOverviewProps> = ({ loading, user }) => {
@@ -38,7 +43,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ loading, user }) => {
             <div className="flex justify-between text-sm">
               <span className="font-semibold">Availability:</span>
               <Badge className="bg-green-100 text-green-800">
-                {user.engineer?.availability || "Available"}
+                {user?.engineer?.availability || "Available"}
               </Badge>
             </div>
             <div className="flex justify-between text-sm">

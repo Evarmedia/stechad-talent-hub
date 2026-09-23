@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, Pencil } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { DashboardApplication, DashboardJob } from "@/types/dashboard";
 
 interface JobsTableProps {
   loading: boolean;
-  jobs: any[];
-  applications: any[];
-  onViewJob: (job: any) => void;
-  onEditJob: (job: any) => void;
-  onToggleStatus: (job: any) => void;
+  jobs: DashboardJob[];
+  applications: DashboardApplication[];
+  onViewJob: (job: DashboardJob) => void;
+  onEditJob: (job: DashboardJob) => void;
+  onToggleStatus: (job: DashboardJob) => void;
   getStatusColor: (status: string) => string;
 }
 

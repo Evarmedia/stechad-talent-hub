@@ -12,11 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle } from "lucide-react";
 import React from "react";
+import type { ReviewEngineer } from "@/types/dashboard";
 
 type VetRemarkDialogProps = {
-  engineer: any;
-  selectedEngineer: any;
-  setSelectedEngineer: (eng: any) => void;
+  engineer: ReviewEngineer;
+  selectedEngineer: ReviewEngineer | null;
+  setSelectedEngineer: (engineer: ReviewEngineer) => void;
   remark: string;
   onRemarkChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onVet: (id: string) => void;

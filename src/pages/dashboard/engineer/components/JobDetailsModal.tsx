@@ -9,9 +9,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import type { DashboardJob } from "@/types/dashboard";
 
 interface JobDetailsModalProps {
-  job: any;
+  job: DashboardJob | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -45,7 +46,7 @@ const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
             Responsibilities
           </strong>
           <ul className="list-disc ml-6 text-sm">
-            {job.responsibilities.map((item, i) => (
+            {(job.responsibilities || []).map((item, i) => (
               <li key={i}>{item}</li>
             ))}
           </ul>
@@ -55,7 +56,7 @@ const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
             Requirements
           </strong>
           <ul className="list-disc ml-6 text-sm">
-            {job.requirements.map((item, i) => (
+            {(job.requirements || []).map((item, i) => (
               <li key={i}>{item}</li>
             ))}
           </ul>

@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import type { DashboardEngineer } from "@/types/dashboard";
 
 interface RecentEngineersProps {
   loading: boolean;
-  engineers: any[];
+  engineers: DashboardEngineer[];
 }
 
 const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers }) => {

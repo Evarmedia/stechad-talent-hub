@@ -3,13 +3,14 @@ import React from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { DashboardJob } from "@/types/dashboard";
 
 interface JobCardProps {
-  job: any;
+  job: DashboardJob;
   hasApplied: boolean;
   isApplying: boolean;
   onApply: (jobId: string,) => void;
-  onViewDetails: (job: any) => void;
+  onViewDetails: (job: DashboardJob) => void;
 }
 
 const JobCard: React.FC<JobCardProps> = ({
@@ -32,7 +33,7 @@ const JobCard: React.FC<JobCardProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-3">
-          {job.skills_required.map((skill) => (
+          {(job.skills_required || []).map((skill) => (
             <Badge
               key={skill}
               className="bg-primary-light text-primary rounded px-2 py-1 text-xs"

@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import React from "react";
 import { Link } from "react-router-dom";
+import type { DashboardApplication } from "@/types/dashboard";
 
 interface RecentApplicationsProps {
   loading: boolean;
-  applications: any[];
+  applications: DashboardApplication[];
 }
 
 const getStatusColor = (status: string) => {
