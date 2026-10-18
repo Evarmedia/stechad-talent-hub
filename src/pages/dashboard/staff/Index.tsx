@@ -402,7 +402,7 @@ const StaffDashboard = () => {
                         variant={
                           item.status === "Approved" ||
                           item.status === "Receipt Verified"
-                            ? "default"
+                            ? "white"
                             : "secondary"
                         }
                       >

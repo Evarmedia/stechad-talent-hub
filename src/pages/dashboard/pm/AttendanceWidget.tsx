@@ -85,7 +85,7 @@ const ProjectManagerAttendanceWidget = () => {
             Today&apos;s work session
           </span>
           <div className="flex items-center gap-2">
-            <Badge variant={isOpen ? "default" : "secondary"}>{summary.currentStatus || "Not clocked in"}</Badge>
+            <Badge variant={isOpen ? "white" : "secondary"}>{summary.currentStatus || "Not clocked in"}</Badge>
             <Button asChild variant="outline" size="sm" className="text-xs">
               <Link to="/dashboard/pm/attendance">View attendance</Link>
             </Button>

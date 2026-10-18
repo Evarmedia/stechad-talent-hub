@@ -278,17 +278,44 @@ const AdminWorkforce = () => {
         </TabsContent>
 
         <TabsContent value="approvals"><Card><CardHeader><CardTitle>Live approvals queue</CardTitle></CardHeader><CardContent>
-          <Table><TableHeader><TableRow><TableHead>Request</TableHead><TableHead>Owner</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
-            <TableBody>{approvals.map((item) => <TableRow key={`${item.type}-${item.id}`}><TableCell>{item.item}</TableCell><TableCell>{item.owner}</TableCell><TableCell className="capitalize">{item.type}</TableCell><TableCell><Badge variant="secondary">{item.status}</Badge></TableCell><TableCell className="space-x-2">
-              {item.type === "invoice" && item.status === "Accounts Approved"
-                ? <Button size="sm" variant="outline" disabled>Accounts approved</Button>
-                : item.type === "expense" && item.status.startsWith("Approved")
-                ? <Button size="sm" onClick={() => reviewApproval(item, "receipt_verified")}>Verify receipt</Button>
-                : item.type === "invoice" && item.status === "Approved"
-                  ? <Button size="sm" onClick={() => reviewApproval(item, "accounts_approved")}>Accounts approve & sync</Button>
-                  : <Button size="sm" onClick={() => reviewApproval(item, "approved")}>Approve</Button>}
-              {!(item.type === "invoice" && item.status === "Accounts Approved") && <Button size="sm" variant="destructive" onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>}
-            </TableCell></TableRow>)}</TableBody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Request</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Receipt</TableHead>
+                <TableHead>Info</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>{approvals.map((item) => {
+              const receiptUrl = item.receipt_url || item.receipt?.url || item.receiptUrl || item.url || null;
+              const info = item.description || item.notes || item.note || item.details || (item.meta && (item.meta.description || item.meta.notes)) || (item.payload && (item.payload.description || item.payload.notes)) || null;
+              return (
+                <TableRow key={`${item.type}-${item.id}`}>
+                  <TableCell>
+                    {item.item}
+                  </TableCell>
+                  <TableCell>{item.owner}</TableCell>
+                  <TableCell className="capitalize">{item.type}</TableCell>
+                  <TableCell><Badge variant="secondary">{item.status}</Badge></TableCell>
+                  <TableCell>{receiptUrl ? <a href={receiptUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">View receipt</a> : "—"}</TableCell>
+                  <TableCell>{info ? <p className="text-sm text-muted-foreground">{info}</p> : "—"}</TableCell>
+                  <TableCell className="space-x-2">
+                    {item.type === "invoice" && item.status === "Accounts Approved"
+                      ? <Button size="sm" variant="outline" disabled>Accounts approved</Button>
+                      : item.type === "expense" && item.status.startsWith("Approved")
+                      ? <Button size="sm" onClick={() => reviewApproval(item, "receipt_verified")}>Verify receipt</Button>
+                      : item.type === "invoice" && item.status === "Approved"
+                        ? <Button size="sm" onClick={() => reviewApproval(item, "accounts_approved")}>Accounts approve & sync</Button>
+                        : <Button size="sm" onClick={() => reviewApproval(item, "approved")}>Approve</Button>}
+                    {!(item.type === "invoice" && item.status === "Accounts Approved") && <Button size="sm" variant="destructive" onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>}
+                  </TableCell>
+                </TableRow>
+              );
+            })}</TableBody>
           </Table>
           {!approvals.length && <p className="py-8 text-center text-muted-foreground">There are no open approvals.</p>}
         </CardContent></Card></TabsContent>

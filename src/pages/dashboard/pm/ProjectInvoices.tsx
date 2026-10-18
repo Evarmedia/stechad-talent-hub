@@ -229,7 +229,7 @@ const PMProjectInvoicePage = () => {
                     <Badge
                       variant={
                         item.status === "Disputed"
-                          ? "destructive"
+                          ? "white"
                           : ["Approved", "Accounts Approved", "Paid"].includes(
                                 item.status,
                               )
