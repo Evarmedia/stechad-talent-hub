@@ -59,6 +59,7 @@ import StaffDashboard from "./pages/dashboard/staff/Index";
 import StaffKpis from "./pages/dashboard/staff/KPIs";
 import StaffLeave from "./pages/dashboard/staff/Leave";
 import StaffProfile from "./pages/dashboard/staff/Profile";
+import MessagesPage from "./pages/dashboard/Messages";
 
 const queryClient = new QueryClient();
 
@@ -134,6 +135,9 @@ const App = () => (
                     } />
 
                     {/* Staff Dashboard routes */}
+                    <Route path="/dashboard/staff/messages" element={
+                      <ProtectedRoute requiredRole="staff"><MessagesPage /></ProtectedRoute>
+                    } />
                     <Route path="/dashboard/staff" element={
                       <ProtectedRoute requiredRole="staff">
                         <StaffDashboard />

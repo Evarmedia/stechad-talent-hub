@@ -1,8 +1,9 @@
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, Pickaxe, ReceiptText, Settings, ShieldCheck, TrendingUp, User, Users, type LucideIcon } from "lucide-react";
+import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, MessageSquare, Pickaxe, ReceiptText, Settings, ShieldCheck, TrendingUp, User, Users, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { useChatContext } from "@/hooks/contexts/ChatContext";
 type MenuItem = {
   icon: LucideIcon;
   label: string;
@@ -18,11 +19,13 @@ const engineerMenu: MenuItem[] = [
   { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
   { icon: DollarSign, label: "Invoices", to: "/dashboard/engineer/invoices" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
   { icon: User, label: "Profile", to: "/dashboard/engineer/profile" },
 ];
 
 const staffMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/staff" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/staff/messages" },
   { icon: Clock3, label: "Attendance", to: "/dashboard/staff/attendance" },
   { icon: CalendarDays, label: "Leave", to: "/dashboard/staff/leave" },
   { icon: ReceiptText, label: "Expenses", to: "/dashboard/staff/expenses" },
@@ -47,6 +50,7 @@ const pmMenu: MenuItem[] = [
   { icon: ClipboardList, label: "Approvals", to: "/dashboard/pm/approvals", permission: "approvals" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
 ];
 
 const adminMenu: MenuItem[] = [
@@ -60,6 +64,7 @@ const adminMenu: MenuItem[] = [
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
   { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
+  { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
 ];
 
 function getRoleMenu(pathname: string): MenuItem[] {
@@ -71,6 +76,8 @@ function getRoleMenu(pathname: string): MenuItem[] {
 }
 
 export function AppSidebar() {
+  const { chats } = useChatContext();
+  const unreadMessages = chats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
   const { pathname } = useLocation();
   const { user } = useAuthContext();
   const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
@@ -115,6 +122,7 @@ export function AppSidebar() {
                       >
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
+                        {item.to.endsWith('/messages') && unreadMessages > 0 && <span className="ml-auto rounded-full bg-primary-light px-1.5 py-0.5 text-[10px] font-semibold text-primary" aria-label={`${unreadMessages} unread messages`}>{unreadMessages > 99 ? '99+' : unreadMessages}</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

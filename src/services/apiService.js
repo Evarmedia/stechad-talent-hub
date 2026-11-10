@@ -39,7 +39,7 @@ class ApiService {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // 🔰 Response Interceptor for errors & token expiry
@@ -67,6 +67,12 @@ class ApiService {
               originalRequest.headers = originalRequest.headers || {};
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
               return this.api(originalRequest);
+            }
+            if (this.getRefreshToken()) {
+              return Promise.reject({
+                message:
+                  "Could not reconnect to your session. Check your connection and try again.",
+              });
             }
           }
 
@@ -97,7 +103,7 @@ class ApiService {
             error.response.data?.error ||
             "Request failed",
         });
-      }
+      },
     );
   }
 
@@ -108,7 +114,7 @@ class ApiService {
         if (v === undefined || v === null || v === "") return false;
         if (Array.isArray(v) && v.length === 0) return false;
         return true;
-      })
+      }),
     );
   }
 
@@ -139,23 +145,43 @@ class ApiService {
   async refreshAccessToken() {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) return null;
-
-    try {
-      const res = await axios.post(`${this.baseURL}/auth/refresh-token`, {
-        refresh_token: refreshToken,
-      });
-
-      const newToken = res.data?.access_token;
-      if (newToken) {
+    if (this.refreshRequest && this.refreshingFor === refreshToken) {
+      return this.refreshRequest;
+    }
+    this.refreshingFor = refreshToken;
+    const request = (async () => {
+      try {
+        const res = await axios.post(`${this.baseURL}/auth/refresh-token`, {
+          refresh_token: refreshToken,
+        });
+        // A logout or account switch must not restore the previous session.
+        if (this.getRefreshToken() !== refreshToken) return null;
+        const payload = res.data?.data || res.data;
+        const newToken = payload?.token || payload?.access_token;
+        if (!newToken) return null;
         this.setToken(newToken);
+        const nextRefreshToken = payload.refreshToken || payload.refresh_token;
+        if (nextRefreshToken) this.setRefreshToken(nextRefreshToken);
         return newToken;
+      } catch (err) {
+        // A temporary network failure should not discard a valid refresh token.
+        if (
+          err.response?.status === 401 &&
+          this.getRefreshToken() === refreshToken
+        ) {
+          this.clearTokens();
+        }
+        return null;
       }
-
-      return null;
-    } catch (err) {
-      console.error("Error refreshing token:", err);
-      this.clearTokens();
-      return null;
+    })();
+    this.refreshRequest = request;
+    try {
+      return await request;
+    } finally {
+      if (this.refreshRequest === request) {
+        this.refreshRequest = null;
+        this.refreshingFor = null;
+      }
     }
   }
 
