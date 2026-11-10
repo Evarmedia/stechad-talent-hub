@@ -1,3 +1,4 @@
+import ChatAlerts from "@/components/chat/ChatAlerts";
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -72,6 +73,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <ChatAlerts>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route element={<PublicLayout />}>
@@ -320,6 +322,7 @@ const App = () => (
                   {/* 404 fallback */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+              </ChatAlerts>
               </BrowserRouter>
             </TooltipProvider>
         </ChatProvider>

@@ -139,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       await apiService.post("auth/logout", {});
       console.clear();
       setUser(null);
-      localStorage.clear();
+      apiService.clearTokens();
+      localStorage.removeItem("stechad_user");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

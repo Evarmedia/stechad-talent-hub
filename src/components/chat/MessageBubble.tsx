@@ -22,6 +22,7 @@ export default function MessageBubble({
   message,
   own,
   group,
+  canPost = true,
   onReply,
   onEdit,
   onDelete,
@@ -30,6 +31,7 @@ export default function MessageBubble({
   message: ChatMessage;
   own: boolean;
   group: boolean;
+  canPost?: boolean;
   onReply: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -71,6 +73,11 @@ export default function MessageBubble({
             message.is_deleted && "italic opacity-65",
           )}
         >
+          {message.reply_unavailable && (
+            <p className="mb-2 border-l-2 border-current/40 pl-2 text-xs italic opacity-70">
+              Earlier message unavailable
+            </p>
+          )}
           {message.replyToMessage && (
             <div
               className={cn(
@@ -179,16 +186,20 @@ export default function MessageBubble({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align={own ? "end" : "start"}>
-            <DropdownMenuItem onSelect={onReply}>
-              <Reply className="mr-2 h-4 w-4" />
-              Reply
-            </DropdownMenuItem>
+            {canPost && (
+              <DropdownMenuItem onSelect={onReply}>
+                <Reply className="mr-2 h-4 w-4" />
+                Reply
+              </DropdownMenuItem>
+            )}
             {own && (
               <>
-                <DropdownMenuItem onSelect={onEdit}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit message
-                </DropdownMenuItem>
+                {canPost && (
+                  <DropdownMenuItem onSelect={onEdit}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit message
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onSelect={onDelete}
                   className="text-red-700 focus:text-red-800"

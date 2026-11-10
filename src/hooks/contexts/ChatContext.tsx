@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useAuthContext } from "../useAuthContext";
 import { chatService } from "@/services/chatService";
+import { isChatFocused } from "@/services/chatActivity";
 import websocketService from "@/services/websocketService";
 import type { ChatMessage, ChatUser, Conversation } from "@/types/chat";
 
@@ -60,6 +61,10 @@ function useChatState() {
   const currentMessages = useRef(messages);
   const inboxRequest = useRef(0);
   const historyRequest = useRef(0);
+  const boundaries = useRef(new Map<string, string>());
+  const revoked = useRef(new Set<string>());
+  const accessEpochs = useRef(new Map<string, number>());
+  const [historyVersion, setHistoryVersion] = useState(0);
   const outbox = useRef(new Map<string, ChatMessage>());
   // Refs keep asynchronous responses and socket handlers scoped to the current session.
   activeId.current = activeChatId;
@@ -67,6 +72,102 @@ function useChatState() {
   currentUser.current = user;
   currentMessages.current = messages;
 
+  const visibleMessage = useCallback((message: ChatMessage) => {
+    if (!message || revoked.current.has(message.chat_id)) return null;
+    const boundary = BigInt(boundaries.current.get(message.chat_id) || 0);
+    if (
+      message.message_sequence &&
+      BigInt(message.message_sequence) <= boundary
+    )
+      return null;
+    if (
+      message.replyToMessage?.message_sequence &&
+      BigInt(message.replyToMessage.message_sequence) <= boundary
+    )
+      return { ...message, replyToMessage: null, reply_unavailable: true };
+    return message;
+  }, []);
+  const protectConversation = useCallback((chat: Conversation) => {
+    const local = BigInt(boundaries.current.get(chat.chats_id) || 0);
+    const snapshot = BigInt(chat.cleared_through_sequence || 0);
+    const boundary = local > snapshot ? local : snapshot;
+    return {
+      ...chat,
+      cleared_through_sequence: String(boundary),
+      ...(snapshot < boundary ? { unread_count: 0 } : {}),
+      ...(boundary > 0 && BigInt(chat.last_message_sequence || 0) <= boundary
+        ? {
+            last_message_id: null,
+            last_message_content: null,
+            last_message_sender_id: null,
+            last_message_timestamp: null,
+          }
+        : {}),
+    };
+  }, []);
+  const applyBoundary = useCallback(
+    (chatId: string, sequence: string) => {
+      if (BigInt(sequence || 0) <= BigInt(boundaries.current.get(chatId) || 0))
+        return;
+      boundaries.current.set(chatId, sequence);
+      ++inboxRequest.current;
+      for (const [id, pending] of outbox.current)
+        if (pending.chat_id === chatId) outbox.current.delete(id);
+      if (activeId.current === chatId) {
+        ++historyRequest.current;
+        setMessages((previous) =>
+          previous
+            .filter((message) => !!message.message_sequence)
+            .map(visibleMessage)
+            .filter(Boolean),
+        );
+        setHasOlderMessages(false);
+        setLoadingOlder(false);
+        setMessagesLoading(false);
+      }
+      setChats((previous) =>
+        previous.map((chat) =>
+          chat.chats_id === chatId
+            ? {
+                ...chat,
+                cleared_through_sequence: sequence,
+                unread_count: 0,
+                last_message_content: null,
+                last_message_id: null,
+                last_message_timestamp: null,
+              }
+            : chat,
+        ),
+      );
+      setHistoryVersion((previous) => previous + 1);
+    },
+    [visibleMessage],
+  );
+  const hideConversation = useCallback(
+    (chatId: string, boundary: string) => {
+      applyBoundary(chatId, boundary);
+      accessEpochs.current.set(
+        chatId,
+        (accessEpochs.current.get(chatId) || 0) + 1,
+      );
+      ++inboxRequest.current;
+      for (const [id, pending] of outbox.current)
+        if (pending.chat_id === chatId) outbox.current.delete(id);
+      setChats((previous) =>
+        previous.filter((chat) => chat.chats_id !== chatId),
+      );
+      if (activeId.current === chatId) {
+        ++historyRequest.current;
+        setMessagesLoading(false);
+        setLoadingOlder(false);
+        activeId.current = null;
+        setActiveChatId(null);
+        setMessages([]);
+      }
+      setHistoryVersion((previous) => previous + 1);
+    },
+    [applyBoundary],
+  );
   const refreshChats = useCallback(async () => {
     const session = sessionId.current;
     if (!session) return;
@@ -75,8 +176,38 @@ function useChatState() {
     setChatsError("");
     try {
       const result = await chatService.chats();
-      if (sessionId.current === session && inboxRequest.current === request)
-        setChats(sortChats(result.chats));
+      if (sessionId.current === session && inboxRequest.current === request) {
+        for (const chat of result.chats) {
+          revoked.current.delete(chat.chats_id);
+          applyBoundary(chat.chats_id, chat.cleared_through_sequence || "0");
+        }
+        setChats(sortChats(result.chats.map(protectConversation)));
+        setChatsLoading(false);
+        if (
+          activeId.current &&
+          !result.chats.some((chat) => chat.chats_id === activeId.current)
+        ) {
+          const id = activeId.current;
+          try {
+            const details = await chatService.details(id);
+            if (
+              sessionId.current === session &&
+              activeId.current === id &&
+              !revoked.current.has(id)
+            )
+              setChats((previous) => [
+                ...previous.filter((chat) => chat.chats_id !== id),
+                protectConversation(details),
+              ]);
+          } catch (error) {
+            if (error.status === 404 && activeId.current === id) {
+              activeId.current = null;
+              setActiveChatId(null);
+              setMessages([]);
+            }
+          }
+        }
+      }
     } catch (error) {
       if (sessionId.current === session)
         setChatsError(error.message || "Could not load conversations");
@@ -84,7 +215,7 @@ function useChatState() {
       if (sessionId.current === session && inboxRequest.current === request)
         setChatsLoading(false);
     }
-  }, []);
+  }, [applyBoundary, protectConversation]);
 
   const markAsRead = useCallback(async (chatId: string, ids: string[] = []) => {
     const session = sessionId.current;
@@ -124,14 +255,14 @@ function useChatState() {
         setMessages((previous) =>
           mergeMessages(reset ? [] : previous, [
             ...pending,
-            ...result.messages,
+            ...result.messages.map(visibleMessage).filter(Boolean),
           ]),
         );
         if (reset)
           setHasOlderMessages(
             result.pagination.totalItems > result.messages.length,
           );
-        if (document.visibilityState === "visible")
+        if (isChatFocused(chatId, activeId.current))
           void markAsRead(chatId).catch(() => {});
       } catch (error) {
         if (sessionId.current === session && activeId.current === chatId)
@@ -145,7 +276,7 @@ function useChatState() {
           setMessagesLoading(false);
       }
     },
-    [markAsRead],
+    [markAsRead, visibleMessage],
   );
 
   const selectChat = useCallback((chatId: string | null) => {
@@ -173,6 +304,7 @@ function useChatState() {
     const chatId = activeId.current;
     const oldest = currentMessages.current.find((message) => !message.delivery);
     const session = sessionId.current;
+    const request = historyRequest.current;
     if (!chatId || !oldest) return;
     setLoadingOlder(true);
     try {
@@ -180,8 +312,17 @@ function useChatState() {
         before_timestamp: oldest.timestamp,
         before_id: oldest.messages_id,
       });
-      if (sessionId.current === session && activeId.current === chatId) {
-        setMessages((previous) => mergeMessages(result.messages, previous));
+      if (
+        sessionId.current === session &&
+        activeId.current === chatId &&
+        request === historyRequest.current
+      ) {
+        setMessages((previous) =>
+          mergeMessages(
+            result.messages.map(visibleMessage).filter(Boolean),
+            previous,
+          ),
+        );
         setHasOlderMessages(
           result.pagination.totalItems > result.messages.length,
         );
@@ -190,64 +331,73 @@ function useChatState() {
       if (sessionId.current === session && activeId.current === chatId)
         setLoadingOlder(false);
     }
-  }, []);
+  }, [visibleMessage]);
 
-  const deliver = useCallback(async (pending: ChatMessage) => {
-    const session = sessionId.current;
-    try {
-      const result = await chatService.send(
-        pending.chat_id,
-        pending.content,
-        pending.reply_to,
-        pending.messages_id,
-      );
-      if (sessionId.current !== session) return;
-      outbox.current.delete(pending.messages_id);
-      if (activeId.current === pending.chat_id)
-        setMessages((previous) =>
-          mergeMessages(
-            previous.filter(
-              (message) => message.messages_id !== pending.messages_id,
+  const deliver = useCallback(
+    async (pending: ChatMessage) => {
+      const session = sessionId.current;
+      try {
+        const result = await chatService.send(
+          pending.chat_id,
+          pending.content,
+          pending.reply_to,
+          pending.messages_id,
+        );
+        if (sessionId.current !== session || !visibleMessage(result)) return;
+        outbox.current.delete(pending.messages_id);
+        if (activeId.current === pending.chat_id)
+          setMessages((previous) =>
+            mergeMessages(
+              previous.filter(
+                (message) => message.messages_id !== pending.messages_id,
+              ),
+              [result],
             ),
-            [result],
+          );
+        setChats((previous) =>
+          sortChats(
+            previous.map((chat) =>
+              chat.chats_id === result.chat_id &&
+              BigInt(result.message_sequence || 0) >=
+                BigInt(chat.last_message_sequence || 0)
+                ? {
+                    ...chat,
+                    last_message_id: result.messages_id,
+                    last_message_sequence: result.message_sequence,
+                    last_message_content: result.content,
+                    last_message_sender_id: result.sender_id,
+                    last_message_timestamp: result.timestamp,
+                  }
+                : chat,
+            ),
           ),
         );
-      setChats((previous) =>
-        sortChats(
-          previous.map((chat) =>
-            chat.chats_id === result.chat_id
-              ? {
-                  ...chat,
-                  last_message_id: result.messages_id,
-                  last_message_content: result.content,
-                  last_message_sender_id: result.sender_id,
-                  last_message_timestamp: result.timestamp,
-                }
-              : chat,
-          ),
-        ),
-      );
-    } catch (error) {
-      if (
-        sessionId.current !== session ||
-        !outbox.current.has(pending.messages_id)
-      )
-        return;
-      outbox.current.set(pending.messages_id, {
-        ...pending,
-        delivery: "failed",
-      });
-      if (sessionId.current === session && activeId.current === pending.chat_id)
-        setMessages((previous) =>
-          previous.map((message) =>
-            message.messages_id === pending.messages_id
-              ? { ...message, delivery: "failed" }
-              : message,
-          ),
-        );
-      throw error;
-    }
-  }, []);
+      } catch (error) {
+        if (
+          sessionId.current !== session ||
+          !outbox.current.has(pending.messages_id)
+        )
+          return;
+        outbox.current.set(pending.messages_id, {
+          ...pending,
+          delivery: "failed",
+        });
+        if (
+          sessionId.current === session &&
+          activeId.current === pending.chat_id
+        )
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.messages_id === pending.messages_id
+                ? { ...message, delivery: "failed" }
+                : message,
+            ),
+          );
+        throw error;
+      }
+    },
+    [visibleMessage],
+  );
 
   const sendMessage = useCallback(
     async (chatId: string, content: string, reply?: ChatMessage) => {
@@ -295,7 +445,7 @@ function useChatState() {
       if (sessionId.current === session) {
         setChats((previous) =>
           sortChats([
-            result,
+            protectConversation(result),
             ...previous.filter((chat) => chat.chats_id !== result.chats_id),
           ]),
         );
@@ -303,11 +453,13 @@ function useChatState() {
       }
       return result;
     },
-    [selectChat],
+    [selectChat, protectConversation],
   );
 
   const applyMutation = useCallback(
     (message: ChatMessage) => {
+      message = visibleMessage(message);
+      if (!message) return;
       if (activeId.current === message.chat_id)
         setMessages((previous) =>
           previous.map((item) =>
@@ -320,7 +472,7 @@ function useChatState() {
         );
       void refreshChats();
     },
-    [refreshChats],
+    [refreshChats, visibleMessage],
   );
   const editMessage = useCallback(
     async (id: string, content: string) => {
@@ -341,6 +493,9 @@ function useChatState() {
 
   useEffect(() => {
     outbox.current.clear();
+    boundaries.current.clear();
+    revoked.current.clear();
+    accessEpochs.current.clear();
     setChats([]);
     setMessages([]);
     setActiveChatId(null);
@@ -364,13 +519,15 @@ function useChatState() {
       websocketService.on(
         "new_message",
         ({ message }: { message: ChatMessage }) => {
+          message = visibleMessage(message);
+          if (!message) return;
           const chatId = message.chat_id;
           outbox.current.delete(message.messages_id);
           if (activeId.current === chatId) {
             // Stable IDs reconcile HTTP responses, realtime events and explicit retries.
             setMessages((previous) => mergeMessages(previous, [message]));
             if (
-              document.visibilityState === "visible" &&
+              isChatFocused(chatId, activeId.current) &&
               message.sender_id !== userId
             )
               void markAsRead(chatId, [message.messages_id]).catch(() => {});
@@ -384,6 +541,44 @@ function useChatState() {
           }));
         },
       ),
+      websocketService.on(
+        "history_cleared",
+        ({ chat_id, cleared_through_sequence }) => {
+          applyBoundary(chat_id, cleared_through_sequence);
+          void refreshChats();
+          if (activeId.current === chat_id) void loadMessages(chat_id, false);
+        },
+      ),
+      websocketService.on(
+        "chat_deleted",
+        ({ chat_id, cleared_through_sequence }) =>
+          hideConversation(chat_id, cleared_through_sequence),
+      ),
+      websocketService.on("group_updated", () => {
+        void refreshChats();
+      }),
+      websocketService.on("membership_revoked", ({ chat_id }) => {
+        revoked.current.add(chat_id);
+        accessEpochs.current.set(
+          chat_id,
+          (accessEpochs.current.get(chat_id) || 0) + 1,
+        );
+        ++inboxRequest.current;
+        for (const [id, pending] of outbox.current)
+          if (pending.chat_id === chat_id) outbox.current.delete(id);
+        setChats((previous) =>
+          previous.filter((chat) => chat.chats_id !== chat_id),
+        );
+        if (activeId.current === chat_id) {
+          ++historyRequest.current;
+          setMessagesLoading(false);
+          setLoadingOlder(false);
+          activeId.current = null;
+          setActiveChatId(null);
+          setMessages([]);
+        }
+        setHistoryVersion((previous) => previous + 1);
+      }),
       websocketService.on("chat_created", () => {
         void refreshChats();
       }),
@@ -493,13 +688,24 @@ function useChatState() {
       if (activeId.current) void loadMessages(activeId.current, false);
     };
     document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("focus", visibility);
     return () => {
       unsubscribers.forEach((unsubscribe) => unsubscribe());
       websocketService.disconnect();
       window.clearInterval(expireTyping);
       document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("focus", visibility);
     };
-  }, [userId, refreshChats, loadMessages, markAsRead, applyMutation]);
+  }, [
+    userId,
+    refreshChats,
+    loadMessages,
+    markAsRead,
+    applyMutation,
+    applyBoundary,
+    hideConversation,
+    visibleMessage,
+  ]);
 
   useEffect(() => {
     if (!userId || connectionStatus === "connected") return;
@@ -511,8 +717,55 @@ function useChatState() {
     return () => window.clearInterval(interval);
   }, [userId, connectionStatus, refreshChats, loadMessages]);
 
+  const clearChat = useCallback(
+    async (chatId: string) => {
+      const session = sessionId.current;
+      const result = await chatService.clear(chatId);
+      if (sessionId.current !== session) return;
+      applyBoundary(chatId, result.cleared_through_sequence);
+      void refreshChats();
+      if (activeId.current === chatId) void loadMessages(chatId, false);
+    },
+    [applyBoundary, refreshChats, loadMessages],
+  );
+  const deleteChat = useCallback(
+    async (chatId: string) => {
+      const session = sessionId.current;
+      const result = await chatService.deleteForMe(chatId);
+      if (sessionId.current !== session) return;
+      hideConversation(chatId, result.cleared_through_sequence);
+    },
+    [hideConversation],
+  );
+  const openConversation = useCallback(
+    async (chatId: string) => {
+      const session = sessionId.current;
+      const epoch = accessEpochs.current.get(chatId) || 0;
+      const result = await chatService.details(chatId);
+      if (sessionId.current !== session) return;
+      if ((accessEpochs.current.get(chatId) || 0) !== epoch)
+        throw new Error(
+          "Your membership changed. Open the conversation again to check access.",
+        );
+      revoked.current.delete(chatId);
+      applyBoundary(chatId, result.cleared_through_sequence || "0");
+      setChats((previous) =>
+        sortChats([
+          protectConversation(result),
+          ...previous.filter((chat) => chat.chats_id !== chatId),
+        ]),
+      );
+      selectChat(chatId);
+    },
+    [applyBoundary, selectChat, protectConversation],
+  );
+
   return {
     chats,
+    historyVersion,
+    clearChat,
+    deleteChat,
+    openConversation,
     activeChatId,
     activeChat: chats.find((chat) => chat.chats_id === activeChatId) || null,
     messages,

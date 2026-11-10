@@ -4,6 +4,11 @@ export interface ChatUser {
   last_name: string;
   avatar_url?: string;
   role?: string | { role_key: string; name: string };
+  job_title?: string;
+  department?: string;
+  company?: string;
+  city?: string;
+  country?: string;
 }
 export interface ChatMessage {
   messages_id: string;
@@ -11,6 +16,8 @@ export interface ChatMessage {
   sender_id: string;
   content: string;
   timestamp: string;
+  message_sequence?: string;
+  reply_unavailable?: boolean;
   message_type?: string;
   attachments?: { url?: string; name?: string }[];
   reply_to?: string;
@@ -25,10 +32,18 @@ export interface Conversation {
   chats_id: string;
   chat_type: "direct" | "group" | "support";
   chat_name?: string;
+  description?: string;
+  avatar_url?: string;
+  posting_policy?: "all_members" | "creator_only";
+  created_by?: string;
+  can_manage?: boolean;
+  can_post?: boolean;
+  cleared_through_sequence?: string;
   participants: string[];
   participant_details: ChatUser[];
   unread_count: number;
   last_message_id?: string;
+  last_message_sequence?: string;
   last_message_content?: string;
   last_message_sender_id?: string;
   last_message_timestamp?: string;

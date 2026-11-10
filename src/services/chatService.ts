@@ -19,11 +19,75 @@ export const chatService = {
       pagination: Paginated<never>["pagination"];
     }>(await apiService.get("chat", { limit: 100 }));
   },
-  async users(search = "") {
+  async users(search = "", context = "direct", chatId?: string) {
     return data<{
       users: ChatUser[];
       pagination: Paginated<never>["pagination"];
-    }>(await apiService.get("chat/users", { search, limit: 50 }));
+    }>(
+      await apiService.get("chat/users", {
+        search,
+        context,
+        chat_id: chatId,
+        limit: 50,
+      }),
+    );
+  },
+  async details(chatId: string) {
+    return data<Conversation>(await apiService.get(`chat/${chatId}`));
+  },
+  async clear(chatId: string) {
+    return data<{ chat_id: string; cleared_through_sequence: string }>(
+      await apiService.post(`chat/${chatId}/clear`, {}),
+    );
+  },
+  async deleteForMe(chatId: string) {
+    return data<{
+      chat_id: string;
+      cleared_through_sequence: string;
+      hidden_through_sequence: string;
+    }>(
+      await apiService.request(`/chat/${chatId}`, {
+        method: "DELETE",
+      }),
+    );
+  },
+  async settings(
+    chatId: string,
+    values: { chat_name: string; description: string; posting_policy: string },
+  ) {
+    return data<Conversation>(
+      await apiService.request(`/chat/${chatId}`, {
+        method: "PATCH",
+        data: values,
+      }),
+    );
+  },
+  async addMembers(chatId: string, participant_ids: string[]) {
+    return data<Conversation>(
+      await apiService.post(`chat/${chatId}/members`, { participant_ids }),
+    );
+  },
+  async removeMember(chatId: string, userId: string) {
+    return data<Conversation>(
+      await apiService.delete(`chat/${chatId}/members`, userId),
+    );
+  },
+  async image(chatId: string, file: File) {
+    const form = new FormData();
+    form.append("avatar", file);
+    return data<Conversation>(
+      await apiService.post(`chat/${chatId}/image`, form),
+    );
+  },
+  async removeImage(chatId: string) {
+    return data<Conversation>(
+      await apiService.request(`/chat/${chatId}/image`, { method: "DELETE" }),
+    );
+  },
+  async profile(chatId: string, userId: string) {
+    return data<ChatUser>(
+      await apiService.get(`chat/${chatId}/members/${userId}/profile`),
+    );
   },
   async create(
     participant_ids: string[],

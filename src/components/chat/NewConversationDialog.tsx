@@ -1,3 +1,4 @@
+import { useAuthContext } from "@/hooks/useAuthContext";
 import { useEffect, useState } from "react";
 import { Check, ChevronRight, Loader2, Search, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +23,10 @@ export default function NewConversationDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { user } = useAuthContext();
+  const canCreateGroup = ["admin", "super_admin", "project_manager"].includes(
+    user?.role,
+  );
   const { createChat, onlineUsers } = useChatContext();
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<ChatUser[]>([]);
@@ -47,7 +52,10 @@ export default function NewConversationDialog({
     setLoading(true);
     const timer = window.setTimeout(async () => {
       try {
-        const result = await chatService.users(search);
+        const result = await chatService.users(
+          search,
+          group ? "group" : "direct",
+        );
         if (!cancelled) {
           setUsers(result.users);
           setTotal(result.pagination.totalItems);
@@ -64,7 +72,7 @@ export default function NewConversationDialog({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [search, open]);
+  }, [search, open, group]);
 
   const start = async (ids: string[], type = "direct") => {
     setCreating(true);
@@ -101,16 +109,18 @@ export default function NewConversationDialog({
           >
             Direct message
           </Button>
-          <Button
-            variant={group ? "default" : "outline"}
-            size="sm"
-            onClick={() => setGroup(true)}
-            disabled={creating}
-            aria-pressed={group}
-          >
-            <Users className="h-4 w-4" />
-            Group
-          </Button>
+          {canCreateGroup && (
+            <Button
+              variant={group ? "default" : "outline"}
+              size="sm"
+              onClick={() => setGroup(true)}
+              disabled={creating}
+              aria-pressed={group}
+            >
+              <Users className="h-4 w-4" />
+              Group
+            </Button>
+          )}
         </div>
         {group && (
           <div className="space-y-2">
@@ -225,7 +235,9 @@ export default function NewConversationDialog({
             <p className="py-10 text-center text-sm text-slate-500">
               {search
                 ? "No team members match that name."
-                : "No other team members are available yet."}
+                : user?.role === "engineer"
+                  ? "People will appear here after they send you a direct message. You can reply to any existing conversation."
+                  : "No eligible team members are available yet."}
             </p>
           )}
         </div>

@@ -6,11 +6,17 @@ import {
   type KeyboardEvent,
 } from "react";
 import {
+  MoreHorizontal,
+  Info,
+  Trash2,
+  Volume2,
+  VolumeX,
   ArrowDown,
   ArrowLeft,
   CheckCheck,
   ChevronDown,
   CircleAlert,
+  Eraser,
   Loader2,
   MessageCircle,
   MessageSquare,
@@ -58,6 +64,15 @@ import {
 } from "@/types/chat";
 import NewConversationDialog from "./chat/NewConversationDialog";
 import MessageBubble from "./chat/MessageBubble";
+import ChatDetailsSheet from "./chat/ChatDetailsSheet";
+import { useChatSound } from "@/hooks/contexts/ChatSoundContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const initials = (name: string) =>
   name
@@ -95,6 +110,10 @@ const inboxTime = (timestamp?: string) =>
 
 export default function ChatInterface() {
   const { user } = useAuthContext();
+  const { soundEnabled, toggleSound } = useChatSound();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
+  const [deleteChatOpen, setDeleteChatOpen] = useState(false);
   const {
     chats,
     activeChatId,
@@ -117,6 +136,9 @@ export default function ChatInterface() {
     loadOlder,
     editMessage,
     deleteMessage,
+    clearChat,
+    deleteChat,
+    historyVersion,
   } = useChatContext();
   const [search, setSearch] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -140,6 +162,7 @@ export default function ChatInterface() {
   const typingTimer = useRef<number>();
   const lastTypingAt = useRef(0);
   const previousChatId = useRef<string | null>(null);
+  const seenClearBoundaries = useRef(new Map<string, string>());
   const draft = drafts[activeChatId] || "";
   const totalUnread = chats.reduce(
     (total, chat) => total + (chat.unread_count || 0),
@@ -185,10 +208,32 @@ export default function ChatInterface() {
     setActionError("");
     setNearBottom(true);
     lastTypingAt.current = 0;
+    setDetailsOpen(false);
+    setClearOpen(false);
+    setEditing(null);
+    setDeleting(null);
+    setSearchResults([]);
     return () => window.clearTimeout(typingTimer.current);
   }, [activeChatId]);
   useEffect(() => {
+    if (!activeChatId) return;
+    const boundary = activeChat?.cleared_through_sequence || "0";
+    const previous = seenClearBoundaries.current.get(activeChatId) || "0";
+    seenClearBoundaries.current.set(activeChatId, boundary);
+    if (BigInt(boundary) <= BigInt(previous)) return;
+    setReply(null);
+    setEditing(null);
+    setDeleting(null);
+    setMessageQuery("");
+    setSearchResults([]);
+    setSearching(false);
+    setSearchTotal(0);
+    if (activeChatId)
+      setDrafts((previous) => ({ ...previous, [activeChatId]: "" }));
+  }, [historyVersion, activeChatId, activeChat?.cleared_through_sequence]);
+  useEffect(() => {
     setDrafts({});
+    seenClearBoundaries.current.clear();
     setReply(null);
   }, [user?.user_id]);
   useEffect(() => {
@@ -226,7 +271,7 @@ export default function ChatInterface() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [activeChatId, messageQuery, searchMode, messages]);
+  }, [activeChatId, messageQuery, searchMode, messages, historyVersion]);
 
   const updateDraft = (value: string) => {
     if (!activeChatId) return;
@@ -247,7 +292,13 @@ export default function ChatInterface() {
     }
   };
   const send = async () => {
-    if (!draft.trim() || !activeChatId || messagesLoading || messagesError)
+    if (
+      !draft.trim() ||
+      !activeChatId ||
+      messagesLoading ||
+      messagesError ||
+      activeChat?.can_post === false
+    )
       return;
     const content = draft.trim();
     const quote = reply;
@@ -314,7 +365,9 @@ export default function ChatInterface() {
       <div className="relative shrink-0">
         <Avatar className="h-11 w-11">
           <AvatarImage
-            src={chat.chat_type === "direct" ? person?.avatar_url : undefined}
+            src={
+              chat.chat_type === "direct" ? person?.avatar_url : chat.avatar_url
+            }
             alt=""
           />
           <AvatarFallback
@@ -384,6 +437,23 @@ export default function ChatInterface() {
                   : "Reconnecting…"}
             </span>
           </span>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-9 w-9 shrink-0 text-slate-500"
+            aria-label={
+              soundEnabled ? "Mute message sounds" : "Enable message sounds"
+            }
+            aria-pressed={soundEnabled}
+            title={soundEnabled ? "Message sound on" : "Message sound off"}
+            onClick={toggleSound}
+          >
+            {soundEnabled ? (
+              <Volume2 className="h-4 w-4" />
+            ) : (
+              <VolumeX className="h-4 w-4" />
+            )}
+          </Button>
           <Button
             onClick={() => setNewChatOpen(true)}
             className="h-10 gap-2 rounded-xl px-3 sm:px-4"
@@ -600,7 +670,7 @@ export default function ChatInterface() {
           {activeChat ? (
             <>
               <header className="flex min-h-[77px] shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-3 sm:px-6">
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                   <Button
                     size="icon"
                     variant="ghost"
@@ -610,8 +680,17 @@ export default function ChatInterface() {
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
-                  {renderAvatar(activeChat)}
-                  <div className="min-w-0">
+                  <button
+                    type="button"
+                    aria-label={
+                      isGroup ? "View group details" : "View contact profile"
+                    }
+                    className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    onClick={() => setDetailsOpen(true)}
+                  >
+                    {renderAvatar(activeChat)}
+                  </button>
+                  <div className="min-w-0 flex-1">
                     <h2 className="truncate text-sm font-semibold text-slate-900 sm:text-base">
                       {conversationName(activeChat, user?.user_id)}
                     </h2>
@@ -638,26 +717,76 @@ export default function ChatInterface() {
                     </p>
                   </div>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className={cn(
-                    "h-9 w-9 shrink-0 border-0 text-slate-500 hover:bg-slate-50",
-                    searchOpen && "bg-primary-light text-primary",
-                  )}
-                  aria-label={
-                    searchOpen
-                      ? "Close message search"
-                      : "Search this conversation"
-                  }
-                  aria-pressed={searchOpen}
-                  onClick={() => {
-                    setSearchOpen((previous) => !previous);
-                    setMessageQuery("");
-                  }}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
+                <div className="ml-2 flex shrink-0 items-center gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      "h-9 w-9 shrink-0 border-0 text-slate-500 hover:bg-slate-50",
+                      searchOpen && "bg-primary-light text-primary",
+                    )}
+                    aria-label={
+                      searchOpen
+                        ? "Close message search"
+                        : "Search this conversation"
+                    }
+                    aria-pressed={searchOpen}
+                    onClick={() => {
+                      setSearchOpen((previous) => !previous);
+                      setMessageQuery("");
+                    }}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 border-0 text-slate-500"
+                        aria-label="Conversation menu"
+                      >
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onSelect={() => setDetailsOpen(true)}>
+                        <Info className="mr-2 h-4 w-4" />
+                        {isGroup ? "Group details" : "Contact profile"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={toggleSound}>
+                        {soundEnabled ? (
+                          <Volume2 className="mr-2 h-4 w-4" />
+                        ) : (
+                          <VolumeX className="mr-2 h-4 w-4" />
+                        )}
+                        {soundEnabled
+                          ? "Mute message sounds"
+                          : "Enable message sounds"}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setActionError("");
+                          setClearOpen(true);
+                        }}
+                      >
+                        <Eraser className="mr-2 h-4 w-4" />
+                        Clear chat for me
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-700 focus:text-red-700"
+                        onSelect={() => {
+                          setActionError("");
+                          setDeleteChatOpen(true);
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete chat for me
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </header>
               {searchOpen && (
                 <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
@@ -792,6 +921,7 @@ export default function ChatInterface() {
                               message={message}
                               own={message.sender_id === user?.user_id}
                               group={isGroup}
+                              canPost={activeChat.can_post !== false}
                               onReply={() => {
                                 setReply(message);
                                 textareaRef.current?.focus();
@@ -834,6 +964,12 @@ export default function ChatInterface() {
                 </Button>
               )}
               <div className="shrink-0 border-t border-slate-200 bg-white p-3 sm:px-6 sm:py-4">
+                {activeChat.can_post === false && (
+                  <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                    Only the creator can post in this group. You can still read
+                    its messages.
+                  </p>
+                )}
                 {actionError && !editing && !deleting && (
                   <div
                     role="alert"
@@ -886,7 +1022,11 @@ export default function ChatInterface() {
                     onChange={(event) => updateDraft(event.target.value)}
                     onKeyDown={onKeyDown}
                     placeholder="Write a message…"
-                    disabled={messagesLoading || !!messagesError}
+                    disabled={
+                      messagesLoading ||
+                      !!messagesError ||
+                      activeChat.can_post === false
+                    }
                     className="max-h-[140px] min-h-10 resize-none rounded-lg border-0 bg-transparent px-2.5 py-2.5 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <Button
@@ -894,7 +1034,10 @@ export default function ChatInterface() {
                     size="icon"
                     aria-label="Send message"
                     disabled={
-                      !draft.trim() || messagesLoading || !!messagesError
+                      !draft.trim() ||
+                      messagesLoading ||
+                      !!messagesError ||
+                      activeChat.can_post === false
                     }
                     className="h-10 w-10 shrink-0 rounded-lg"
                   >
@@ -951,6 +1094,120 @@ export default function ChatInterface() {
         </div>
       </div>
       <NewConversationDialog open={newChatOpen} onOpenChange={setNewChatOpen} />
+      {activeChat && (
+        <ChatDetailsSheet
+          chat={activeChat}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
+      )}
+      <AlertDialog
+        open={clearOpen}
+        onOpenChange={(open) => {
+          if (!saving) setClearOpen(open);
+        }}
+      >
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear this chat for you?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes previous messages, search results, and message
+              notifications from your view. Other participants keep their
+              history. You’ll stay in this conversation and receive new
+              messages. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {actionError && (
+            <p role="alert" className="text-sm text-red-700">
+              {actionError}
+            </p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                setActionError("");
+                try {
+                  await clearChat(activeChatId);
+                  setReply(null);
+                  setEditing(null);
+                  setDeleting(null);
+                  setMessageQuery("");
+                  setSearchResults([]);
+                  setDrafts((previous) => ({
+                    ...previous,
+                    [activeChatId]: "",
+                  }));
+                  setClearOpen(false);
+                } catch (error) {
+                  setActionError(error.message || "Could not clear the chat");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}Clear chat
+              for me
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={deleteChatOpen}
+        onOpenChange={(open) => {
+          if (!saving) setDeleteChatOpen(open);
+        }}
+      >
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this chat for you?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the chat and its previous messages from your inbox.
+              Other participants keep their copy. The chat will return if a new
+              message arrives or you start the conversation again. This cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {actionError && (
+            <p role="alert" className="text-sm text-red-700">
+              {actionError}
+            </p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={saving}
+              onClick={async () => {
+                const chatId = activeChatId;
+                if (!chatId) return;
+                setSaving(true);
+                setActionError("");
+                try {
+                  await deleteChat(chatId);
+                  setReply(null);
+                  setEditing(null);
+                  setDeleting(null);
+                  setMessageQuery("");
+                  setSearchResults([]);
+                  setDrafts((previous) => ({ ...previous, [chatId]: "" }));
+                  setDeleteChatOpen(false);
+                } catch (error) {
+                  setActionError(error.message || "Could not delete the chat");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Delete chat for me
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Dialog
         open={!!editing}
         onOpenChange={(open) => {

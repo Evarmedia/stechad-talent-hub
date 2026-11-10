@@ -55,9 +55,7 @@ export function AppNavbar() {
   const currentRole =
     navRoles.find((r) => pathname.startsWith(r.path))?.name || "Dashboard";
   const profileRoute = getProfileRoute(pathname);
-  const showNotifications =
-    notificationsEligible &&
-    (user?.role === "engineer" || user?.role === "project_manager" || user?.role === "staff");
+  const showNotifications = notificationsEligible;
   const notificationsToShow = useMemo(
     () => (notifications || []).slice(0, 10),
     [notifications]
@@ -195,8 +193,13 @@ export function AppNavbar() {
                     return (
                       <DropdownMenuItem
                         key={key}
-                        onSelect={(e) => e.preventDefault()}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-blue-200 focus:bg-slate-50"
+                        onSelect={() => {
+                          if (typeof n.action_url === "string" && n.action_url.startsWith("/") && !n.action_url.startsWith("//")) {
+                            setNotifOpen(false);
+                            navigate(n.action_url);
+                          }
+                        }}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 focus:bg-primary-light"
                       >
                         <span
                           className={`mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 ${n.is_read ? "" : "ring-2 ring-primary/40"}`}

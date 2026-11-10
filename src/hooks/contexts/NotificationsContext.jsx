@@ -1,166 +1,162 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import apiService from "../../services/apiService.js";
+import websocketService from "../../services/websocketService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
 
 const NotificationsContext = createContext();
-
 export const NotificationsProvider = ({ children }) => {
+  const { user } = useAuthContext();
+  const userId = user?.user_id;
+  const isEligibleRole = [
+    "admin",
+    "super_admin",
+    "project_manager",
+    "staff",
+    "engineer",
+  ].includes(user?.role);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false); // prevents double fetching
-
-  const token = apiService.getToken(); // ensures only fetch when logged in
-  const { user } = useAuthContext();
-  const isEligibleRole =
-    user?.role === "engineer" || user?.role === "project_manager";
-
-  const getNotifications = async (filters = {}) => {
-    if (!token || !isEligibleRole) return [];
-
-    setLoading(true);
-    try {
-      let params = {
-        // page: filters.page || 1,
-        // limit: filters.limit || 50,
-      };
-
-      if (filters.is_read !== undefined) {
-        params.is_read = filters.is_read;
-      }
-      if (filters.type) {
-        params.type = filters.type;
-      }
-
-      const response = await apiService.get("notifications",);
-      const notificationsData =
-        response.success && response.data
-          ? response.data.notifications || response.data
-          : [];
-
-      setNotifications(notificationsData);
-
-      // Calculate unread count
-      // const unread = notificationsData.filter((n) => !n.is_read).length;
-      setUnreadCount(response?.data?.unread_count ?? 0);
-
-      console.log(notificationsData);
-      return notificationsData;
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      setNotifications([]);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (notificationId) => {
-    if (!token || !isEligibleRole) return { success: false };
-
-    try {
-      const response = await apiService.request(
-        `/notifications/${notificationId}/read`,
-        {
-          method: "PUT",
-        }
-      );
-
-      if (response.success) {
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.notifications_id === notificationId || n.id === notificationId
-              ? { ...n, is_read: true, read_at: new Date().toISOString() }
-              : n
-          )
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
-
-      return response;
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      throw error;
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!token || !isEligibleRole) return { success: false };
-
-    try {
-      const response = await apiService.request("/notifications/read-all", {
-        method: "PUT",
-      });
-
-      if (response.success) {
-        setNotifications((prev) =>
-          prev.map((n) => ({
-            ...n,
-            is_read: true,
-            read_at: new Date().toISOString(),
-          }))
-        );
-        setUnreadCount(0);
-      }
-
-      return response;
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    if (!token || !user || initialized || !isEligibleRole) return;
-
-    const init = async () => {
+  const request = useRef(0);
+  const session = useRef(userId);
+  session.current = userId;
+  const boundaries = useRef(new Map());
+  const revoked = useRef(new Set());
+  const visible = useCallback((notification) => {
+    const id = notification.metadata?.chat_id;
+    return (
+      !revoked.current.has(id) &&
+      (!id ||
+        BigInt(notification.metadata?.message_sequence || 0) >
+          BigInt(boundaries.current.get(id) || 0))
+    );
+  }, []);
+  const getNotifications = useCallback(
+    async (filters = {}) => {
+      if (!userId || !isEligibleRole || !apiService.getToken()) return [];
+      const version = ++request.current;
       setLoading(true);
       try {
-        await getNotifications();
-        setInitialized(true);
-        setLoading(false);
-      } catch (err) {
-        console.error("NotificationsContext init error:", err);
+        const response = await apiService.get("notifications", filters);
+        const rows = (response.data?.notifications || []).filter(visible);
+        if (session.current === userId && request.current === version) {
+          setNotifications(rows);
+          setUnreadCount(
+            response.data?.unread_count ??
+              rows.filter((n) => !n.is_read).length,
+          );
+        }
+        return rows;
       } finally {
-        setInitialized(true);
-        setLoading(false);
+        if (session.current === userId && request.current === version)
+          setLoading(false);
       }
-    };
-
-    init();
-  }, [token, user]);
-
-  const resetNotificationState = () => {
+    },
+    [userId, isEligibleRole, visible],
+  );
+  const markAsRead = useCallback(
+    async (id) => {
+      const response = await apiService.request(`/notifications/${id}/read`, {
+        method: "PUT",
+      });
+      if (session.current === userId) await getNotifications();
+      return response;
+    },
+    [getNotifications, userId],
+  );
+  const markAllAsRead = useCallback(async () => {
+    const response = await apiService.request("/notifications/read-all", {
+      method: "PUT",
+    });
+    if (session.current === userId) await getNotifications();
+    return response;
+  }, [getNotifications, userId]);
+  const resetNotificationState = useCallback(() => {
+    ++request.current;
     setNotifications([]);
     setUnreadCount(0);
     setLoading(false);
-    setInitialized(false);
-  };
-
-  const value = {
-    notifications,
-    unreadCount,
-    loading,
+  }, []);
+  useEffect(() => {
+    resetNotificationState();
+    boundaries.current.clear();
+    revoked.current.clear();
+    if (!userId || !isEligibleRole) return;
+    const refresh = () => {
+      void getNotifications().catch(() => {});
+    };
+    const removeChat = (chatId, sequence) => {
+      ++request.current;
+      if (sequence !== undefined) {
+        if (BigInt(sequence) > BigInt(boundaries.current.get(chatId) || 0))
+          boundaries.current.set(chatId, sequence);
+      } else revoked.current.add(chatId);
+      setNotifications((previous) => previous.filter(visible));
+      refresh();
+    };
+    const off = [
+      websocketService.on("notification_created", refresh),
+      websocketService.on("notifications_changed", refresh),
+      websocketService.on(
+        "history_cleared",
+        ({ chat_id, cleared_through_sequence }) =>
+          removeChat(chat_id, cleared_through_sequence),
+      ),
+      websocketService.on("membership_revoked", ({ chat_id }) =>
+        removeChat(chat_id),
+      ),
+      websocketService.on("group_updated", ({ chat_id }) => {
+        revoked.current.delete(chat_id);
+        refresh();
+      }),
+      websocketService.on("message_deleted", refresh),
+      websocketService.on("connection_status", (status) => {
+        if (status === "connected") refresh();
+      }),
+    ];
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => {
+      ++request.current;
+      off.forEach((unsubscribe) => unsubscribe());
+      window.removeEventListener("focus", refresh);
+    };
+  }, [
+    userId,
     isEligibleRole,
     getNotifications,
-    markAsRead,
-    markAllAsRead,
     resetNotificationState,
-  };
-
+    visible,
+  ]);
   return (
-    <NotificationsContext.Provider value={value}>
+    <NotificationsContext.Provider
+      value={{
+        notifications,
+        unreadCount,
+        loading,
+        isEligibleRole,
+        getNotifications,
+        markAsRead,
+        markAllAsRead,
+        resetNotificationState,
+      }}
+    >
       {children}
     </NotificationsContext.Provider>
   );
 };
-
 export const useNotificationsContext = () => {
   const context = useContext(NotificationsContext);
-  if (!context) {
+  if (!context)
     throw new Error(
-      "useNotificationsContext must be used within a NotificationsProvider"
+      "useNotificationsContext must be used within a NotificationsProvider",
     );
-  }
   return context;
 };
