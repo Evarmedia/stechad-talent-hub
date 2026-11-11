@@ -66,6 +66,7 @@ const DataProviderInner = ({ children }) => {
     talentDashboardData: talentsContext.talentDashboardData,
     talentProjects: talentsContext.talentProjects,
     jobs: jobsContext.jobs,
+    jobsLoading: jobsContext.loading,
     applications: applicationsContext.applications,
     jobApplications: applicationsContext.jobApplications,
     talentApplications: applicationsContext.talentApplications,
