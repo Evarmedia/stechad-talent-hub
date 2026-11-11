@@ -5,23 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import type { DashboardEngineer } from "@/types/dashboard";
+import type { DashboardTalent } from "@/types/dashboard";
 
-interface RecentEngineersProps {
+interface RecentTalentsProps {
   loading: boolean;
-  engineers: DashboardEngineer[];
+  talents: DashboardTalent[];
 }
 
-const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers }) => {
-  const recentEngineers = engineers.slice(0, 3);
+const RecentTalents: React.FC<RecentTalentsProps> = ({ loading, talents }) => {
+  const recentTalents = talents.slice(0, 3);
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
-          Recent Engineer Signups
+          Recent Talent Signups
           <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/admin/engineers">View All</Link>
+            <Link to="/admin/talents">View All</Link>
           </Button>
         </CardTitle>
       </CardHeader>
@@ -37,7 +37,7 @@ const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers })
           </div>
         ) : (
           <div className="space-y-3">
-            {recentEngineers.map((e, idx) => (
+            {recentTalents.map((e, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-sm">{`${e.user.first_name} ${e.user.last_name}`}</div>
@@ -54,9 +54,9 @@ const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers })
                 </Badge></>)}
               </div>
             ))}
-            {recentEngineers.length === 0 && (
+            {recentTalents.length === 0 && (
               <div className="text-center text-muted-foreground py-4">
-                No engineers found
+                No talents found
               </div>
             )}
           </div>
@@ -66,4 +66,4 @@ const RecentEngineers: React.FC<RecentEngineersProps> = ({ loading, engineers })
   );
 };
 
-export default RecentEngineers;
+export default RecentTalents;

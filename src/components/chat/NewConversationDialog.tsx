@@ -235,7 +235,7 @@ export default function NewConversationDialog({
             <p className="py-10 text-center text-sm text-slate-500">
               {search
                 ? "No team members match that name."
-                : user?.role === "engineer"
+                : user?.role === "talent"
                   ? "People will appear here after they send you a direct message. You can reply to any existing conversation."
                   : "No eligible team members are available yet."}
             </p>

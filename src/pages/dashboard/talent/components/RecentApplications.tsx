@@ -32,7 +32,7 @@ const RecentApplications: React.FC<RecentApplicationsProps> = ({ loading, applic
         <CardTitle className="text-lg flex items-center justify-between">
           Recent Applications
           <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/dashboard/engineer/applications">View All</Link>
+            <Link to="/dashboard/talent/applications">View All</Link>
           </Button>
         </CardTitle>
       </CardHeader>
@@ -66,7 +66,7 @@ const RecentApplications: React.FC<RecentApplicationsProps> = ({ loading, applic
             ))}
             {applications.length === 0 && (
               <div className="text-center text-muted-foreground py-4">
-                No applications yet. <Link to="/dashboard/engineer/jobs" className="text-primary hover:underline">Browse jobs</Link>
+                No applications yet. <Link to="/dashboard/talent/jobs" className="text-primary hover:underline">Browse jobs</Link>
               </div>
             )}
           </div>

@@ -9,8 +9,8 @@ import { useDataContext } from '@/hooks/useDataContext';
 import React, { useState } from 'react';
 import { useAuthContext } from '../hooks/useAuthContext';
 
-interface Engineer {
-  engineer_id: string;
+interface Talent {
+  talent_id: string;
   user_id: string;
   date_of_birth: string;
   open_to_nearby_cities: boolean;
@@ -44,11 +44,11 @@ interface Engineer {
 }
 
 interface Applicant {
-  engineer_id: string;
+  talent_id: string;
   first_name?: string;
   last_name?: string;
   email?: string;
-  engineer?: Engineer;
+  talent?: Talent;
   user: {
     first_name?: string;
     last_name?: string;
@@ -60,7 +60,7 @@ interface ApplicantData {
   // When passed from Applicants page (full application)
   applicant?: Applicant;
   applications_id?: string;
-  engineer_id?: string;
+  talent_id?: string;
   job_id?: string;
   job_title?: string;
   status?: string;
@@ -69,7 +69,7 @@ interface ApplicantData {
   first_name?: string;
   last_name?: string;
   email?: string;
-  engineer?: Engineer;
+  talent?: Talent;
 }
 
 interface ScheduleInterviewDialogProps {
@@ -81,7 +81,7 @@ interface ScheduleInterviewDialogProps {
 }
 
 interface FormData {
-  engineer_id: string;
+  talent_id: string;
   job_id: string;
   date_time: string;
   duration: number;
@@ -109,7 +109,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
         firstName: applicant.applicant.user?.first_name || '',
         lastName: applicant.applicant.user?.last_name || '',
         email: applicant.applicant.user?.email || '',
-        engineerId: applicant.applicant?.engineer_id || applicant.engineer_id || '',
+        talentId: applicant.applicant?.talent_id || applicant.talent_id || '',
       };
     }
     // Otherwise, applicant is the direct object (from profile dialog)
@@ -117,14 +117,14 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
       firstName: applicant.first_name || '',
       lastName: applicant.last_name || '',
       email: applicant.email || '',
-      engineerId: applicant.engineer?.engineer_id || applicant.engineer_id || '',
+      talentId: applicant.talent?.talent_id || applicant.talent_id || '',
     };
   };
 
   const applicantData = getApplicantData();
 
   const [formData, setFormData] = useState({
-    engineer_id: applicantData.engineerId,
+    talent_id: applicantData.talentId,
     job_id: applicant.job_id || '',
     date_time: '',
     duration: 30,
@@ -143,7 +143,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
 
     try {
       const interviewData = {
-        engineer_id: applicantData.engineerId,
+        talent_id: applicantData.talentId,
         job_id: applicant.job_id || '',
         date_time: new Date(formData.date_time).toISOString(),
         duration: formData.duration,
@@ -161,7 +161,7 @@ const ScheduleInterviewDialog: React.FC<ScheduleInterviewDialogProps> = ({
 
       onClose();
       setFormData({
-        engineer_id: '',
+        talent_id: '',
         job_id: '',
         date_time: '',
         duration: 30,

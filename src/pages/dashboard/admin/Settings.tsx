@@ -14,7 +14,7 @@ const AdminSettings = () => (
         <form className="flex flex-col gap-4">
           <label className="font-semibold text-primary">Contact Email</label>
           <Input value="contact@stechad.com" disabled />
-          <label className="font-semibold text-primary">Auto-approve Engineers</label>
+          <label className="font-semibold text-primary">Auto-approve Talents</label>
           <input type="checkbox" checked className="ml-2" readOnly />
           <label className="font-semibold text-primary">Support Link</label>
           <Input value="https://stechad.com/support" disabled />

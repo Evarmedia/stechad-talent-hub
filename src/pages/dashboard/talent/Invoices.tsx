@@ -34,7 +34,7 @@ type ReferralSummary = {
   referrals_made?: number;
 };
 
-const EngineerInvoicesPage = () => {
+const TalentInvoicesPage = () => {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [referrals, setReferrals] = useState<ReferralSummary>({});
@@ -87,7 +87,7 @@ const EngineerInvoicesPage = () => {
         <p className='text-sm uppercase tracking-[0.2em] text-primary/80'>
           Payments
         </p>
-        <h1 className='text-2xl font-bold text-primary'>Engineer invoicing</h1>
+        <h1 className='text-2xl font-bold text-primary'>Talent invoicing</h1>
       </div>
       <div className='grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6'>
         <Card>
@@ -226,4 +226,4 @@ const EngineerInvoicesPage = () => {
   );
 };
 
-export default EngineerInvoicesPage;
+export default TalentInvoicesPage;

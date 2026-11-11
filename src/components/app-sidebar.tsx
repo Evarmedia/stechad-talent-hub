@@ -12,15 +12,15 @@ type MenuItem = {
   superAdminOnly?: boolean;
 };
 
-const engineerMenu: MenuItem[] = [
-  { icon: Home, label: "Dashboard", to: "/dashboard/engineer" },
-  { icon: Briefcase, label: "Jobs", to: "/dashboard/engineer/jobs" },
-  { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
-  { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
-  { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
-  { icon: DollarSign, label: "Invoices", to: "/dashboard/engineer/invoices" },
-  { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
-  { icon: User, label: "Profile", to: "/dashboard/engineer/profile" },
+const talentMenu: MenuItem[] = [
+  { icon: Home, label: "Dashboard", to: "/dashboard/talent" },
+  { icon: Briefcase, label: "Jobs", to: "/dashboard/talent/jobs" },
+  { icon: FolderKanban, label: "Projects", to: "/dashboard/talent/projects" },
+  { icon: ClipboardList, label: "Applications", to: "/dashboard/talent/applications" },
+  { icon: Calendar, label: "Interviews", to: "/dashboard/talent/interviews" },
+  { icon: DollarSign, label: "Invoices", to: "/dashboard/talent/invoices" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/talent/messages" },
+  { icon: User, label: "Profile", to: "/dashboard/talent/profile" },
 ];
 
 const staffMenu: MenuItem[] = [
@@ -39,7 +39,7 @@ const pmMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
-  { icon: Pickaxe, label: "Engineers", to: "/dashboard/pm/engineers" },
+  { icon: Pickaxe, label: "Talents", to: "/dashboard/pm/talents" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
   { icon: DollarSign, label: "Project Invoices", to: "/dashboard/pm/project-invoices" },
   { icon: Clock3, label: "Attendance", to: "/dashboard/pm/attendance" },
@@ -55,20 +55,20 @@ const pmMenu: MenuItem[] = [
 
 const adminMenu: MenuItem[] = [
   { icon: Home, label: "Overview", to: "/admin" },
-  { icon: Pickaxe, label: "Engineers", to: "/admin/engineers" },
+  { icon: Pickaxe, label: "Talents", to: "/admin/talents" },
   { icon: User, label: "Project Managers", to: "/admin/project-managers" },
   { icon: FolderKanban, label: "Projects", to: "/admin/projects" },
   { icon: ShieldCheck, label: "Roles", to: "/admin/roles", superAdminOnly: true },
   { icon: ClipboardList, label: "Workforce", to: "/admin/workforce" },
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
-  { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
+  { icon: ClipboardList, label: "Talent Vetting", to: "/admin/talent-vetting" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
   { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
 ];
 
 function getRoleMenu(pathname: string): MenuItem[] {
-  if (pathname.startsWith("/dashboard/engineer")) return engineerMenu;
+  if (pathname.startsWith("/dashboard/talent")) return talentMenu;
   if (pathname.startsWith("/dashboard/staff")) return staffMenu;
   if (pathname.startsWith("/dashboard/pm")) return pmMenu;
   if (pathname.startsWith("/admin")) return adminMenu;
@@ -95,8 +95,8 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {pathname.includes("/engineer")
-              ? "Engineer"
+            {pathname.includes("/talent")
+              ? "Talent"
               : pathname.includes("/staff")
               ? "Staff"
               : pathname.includes("/pm")

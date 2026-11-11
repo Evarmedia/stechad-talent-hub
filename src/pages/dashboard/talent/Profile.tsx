@@ -77,12 +77,12 @@ const Profile = () => {
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
-        years_of_experience: user.engineer?.years_of_experience?.toString() || "",
-        skill_level: user.engineer?.skill_level || "",
-        specialization: user.engineer?.specialization?.join(", ") || "",
-        project_types: user.engineer?.project_types?.join(", ") || "",
-        availability: user.engineer?.availability || "available",
-        cv_name: user.engineer?.cv_object_name || "",
+        years_of_experience: user.talent?.years_of_experience?.toString() || "",
+        skill_level: user.talent?.skill_level || "",
+        specialization: user.talent?.specialization?.join(", ") || "",
+        project_types: user.talent?.project_types?.join(", ") || "",
+        availability: user.talent?.availability || "available",
+        cv_name: user.talent?.cv_object_name || "",
       }));
 
       // Set avatar preview from user's current avatar
@@ -91,8 +91,8 @@ const Profile = () => {
       }
       
       // Set CV URL if available
-      if (user.engineer?.cv_url) {
-        setCvUrl(user.engineer.cv_url);
+      if (user.talent?.cv_url) {
+        setCvUrl(user.talent.cv_url);
       }
     }
   }, [user]);
@@ -259,14 +259,14 @@ const Profile = () => {
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
-        years_of_experience: user.engineer?.years_of_experience?.toString() || "",
-        skill_level: user.engineer?.skill_level || "",
-        specialization: user.engineer?.specialization?.join(", ") || "",
-        project_types: user.engineer?.project_types?.join(", ") || "",
-        availability: user.engineer?.availability || "available",
+        years_of_experience: user.talent?.years_of_experience?.toString() || "",
+        skill_level: user.talent?.skill_level || "",
+        specialization: user.talent?.specialization?.join(", ") || "",
+        project_types: user.talent?.project_types?.join(", ") || "",
+        availability: user.talent?.availability || "available",
         avatar: null,
         cv_file: null,
-        cv_name: user.engineer?.cv_object_name || "",
+        cv_name: user.talent?.cv_object_name || "",
       }));
 
       // Reset avatar preview

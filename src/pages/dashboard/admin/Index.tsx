@@ -3,12 +3,12 @@ import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar } from "lucide-react";
 import AdminStats from "./components/AdminStats";
 import LatestJobs from "./components/LatestJobs";
-import RecentEngineers from "./components/RecentEngineers";
+import RecentTalents from "./components/RecentTalents";
 import RecentProjects from "./components/RecentProjects";
 
 const AdminDashboard = () => {
   // const [loading, setLoading] = useState(true);
-  // const [engineers, setEngineers] = useState([]);
+  // const [talents, setTalents] = useState([]);
   // const [jobs, setJobs] = useState([]);
   // const [applications, setApplications] = useState([]);
   // const [projects, setProjects] = useState([]);
@@ -35,7 +35,7 @@ const AdminDashboard = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <RecentEngineers loading={loading} engineers={adminDashboardData?.recentActivity?.recentEngineers} />
+          <RecentTalents loading={loading} talents={adminDashboardData?.recentActivity?.recentTalents} />
           <LatestJobs loading={loading} jobs={adminDashboardData?.recentActivity?.recentJobs} />
         </div>
 

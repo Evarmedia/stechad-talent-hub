@@ -1,4 +1,4 @@
-import { EngineerDetailsDialog } from "@/components/EngineerDetailsDialog";
+import { TalentDetailsDialog } from "@/components/TalentDetailsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,10 @@ import { Download, Eye, Search, User } from "lucide-react";
 import { useState } from "react";
 import { exportToXLSX } from "./exportUtils";
 import VetRemarkDialog from "./VetRemarkDialog";
-// import EngineerTable from "./EngineerTable";
+// import TalentTable from "./TalentTable";
 // import { exportToXLSX } from "./exportToXlsx";
 
-interface Engineer {
+interface Talent {
   name: string;
   country: string;
   years_of_experience: number;
@@ -21,87 +21,87 @@ interface Engineer {
   user: { first_name: string; last_name: string; city?: string; country?: string; browser_location_city?: string; browser_location_state?: string; browser_location_country?: string; email?: string; phone_number?: string; };
 }
 
-const Engineers = () => {
+const Talents = () => {
   // const [loading, setLoading] = useState(true);
-  // const [engineers, setEngineers] = useState([]);
+  // const [talents, setTalents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("All");
-  const [selectedEngineer, setSelectedEngineer] = useState(null);
+  const [selectedTalent, setSelectedTalent] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const { engineers, loading } = useDataContext();
+  const { talents, loading } = useDataContext();
 
-  // console.log("Engineers at Engineers page", engineers);
+  // console.log("Talents at Talents page", talents);
 
-  const filteredEngineers = engineers.filter((engineer) => {
+  const filteredTalents = talents.filter((talent) => {
     const fullName =
-      `${engineer.user?.first_name || ""} ${engineer.user?.last_name || ""}`.toLowerCase();
+      `${talent.user?.first_name || ""} ${talent.user?.last_name || ""}`.toLowerCase();
 
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
-      engineer.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      engineer.user?.browser_location_country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      engineer.user?.country?.toLowerCase().includes(searchTerm.toLowerCase());
+      talent.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      talent.user?.browser_location_country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      talent.user?.country?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "All" ||
-      engineer.status?.toLowerCase() === statusFilter.toLowerCase();
+      talent.status?.toLowerCase() === statusFilter.toLowerCase();
 
     let matchesDate = true;
-    if (dateFilter === "Recent" && engineer.onboarded_at) {
+    if (dateFilter === "Recent" && talent.onboarded_at) {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      matchesDate = new Date(engineer.onboarded_at) >= oneMonthAgo;
+      matchesDate = new Date(talent.onboarded_at) >= oneMonthAgo;
     }
 
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const sortedEngineers =
+  const sortedTalents =
     dateFilter === "Recent"
-      ? [...filteredEngineers].sort(
+      ? [...filteredTalents].sort(
         (a, b) =>
           new Date(b.onboarded_at || 0).getTime() -
           new Date(a.onboarded_at || 0).getTime()
       )
-      : filteredEngineers;
+      : filteredTalents;
 
   const getStatusColor = (status: string) =>
     status === "active"
       ? "bg-green-100 text-green-800"
       : "bg-gray-100 text-gray-800";
 
-  const handleViewEngineer = (engineer: Engineer) => {
-    setSelectedEngineer(engineer);
+  const handleViewTalent = (talent: Talent) => {
+    setSelectedTalent(talent);
     setIsDetailsOpen(true);
   };
 
   const handleExportXlsx = () => {
-    const dataToExport = sortedEngineers.map(engineer => ({
-      Date: engineer.onboarded_at?.split("T")[0],
-      name: `${engineer.user.first_name} ${engineer.user.last_name}`,
-      email: engineer.user.email,
-      phone: engineer.user.phone_number || 'N/A',
-      date_Of_Birth: engineer.date_of_birth,
-      skills: engineer.specialization.join(", "),
-      languages: engineer.languages.join(", "),
-      language_Proficiency: engineer.language_proficiency,
-      country: engineer.user.browser_location_country || engineer.user.country,
-      experience: engineer.years_of_experience,
-      status: engineer.status,
-      open_To_Nearby_Cities: engineer.open_to_nearby_cities ? 'Yes' : 'No',
-      has_Drivers_Licence: engineer.has_drivers_licence ? 'Yes' : 'No',
-      skill_Level: engineer.skill_level,
-      certifications: engineer.certifications.join(", "),
-      project_Types: engineer.project_types.join(", "),
-      open_To_Training: engineer.open_to_training ? 'Yes' : 'No',
-      Are_You_A_Freelancer: engineer.is_freelancer ? 'Yes' : 'No',
-      Are_You_Following_Us_On_Linkedin: engineer.follows_linkedin ? 'Yes' : 'No',
-      Would_You_Like_To_Subscribe_To_Our_Newsletter: engineer.newsletter ? 'Yes' : 'No',
-      // cv_Url: engineer.cv_url || 'N/A',
-      CV: engineer.cv_url
-        ? { f: `HYPERLINK("${engineer.cv_url}", "engineer_cv")` }
+    const dataToExport = sortedTalents.map(talent => ({
+      Date: talent.onboarded_at?.split("T")[0],
+      name: `${talent.user.first_name} ${talent.user.last_name}`,
+      email: talent.user.email,
+      phone: talent.user.phone_number || 'N/A',
+      date_Of_Birth: talent.date_of_birth,
+      skills: talent.specialization.join(", "),
+      languages: talent.languages.join(", "),
+      language_Proficiency: talent.language_proficiency,
+      country: talent.user.browser_location_country || talent.user.country,
+      experience: talent.years_of_experience,
+      status: talent.status,
+      open_To_Nearby_Cities: talent.open_to_nearby_cities ? 'Yes' : 'No',
+      has_Drivers_Licence: talent.has_drivers_licence ? 'Yes' : 'No',
+      skill_Level: talent.skill_level,
+      certifications: talent.certifications.join(", "),
+      project_Types: talent.project_types.join(", "),
+      open_To_Training: talent.open_to_training ? 'Yes' : 'No',
+      Are_You_A_Freelancer: talent.is_freelancer ? 'Yes' : 'No',
+      Are_You_Following_Us_On_Linkedin: talent.follows_linkedin ? 'Yes' : 'No',
+      Would_You_Like_To_Subscribe_To_Our_Newsletter: talent.newsletter ? 'Yes' : 'No',
+      // cv_Url: talent.cv_url || 'N/A',
+      CV: talent.cv_url
+        ? { f: `HYPERLINK("${talent.cv_url}", "talent_cv")` }
         : "N/A",
     }));
 
@@ -111,7 +111,7 @@ const Engineers = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Engineers Management</h1>
+        <h1 className="text-2xl font-bold">Talents Management</h1>
         <Button onClick={handleExportXlsx} variant="outline">
           <Download className="w-4 h-4 mr-2" />
           Export data
@@ -123,7 +123,7 @@ const Engineers = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search engineers by name, country or email..."
+            placeholder="Search talents by name, country or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -143,14 +143,14 @@ const Engineers = () => {
           onChange={(e) => setDateFilter(e.target.value)}
           className="border rounded-md px-3 py-2 bg-background"
         >
-          <option value="All">All Engineers</option>
+          <option value="All">All Talents</option>
           <option value="Recent">Recent (Last Month)</option>
         </select>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Engineers List ({sortedEngineers.length})</CardTitle>
+          <CardTitle>Talents List ({sortedTalents.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Mobile: Card layout */}
@@ -174,16 +174,16 @@ const Engineers = () => {
                   </div>
                 </div>
               ))
-              : sortedEngineers.map((engineer) => (
-                <div key={engineer.engineer_id} className="border rounded-lg p-4 space-y-3">
+              : sortedTalents.map((talent) => (
+                <div key={talent.talent_id} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{engineer?.user?.first_name} {engineer?.user?.last_name}</h3>
-                        {engineer.is_vetted ? (
+                        <h3 className="font-medium">{talent?.user?.first_name} {talent?.user?.last_name}</h3>
+                        {talent.is_vetted ? (
                           <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                             Vetted
                           </Badge>
@@ -191,7 +191,7 @@ const Engineers = () => {
                           Not Vetted
                         </Badge>)}
                       </div>
-                      <p className="text-sm text-muted-foreground">{engineer?.user?.email}</p>
+                      <p className="text-sm text-muted-foreground">{talent?.user?.email}</p>
                     </div>
                   </div>
 
@@ -199,12 +199,12 @@ const Engineers = () => {
                     <div>
                       <span className="text-sm font-medium">Skills: </span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {engineer.specialization.length === 0 && (
+                        {talent.specialization.length === 0 && (
                           <Badge variant="outline" className="text-xs">
                             N/A
                           </Badge>
                         )}
-                        {engineer.specialization.map(skill => (
+                        {talent.specialization.map(skill => (
                           <Badge key={skill} variant="outline" className="text-xs">
                             {skill}
                           </Badge>
@@ -213,19 +213,19 @@ const Engineers = () => {
                     </div>
                     <div className="text-sm">
                       <span className="text-muted-foreground">Experience: </span>
-                      <span className="font-medium">{engineer?.years_of_experience || "N/A"}</span>
+                      <span className="font-medium">{talent?.years_of_experience || "N/A"}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-muted-foreground">Country: </span>
-                      <span className="font-medium">{engineer.user.country || engineer.user.browser_location_country || "Remote"}</span>
+                      <span className="font-medium">{talent.user.country || talent.user.browser_location_country || "Remote"}</span>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <Badge className={getStatusColor(engineer.status)}>
-                      {engineer.status}
+                    <Badge className={getStatusColor(talent.status)}>
+                      {talent.status}
                     </Badge>
-                    <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                    <Button size="sm" variant="outline" onClick={() => handleViewTalent(talent)}>
                       <Eye className="w-3 h-3 mr-1" />
                       View
                     </Button>
@@ -239,7 +239,7 @@ const Engineers = () => {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b">
-                  <th className="p-3 text-sm font-bold text-muted-foreground">Engineer</th>
+                  <th className="p-3 text-sm font-bold text-muted-foreground">Talent</th>
                   <th className="p-3 text-sm font-bold text-muted-foreground">Skills</th>
                   <th className="p-3 text-sm font-bold text-muted-foreground">Experience</th>
                   <th className="p-3 text-sm font-bold text-muted-foreground">City</th>
@@ -262,8 +262,8 @@ const Engineers = () => {
                       <td className="p-3"><Skeleton className="h-8 w-20" /></td>
                     </tr>
                   ))
-                  : sortedEngineers.map((engineer) => (
-                    <tr key={engineer.engineer_id} className="border-b hover:bg-gray-50">
+                  : sortedTalents.map((talent) => (
+                    <tr key={talent.talent_id} className="border-b hover:bg-gray-50">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
@@ -271,8 +271,8 @@ const Engineers = () => {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{engineer?.user?.first_name} {engineer?.user?.last_name}</span>
-                              {engineer.is_vetted ? (
+                              <span className="font-medium">{talent?.user?.first_name} {talent?.user?.last_name}</span>
+                              {talent.is_vetted ? (
                                 <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                                   Vetted
                                 </Badge>
@@ -280,40 +280,40 @@ const Engineers = () => {
                                 Not Vetted
                               </Badge>)}
                             </div>
-                            <span className="text-sm text-muted-foreground">{engineer?.user?.email}</span>
+                            <span className="text-sm text-muted-foreground">{talent?.user?.email}</span>
                           </div>
                         </div>
                       </td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1">
-                          {engineer.specialization.length === 0 && (
+                          {talent.specialization.length === 0 && (
                             <Badge variant="outline" className="text-xs">
                               N/A
                             </Badge>
                           )}
-                          {engineer.specialization.slice(0, 2).map(skill => (
+                          {talent.specialization.slice(0, 2).map(skill => (
                             <Badge key={skill} variant="outline" className="text-xs">
                               {skill}
                             </Badge>
                           ))}
-                          {engineer.specialization.length > 2 && (
+                          {talent.specialization.length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{engineer.specialization.length - 2}
+                              +{talent.specialization.length - 2}
                             </Badge>
                           )}
                         </div>
                       </td>
-                      <td className="p-3 text-sm">{engineer?.years_of_experience || "N/A"}</td>
-                      <td className="p-3 text-sm">{engineer?.user?.browser_location_city || engineer?.user?.browser_location_state || engineer?.user?.city || "Remote"}</td>
-                      <td className="p-3 text-sm">{engineer?.user?.country || engineer?.user?.browser_location_country || "Remote"}</td>
+                      <td className="p-3 text-sm">{talent?.years_of_experience || "N/A"}</td>
+                      <td className="p-3 text-sm">{talent?.user?.browser_location_city || talent?.user?.browser_location_state || talent?.user?.city || "Remote"}</td>
+                      <td className="p-3 text-sm">{talent?.user?.country || talent?.user?.browser_location_country || "Remote"}</td>
                       <td className="p-3">
-                        <Badge className={getStatusColor(engineer.status)}>
-                          {engineer.status}
+                        <Badge className={getStatusColor(talent.status)}>
+                          {talent.status}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm text-muted-foreground">{engineer.onboarded_at?.split("T")[0] || 'N/A'}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{talent.onboarded_at?.split("T")[0] || 'N/A'}</td>
                       <td className="p-3">
-                        <Button size="sm" variant="outline" onClick={() => handleViewEngineer(engineer)}>
+                        <Button size="sm" variant="outline" onClick={() => handleViewTalent(talent)}>
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
@@ -324,12 +324,12 @@ const Engineers = () => {
             </table>
           </div>
 
-          {/* <EngineerTable engineers={sortedEngineers} loading={loading} /> */}
+          {/* <TalentTable talents={sortedTalents} loading={loading} /> */}
         </CardContent>
       </Card>
 
-      <EngineerDetailsDialog
-        engineer={selectedEngineer}
+      <TalentDetailsDialog
+        talent={selectedTalent}
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
       />
@@ -338,4 +338,4 @@ const Engineers = () => {
   );
 };
 
-export default Engineers;
+export default Talents;

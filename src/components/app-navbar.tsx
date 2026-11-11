@@ -16,7 +16,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const navRoles = [
-  { name: "Engineer", path: "/dashboard/engineer" },
+  { name: "Talent", path: "/dashboard/talent" },
   { name: "Staff", path: "/dashboard/staff" },
   { name: "PM", path: "/dashboard/pm" },
   { name: "Admin", path: "/admin" },
@@ -24,18 +24,18 @@ const navRoles = [
 
 // Helper function to get the route for the profile based on role and current route
 function getProfileRoute(pathname: string) {
-  if (pathname.startsWith("/dashboard/engineer")) return "/dashboard/engineer/profile";
+  if (pathname.startsWith("/dashboard/talent")) return "/dashboard/talent/profile";
   if (pathname.startsWith("/dashboard/staff")) return "/dashboard/staff/profile";
   if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm/profile";
   if (pathname.startsWith("/admin")) return "/admin/profile";
-  return "/dashboard/engineer/profile"; // default fallback
+  return "/dashboard/talent/profile"; // default fallback
 }
 
 export function AppNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
   const {
-    resetEngineerState,
+    resetTalentState,
     resetJobsState,
     resetApplicationState,
     resetPMsState,
@@ -115,7 +115,7 @@ export function AppNavbar() {
 
   const handleLogout = () => {
     logout();
-    resetEngineerState();
+    resetTalentState();
     resetJobsState();
     resetApplicationState();
     resetPMsState();

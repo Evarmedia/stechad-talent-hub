@@ -20,16 +20,16 @@ const Applications = () => {
   // const [loading, setLoading] = useState(true);
   // const [applications, setApplications] = useState([]);
   
-  const { engrApplications, loading } = useDataContext();
+  const { talentApplications, loading } = useDataContext();
   const { user } = useAuthContext();
 
   // useEffect(() => {
   //   const fetchApplications = async () => {
   //     if (user) {
   //       try {
-  //         const applicationsData = await getEngineersApplication({ engineerId: user.user_id });
+  //         const applicationsData = await getTalentsApplication({ talentId: user.user_id });
   //         setApplications(applicationsData);
-  //         console.log("Engineer Applications Page:", applications);
+  //         console.log("Talent Applications Page:", applications);
   //       } catch (error) {
   //         console.error('Error fetching applications:', error);
   //       } finally {
@@ -39,7 +39,7 @@ const Applications = () => {
   //   };
 
   //   fetchApplications();
-  // }, [getEngineersApplication, user]);
+  // }, [getTalentsApplication, user]);
 
   return (
     <div className="p-4 md:p-8">
@@ -58,7 +58,7 @@ const Applications = () => {
                     <Skeleton className="h-6 w-20" />
                   </div>
                 ))
-              : engrApplications?.map((app, idx) => (
+              : talentApplications?.map((app, idx) => (
                   <div key={idx} className="border rounded-lg p-4 space-y-3">
                     <div>
                       <h3 className="font-medium text-base">{app.title}</h3>
@@ -67,7 +67,7 @@ const Applications = () => {
                     <Badge className={statusColor(app.status)}>{app.status}</Badge>
                   </div>
                 ))}
-            {!loading && engrApplications?.length === 0 && (
+            {!loading && talentApplications?.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No applications found. Start applying to jobs to see them here.
               </div>
@@ -93,7 +93,7 @@ const Applications = () => {
                       <td className="p-2"><Skeleton className="h-6 w-24" /></td>
                     </tr>
                   ))
-                  : engrApplications?.map((app, idx) => (
+                  : talentApplications?.map((app, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="p-2">{app.job_title}</td>
                       <td className="p-2">{app.applied_at?.split('T')[0]}</td>
@@ -104,7 +104,7 @@ const Applications = () => {
                   ))}
               </tbody>
             </table>
-            {!loading && engrApplications?.length === 0 && (
+            {!loading && talentApplications?.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No applications found. Start applying to jobs to see them here.
               </div>

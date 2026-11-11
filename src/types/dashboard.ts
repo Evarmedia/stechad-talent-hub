@@ -39,7 +39,7 @@ export interface DashboardApplication {
 }
 
 export interface DashboardApplicant {
-  engineer_id?: string;
+  talent_id?: string;
   first_name?: string;
   last_name?: string;
   email?: string;
@@ -64,8 +64,8 @@ export interface DashboardApplicant {
   open_to_nearby_cities?: boolean;
   work_authorized?: boolean;
   user?: DashboardUser;
-  engineer?: {
-    engineer_id?: string;
+  talent?: {
+    talent_id?: string;
     specialization?: string[];
     years_of_experience?: number;
   };
@@ -85,8 +85,8 @@ export interface DashboardUser {
   browser_location_country?: string;
 }
 
-export interface DashboardEngineer {
-  engineer_id?: string;
+export interface DashboardTalent {
+  talent_id?: string;
   user_id?: string;
   is_vetted?: boolean;
   vetting_status?: string;
@@ -108,8 +108,8 @@ export interface DashboardEngineer {
   user: DashboardUser;
 }
 
-export interface ReviewEngineer extends Omit<DashboardEngineer, "engineer_id"> {
-  engineer_id: string;
+export interface ReviewTalent extends Omit<DashboardTalent, "talent_id"> {
+  talent_id: string;
 }
 
 export interface DashboardProject {
@@ -123,7 +123,7 @@ export interface DashboardProject {
   deadline?: string;
   start_date?: string;
   team?: string[];
-  engineers?: DashboardEngineer[];
+  talents?: DashboardTalent[];
 }
 
 export interface DashboardInterview {
@@ -139,7 +139,7 @@ export interface DashboardInterview {
 }
 
 export interface AdminStatistics {
-  totalEngineers?: number;
+  totalTalents?: number;
   totalProjectManagers?: number;
   totalJobs?: number;
   totalApplications?: number;

@@ -12,12 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle } from "lucide-react";
 import React from "react";
-import type { ReviewEngineer } from "@/types/dashboard";
+import type { ReviewTalent } from "@/types/dashboard";
 
 type VetRemarkDialogProps = {
-  engineer: ReviewEngineer;
-  selectedEngineer: ReviewEngineer | null;
-  setSelectedEngineer: (engineer: ReviewEngineer) => void;
+  talent: ReviewTalent;
+  selectedTalent: ReviewTalent | null;
+  setSelectedTalent: (talent: ReviewTalent) => void;
   remark: string;
   onRemarkChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onVet: (id: string) => void;
@@ -25,9 +25,9 @@ type VetRemarkDialogProps = {
 };
 
 const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
-  engineer,
-  selectedEngineer,
-  setSelectedEngineer,
+  talent,
+  selectedTalent,
+  setSelectedTalent,
   remark,
   onRemarkChange,
   onVet,
@@ -41,7 +41,7 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
         <Button
           size="sm"
           className="text-white"
-          onClick={() => setSelectedEngineer(engineer)}
+          onClick={() => setSelectedTalent(talent)}
         >
           <CheckCircle className="w-4 h-4 mr-1" />
           Vet
@@ -52,13 +52,13 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
           <DialogTitle>Add Remark</DialogTitle>
           <div>
             <Label className="block font-semibold text-blue-400 mb-2">
-              Remark for {selectedEngineer?.user?.first_name || engineer?.user?.first_name}
+              Remark for {selectedTalent?.user?.first_name || talent?.user?.first_name}
             </Label>
             <Textarea
               name="remark"
               value={remark}
               onChange={onRemarkChange}
-              placeholder="Add Remarks about Engineer"
+              placeholder="Add Remarks about Talent"
               required
               rows={4}
             />
@@ -71,14 +71,14 @@ const VetRemarkDialog: React.FC<VetRemarkDialogProps> = ({
             </Button>
           </DialogClose>
 
-          {selectedEngineer && !selectedEngineer.is_vetted && (
+          {selectedTalent && !selectedTalent.is_vetted && (
             <Button
-              onClick={() => isRemarkProvided && onVet(selectedEngineer.engineer_id)}
+              onClick={() => isRemarkProvided && onVet(selectedTalent.talent_id)}
               className="text-white"
               disabled={!isRemarkProvided}
             >
               <CheckCircle className="w-4 h-4 mr-1" />
-              Vet Engineer
+              Vet Talent
             </Button>
           )}
         </DialogFooter>

@@ -19,7 +19,7 @@ export const NotificationsProvider = ({ children }) => {
     "super_admin",
     "project_manager",
     "staff",
-    "engineer",
+    "talent",
   ].includes(user?.role);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);

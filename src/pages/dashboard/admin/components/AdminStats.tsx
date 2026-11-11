@@ -13,7 +13,7 @@ interface AdminStatsProps {
 
 const AdminStats: React.FC<AdminStatsProps> = ({ loading, statistics }) => {
   const stats = [
-    { label: "Engineers", value: statistics?.totalEngineers, icon: Users, change: "+12%" },
+    { label: "Talents", value: statistics?.totalTalents, icon: Users, change: "+12%" },
     { label: "Project Managers", value: statistics?.totalProjectManagers, icon: UserCheck, change: "+2%" },
     { label: "Active Jobs", value: statistics?.totalJobs, icon: Briefcase, change: "+5%" },
     { label: "Applications", value: statistics?.totalApplications, icon: FileText, change: "+18%" },

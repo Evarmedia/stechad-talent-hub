@@ -1,7 +1,7 @@
 import apiService from './apiService';
 
 class ExportService {
-  async exportEngineers(filters = {}) {
+  async exportTalents(filters = {}) {
     try {
       let params = {
         format: filters.format || 'csv'
@@ -23,16 +23,16 @@ class ExportService {
         params.date_to = filters.date_to;
       }
 
-      const response = await apiService.get('export/engineers', null, params);
+      const response = await apiService.get('export/talents', null, params);
       
       // Handle file download
       if (response.success && response.data) {
-        this.downloadFile(response.data.url || response.data.file, `engineers.${params.format}`);
+        this.downloadFile(response.data.url || response.data.file, `talents.${params.format}`);
       }
       
       return response;
     } catch (error) {
-      console.error('Error exporting engineers:', error);
+      console.error('Error exporting talents:', error);
       throw error;
     }
   }
@@ -88,8 +88,8 @@ class ExportService {
       if (filters.job_id) {
         params.job_id = filters.job_id;
       }
-      if (filters.engineer_id) {
-        params.engineer_id = filters.engineer_id;
+      if (filters.talent_id) {
+        params.talent_id = filters.talent_id;
       }
       if (filters.date_from) {
         params.date_from = filters.date_from;

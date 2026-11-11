@@ -7,7 +7,7 @@ import JobDetailsModal from "./components/JobDetailsModal";
 import JobsGrid from "./components/JobsGrid";
 import JobsHeader from "./components/JobsHeader";
 
-const EngineerJobs = () => {
+const TalentJobs = () => {
   const [search, setSearch] = useState("");
   const [selectedJob, setSelectedJob] = useState<DashboardJob | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
@@ -18,14 +18,14 @@ const EngineerJobs = () => {
     loading, 
     getJobs,
     createApplication, 
-    getEngineersApplication,
-    refreshAllEngineers
+    getTalentsApplication,
+    refreshAllTalents
   } = useDataContext();
 
   const { user } = useAuthContext();
-  const getApplicationsRef = useRef(getEngineersApplication);
+  const getApplicationsRef = useRef(getTalentsApplication);
   const getJobsRef = useRef(getJobs);
-  getApplicationsRef.current = getEngineersApplication;
+  getApplicationsRef.current = getTalentsApplication;
   getJobsRef.current = getJobs;
 
   // -------------------------------------------------------------
@@ -82,14 +82,14 @@ const EngineerJobs = () => {
     try {
       await createApplication(jobId);
 
-      const apps = await getEngineersApplication();
+      const apps = await getTalentsApplication();
       setUserApplications(apps || []);
 
       toast({
         title: "Success",
         description: "Application submitted successfully!",
       });
-      await refreshAllEngineers();
+      await refreshAllTalents();
     } catch (error) {
       toast({
         title: "Error",
@@ -138,4 +138,4 @@ const EngineerJobs = () => {
   );
 };
 
-export default EngineerJobs;
+export default TalentJobs;

@@ -28,10 +28,10 @@ const getTaskIcon = (status: string) => {
   }
 };
 
-const EngineerProjects = () => {
+const TalentProjects = () => {
   // const [projects, setProjects] = useState([]);
   // const [initialLoading, setInitialLoading] = useState(true);
-  const { getProjects, engrProjects, loading } = useDataContext();
+  const { getProjects, talentProjects, loading } = useDataContext();
   const { user } = useAuthContext();
 
   // useEffect(() => {
@@ -47,9 +47,9 @@ const EngineerProjects = () => {
   //       // Filter projects to only show those assigned to the current user
   //       const userProjects = projectsData.filter(project => 
   //         project.assignedTo === user.id || 
-  //         project.engineerId === user.id ||
+  //         project.talentId === user.id ||
   //         (project.team && project.team.includes(user.id)) ||
-  //         (project.assignedEngineers && project.assignedEngineers.includes(user.id))
+  //         (project.assignedTalents && project.assignedTalents.includes(user.id))
   //       );
         
   //       console.log('All projects:', projectsData);
@@ -66,11 +66,11 @@ const EngineerProjects = () => {
   //   fetchProjects();
   // }, [getProjects, user]);
 
-  const currentProjects = engrProjects.filter(project => 
+  const currentProjects = talentProjects.filter(project => 
     project.status === "in_progress" || project.status === "planning"
   );
   
-  const completedProjects = engrProjects.filter(project => 
+  const completedProjects = talentProjects.filter(project => 
     project.status === "completed"
   );
 
@@ -236,4 +236,4 @@ const EngineerProjects = () => {
   );
 };
 
-export default EngineerProjects;
+export default TalentProjects;

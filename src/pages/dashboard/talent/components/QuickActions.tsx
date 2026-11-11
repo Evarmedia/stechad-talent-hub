@@ -10,10 +10,10 @@ interface QuickActionsProps {
 }
 
 const quickLinks = [
-  { to: "/dashboard/engineer/jobs", label: "Browse Jobs", icon: "💼" },
-  { to: "/dashboard/engineer/applications", label: "My Applications", icon: "📝" },
-  { to: "/dashboard/engineer/projects", label: "My Projects", icon: "🏗️" },
-  { to: "/dashboard/engineer/profile", label: "Profile", icon: "👤" },
+  { to: "/dashboard/talent/jobs", label: "Browse Jobs", icon: "💼" },
+  { to: "/dashboard/talent/applications", label: "My Applications", icon: "📝" },
+  { to: "/dashboard/talent/projects", label: "My Projects", icon: "🏗️" },
+  { to: "/dashboard/talent/profile", label: "Profile", icon: "👤" },
 ];
 
 const QuickActions: React.FC<QuickActionsProps> = ({ loading }) => {

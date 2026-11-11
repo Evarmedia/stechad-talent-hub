@@ -17,7 +17,7 @@ const statusColor = (status: string) => {
   }
 };
 
-interface Engineer {
+interface Talent {
   name: string;
   country: string;
   years_of_experience: number;
@@ -26,13 +26,13 @@ interface Engineer {
   user: { first_name: string; last_name: string; country?: string; email?: string; phone_number?: string;};
 }
 
-interface EngineerTableProps {
-  engineers: Engineer[];
+interface TalentTableProps {
+  talents: Talent[];
   loading: boolean;
 }
 
-const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => {
-  const [selectedEngineer, setSelectedEngineer] = useState<null | Engineer>(null);
+const TalentTable: React.FC<TalentTableProps> = ({ talents, loading }) => {
+  const [selectedTalent, setSelectedTalent] = useState<null | Talent>(null);
 
   return (
     <div className="overflow-x-auto">
@@ -73,31 +73,31 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
                   </td>
                 </tr>
               ))
-          ) : engineers.length === 0 ? (
+          ) : talents.length === 0 ? (
             <tr>
               <td className="p-4 text-center text-muted-foreground" colSpan={6}>
-                No engineers found for this filter.
+                No talents found for this filter.
               </td>
             </tr>
           ) : (
-            engineers.map((eng, i) => (
+            talents.map((talent, i) => (
               <tr key={i} className="border-b">
-                <td className="p-2">{eng.user.first_name} {eng.user.last_name}</td>
-                <td className="p-2">{eng.country}</td>
-                <td className="p-2">{eng.years_of_experience} yrs</td>
+                <td className="p-2">{talent.user.first_name} {talent.user.last_name}</td>
+                <td className="p-2">{talent.country}</td>
+                <td className="p-2">{talent.years_of_experience} yrs</td>
                 <td className="p-2">
-                  <span className={`px-2 py-1 rounded ${statusColor(eng.status)} text-xs`}>
-                    {eng.status}
+                  <span className={`px-2 py-1 rounded ${statusColor(talent.status)} text-xs`}>
+                    {talent.status}
                   </span>
                 </td>
-                <td className="p-2">{eng.onboarded_at ? new Date(eng.onboarded_at).toLocaleDateString() : "n/a"}</td>
+                <td className="p-2">{talent.onboarded_at ? new Date(talent.onboarded_at).toLocaleDateString() : "n/a"}</td>
                 <td className="p-2">
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedEngineer(eng)}
+                        onClick={() => setSelectedTalent(talent)}
                       >
                         View Profile
                       </Button>
@@ -105,34 +105,34 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
-                          {selectedEngineer?.user.first_name}'s Profile
+                          {selectedTalent?.user.first_name}'s Profile
                         </DialogTitle>
-                        <DialogDescription>Engineer profile details.</DialogDescription>
+                        <DialogDescription>Talent profile details.</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-2">
                         <div>
-                          <strong>Name:</strong> {selectedEngineer?.user.first_name} {selectedEngineer?.user.last_name}
+                          <strong>Name:</strong> {selectedTalent?.user.first_name} {selectedTalent?.user.last_name}
                         </div>
                         <div>
-                          <strong>Country:</strong> {selectedEngineer?.user.country}
+                          <strong>Country:</strong> {selectedTalent?.user.country}
                         </div>
                         <div>
-                          <strong>Email:</strong> {selectedEngineer?.user?.email}
+                          <strong>Email:</strong> {selectedTalent?.user?.email}
                         </div>
                         <div>
-                          <strong>Phone:</strong> {selectedEngineer?.user?.phone_number}
+                          <strong>Phone:</strong> {selectedTalent?.user?.phone_number}
                         </div>
                         <div>
-                          <strong>Experience:</strong> {selectedEngineer?.years_of_experience} years
+                          <strong>Experience:</strong> {selectedTalent?.years_of_experience} years
                         </div>
                         <div>
                           <strong>Status:</strong>
-                          <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedEngineer?.status)} text-xs`}>
-                            {selectedEngineer?.status}
+                          <span className={`ml-2 px-2 py-1 rounded ${statusColor(selectedTalent?.status)} text-xs`}>
+                            {selectedTalent?.status}
                           </span>
                         </div>
                         <div>
-                          <strong>Onboarded At:</strong> {selectedEngineer?.onboarded_at ? new Date(selectedEngineer.onboarded_at).toLocaleDateString() : "n/a"}
+                          <strong>Onboarded At:</strong> {selectedTalent?.onboarded_at ? new Date(selectedTalent.onboarded_at).toLocaleDateString() : "n/a"}
                         </div>
                       </div>
                       <DialogClose asChild>
@@ -152,4 +152,4 @@ const EngineerTable: React.FC<EngineerTableProps> = ({ engineers, loading }) => 
   );
 };
 
-export default EngineerTable;
+export default TalentTable;

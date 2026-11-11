@@ -32,7 +32,7 @@ const CurrentProjects: React.FC<CurrentProjectsProps> = ({ loading, activeProjec
         <CardTitle className="text-lg flex items-center justify-between">
           Current Projects
           <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to="/dashboard/engineer/projects">View All</Link>
+            <Link to="/dashboard/talent/projects">View All</Link>
           </Button>
         </CardTitle>
       </CardHeader>

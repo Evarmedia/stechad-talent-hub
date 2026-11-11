@@ -168,7 +168,7 @@ const Interviews = () => {
       </Card>
 
       {/* Reschedule Dialog */}
-      {/* {selectedInterview && (user.role !== 'engineer') && (
+      {/* {selectedInterview && (user.role !== 'talent') && (
         <RescheduleInterviewDialog
           isOpen={rescheduleDialogOpen}
           onClose={() => {

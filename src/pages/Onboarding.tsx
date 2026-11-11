@@ -126,7 +126,7 @@ const Onboarding = () => {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle className="mb-2 text-primary text-center text-2xl">Engineer Onboarding</CardTitle>
+          <CardTitle className="mb-2 text-primary text-center text-2xl">Talent Onboarding</CardTitle>
           <p className="text-center text-muted-foreground mb-4">Complete your profile to get started</p>
           
           <div className="space-y-2">

@@ -31,7 +31,7 @@ export const exportToCSV = (data: Record<string, unknown>[]) => {
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
-  const filename = `engineers_${yyyy}-${mm}-${dd}.csv`;
+  const filename = `talents_${yyyy}-${mm}-${dd}.csv`;
 
   const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   const url = window.URL.createObjectURL(blob);
@@ -50,7 +50,7 @@ export const exportToCSV = (data: Record<string, unknown>[]) => {
 
 export const exportToXLSX = (
   data: Record<string, unknown>[],
-  fileName = "engineers"
+  fileName = "talents"
 ) => {
   if (!data || data.length === 0) return;
 
@@ -85,7 +85,7 @@ export const exportToXLSX = (
 
   // 4. Create workbook
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Engineers");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Talents");
 
   // 5. Generate filename with date
   const today = new Date();

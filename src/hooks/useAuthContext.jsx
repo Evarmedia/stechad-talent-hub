@@ -202,8 +202,8 @@ export const AuthProvider = ({ children }) => {
       let isFormData = profileData instanceof FormData;
 
       // Route to correct endpoint based on role
-      if (user.role === "engineer") {
-        endpoint = "engineers/profile";
+      if (user.role === "talent") {
+        endpoint = "talents/profile";
       } else if (user.role === "project_manager") {
         endpoint = "pm/profile";
       } else if (user.role === "staff") {
@@ -262,7 +262,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isOnboarded = () => {
-    return user?.engineer?.is_onboarded === true;
+    return user?.talent?.is_onboarded === true;
   };
 
   const acceptInvites = async (token, payload) => {

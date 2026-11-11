@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { User, Mail, Calendar, MapPin, Briefcase, ShieldCheck } from "lucide-react";
 
-interface Engineer {
-  engineer_id: number;
+interface Talent {
+  talent_id: number;
   specialization: string[];
   years_of_experience: string;
   status: string;
@@ -17,24 +17,24 @@ interface Engineer {
   cv_url?: string;
 }
 
-interface EngineerDetailsDialogProps {
-  engineer: Engineer | null;
+interface TalentDetailsDialogProps {
+  talent: Talent | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
-  engineer,
+export const TalentDetailsDialog: React.FC<TalentDetailsDialogProps> = ({
+  talent,
   isOpen,
   onClose
 }) => {
-  if (!engineer) return null;
+  if (!talent) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-primary">Engineer Profile</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-primary">Talent Profile</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
@@ -45,19 +45,19 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xl font-semibold">
-                  {engineer.user.first_name} {engineer.user.last_name}
+                  {talent.user.first_name} {talent.user.last_name}
                 </span>
                 <Badge
-                  variant={engineer.is_vetted ? "secondary" : "outline"}
+                  variant={talent.is_vetted ? "secondary" : "outline"}
                   className="text-xs flex items-center gap-1"
                 >
                   <ShieldCheck className="w-3 h-3" />
-                  {engineer.is_vetted ? "Vetted" : "Pending"}
+                  {talent.is_vetted ? "Vetted" : "Pending"}
                 </Badge>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground mt-1">
                 <Mail className="w-4 h-4" />
-                <span className="text-sm">{engineer.user.email}</span>
+                <span className="text-sm">{talent.user.email}</span>
               </div>
             </div>
           </div>
@@ -70,11 +70,11 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   <span className="text-sm font-semibold text-gray-900">Experience</span>
                 </div>
                 <p className="text-2xl font-bold text-blue-700">
-                  {engineer.years_of_experience} years
+                  {talent.years_of_experience} years
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Status:{" "}
-                  <span className="font-semibold capitalize">{engineer.status || "N/A"}</span>
+                  <span className="font-semibold capitalize">{talent.status || "N/A"}</span>
                 </p>
               </CardContent>
             </Card>
@@ -86,10 +86,10 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
                   <span className="text-sm font-semibold text-gray-900">Location</span>
                 </div>
                 <p className="text-lg font-semibold text-gray-900">
-                  {[engineer.user?.browser_location_city || engineer.user?.browser_location_state || engineer.user?.city, engineer.user?.browser_location_country || engineer.user?.country].filter(Boolean).join(", ") || "Not specified"}
+                  {[talent.user?.browser_location_city || talent.user?.browser_location_state || talent.user?.city, talent.user?.browser_location_country || talent.user?.country].filter(Boolean).join(", ") || "Not specified"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Onboarded: {engineer.onboarded_at?.split("T")[0]}
+                  Onboarded: {talent.onboarded_at?.split("T")[0]}
                 </p>
               </CardContent>
             </Card>
@@ -100,7 +100,7 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
               <div>
                 <span className="text-sm font-semibold">Skills</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {engineer.specialization.map(skill => (
+                  {talent.specialization.map(skill => (
                     <Badge key={skill} variant="outline" className="text-xs">
                       {skill}
                     </Badge>
@@ -110,22 +110,22 @@ export const EngineerDetailsDialog: React.FC<EngineerDetailsDialogProps> = ({
               <div>
                 <span className="text-sm font-semibold">Status</span>
                 <div className="mt-2">
-                  <Badge className={engineer.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                    {engineer.status}
+                  <Badge className={talent.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                    {talent.status}
                   </Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {engineer.cv_url && (
+          {talent.cv_url && (
             <Card>
               <CardContent className="p-4">
                 <div className="mb-3">
                   <span className="text-sm font-semibold">CV Preview</span>
                 </div>
                 <a
-                  href={engineer.cv_url}
+                  href={talent.cv_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:underline"

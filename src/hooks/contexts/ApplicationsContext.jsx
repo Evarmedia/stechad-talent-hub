@@ -10,7 +10,7 @@ export const ApplicationsProvider = ({ children }) => {
 
   const [applications, setApplications] = useState([]);
   const [jobApplications, setJobApplications] = useState([]);
-  const [engrApplications, setEngrApplications] = useState([]);
+  const [talentApplications, setTalentApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
@@ -22,8 +22,8 @@ export const ApplicationsProvider = ({ children }) => {
       if (filters.job_id || filters.jobId) {
         params.job_id = filters.job_id || filters.jobId;
       }
-      if (filters.engineer_id || filters.engineerId) {
-        params.engineer_id = filters.engineer_id || filters.engineerId;
+      if (filters.talent_id || filters.talentId) {
+        params.talent_id = filters.talent_id || filters.talentId;
       }
       if (filters.status) {
         params.status = filters.status;
@@ -52,7 +52,7 @@ export const ApplicationsProvider = ({ children }) => {
     }
   };
 
-  const getEngineersApplication = async (filters = {}) => {
+  const getTalentsApplication = async (filters = {}) => {
     setLoading(true);
     try {
       const params = {};
@@ -70,15 +70,15 @@ export const ApplicationsProvider = ({ children }) => {
         params.limit = filters.limit;
       }
 
-      const response = await apiService.get("engineers/applications", params);
+      const response = await apiService.get("talents/applications", params);
       const applicationsData =
       response.success && response.data ? response.data.applications : [];
 
-      setEngrApplications(applicationsData);
+      setTalentApplications(applicationsData);
       return applicationsData;
     } catch (error) {
       console.error("Error fetching applications:", error);
-      setEngrApplications([]);
+      setTalentApplications([]);
       throw error;
     } finally {
       setLoading(false);
@@ -120,7 +120,7 @@ export const ApplicationsProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await apiService.post(
-        `engineers/jobs/${jobId}/apply`,
+        `talents/jobs/${jobId}/apply`,
         applicationData
       );
 
@@ -203,9 +203,9 @@ const updateApplication = async (id, updateData) => {
       setLoading(true);
 
       try {
-        if (user.role === "engineer") {
-          // Engineers fetch their dashboard ONLY
-          getEngineersApplication();
+        if (user.role === "talent") {
+          // Talents fetch their dashboard ONLY
+          getTalentsApplication();
         }
 
         if (user.role === "admin" || user.role === "project_manager") {
@@ -226,7 +226,7 @@ const updateApplication = async (id, updateData) => {
   const resetApplicationState = () => {
     setApplications([]);
     setJobApplications([]);
-    setEngrApplications([]);
+    setTalentApplications([]);
     setLoading(false);
     setInitialized(false);
   }
@@ -234,10 +234,10 @@ const updateApplication = async (id, updateData) => {
   const value = {
     applications,
     jobApplications,
-    engrApplications,
+    talentApplications,
     loading,
     getApplications,
-    getEngineersApplication,
+    getTalentsApplication,
     getApplicationsByJobId,
     createApplication,
     updateApplication,

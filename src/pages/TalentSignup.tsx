@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 
-const EngineerSignup = () => {
+const TalentSignup = () => {
   const params = new URLSearchParams(window.location.search);
   const refQuery = params.get("referral")
 
@@ -46,7 +46,7 @@ const EngineerSignup = () => {
         email: form.email,
         password: form.password,
         confirm_password: form.confirm_password,
-        role: "engineer"
+        role: "talent"
       });
 
       toast({
@@ -65,7 +65,7 @@ const EngineerSignup = () => {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-2">
       <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8">
-        <h1 className="text-2xl font-bold text-primary mb-6">Join STECHAD as Engineer</h1>
+        <h1 className="text-2xl font-bold text-primary mb-6">Join STECHAD as Talent</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input
             type="text"
@@ -184,4 +184,4 @@ const EngineerSignup = () => {
   );
 };
 
-export default EngineerSignup;
+export default TalentSignup;

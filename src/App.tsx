@@ -12,7 +12,7 @@ import { DataProvider } from "./hooks/useDataContext";
 import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import AcceptInvite from "./pages/AcceptInvites";
-import EngineerSignup from "./pages/EngineerSignup";
+import TalentSignup from "./pages/TalentSignup";
 import ForgotPassword from "./pages/ForgotPassword";
 import GoogleAuthHandler from "./pages/GoogleAuthHandler";
 import Index from "./pages/Index";
@@ -23,8 +23,8 @@ import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyOTP from "./pages/VerifyOTP";
 import AdminApplications from "./pages/dashboard/admin/Applications";
-import AdminEngineerVetting from "./pages/dashboard/admin/EngineerVetting";
-import AdminEngineers from "./pages/dashboard/admin/Engineers";
+import AdminTalentVetting from "./pages/dashboard/admin/TalentVetting";
+import AdminTalents from "./pages/dashboard/admin/Talents";
 import AdminIndex from "./pages/dashboard/admin/Index";
 import AdminJobs from "./pages/dashboard/admin/Jobs";
 import AdminMessages from "./pages/dashboard/admin/Messages";
@@ -34,14 +34,14 @@ import AdminProjects from "./pages/dashboard/admin/Projects";
 import AdminRoles from "./pages/dashboard/admin/Roles";
 import AdminSettings from "./pages/dashboard/admin/Settings";
 import AdminWorkforce from "./pages/dashboard/admin/Workforce";
-import EngineerApplications from "./pages/dashboard/engineer/Applications";
-import EngineerIndex from "./pages/dashboard/engineer/Index";
-import EngineerInterviews from "./pages/dashboard/engineer/Interviews";
-import EngineerInvoicesPage from "./pages/dashboard/engineer/Invoices";
-import EngineerJobs from "./pages/dashboard/engineer/Jobs";
-import EngineerMessages from "./pages/dashboard/engineer/Messages";
-import EngineerProfile from "./pages/dashboard/engineer/Profile";
-import EngineerProjects from "./pages/dashboard/engineer/Projects";
+import TalentApplications from "./pages/dashboard/talent/Applications";
+import TalentIndex from "./pages/dashboard/talent/Index";
+import TalentInterviews from "./pages/dashboard/talent/Interviews";
+import TalentInvoicesPage from "./pages/dashboard/talent/Invoices";
+import TalentJobs from "./pages/dashboard/talent/Jobs";
+import TalentMessages from "./pages/dashboard/talent/Messages";
+import TalentProfile from "./pages/dashboard/talent/Profile";
+import TalentProjects from "./pages/dashboard/talent/Projects";
 import PMApplicants from "./pages/dashboard/pm/Applicants";
 import PMApplications from "./pages/dashboard/pm/Applications";
 import PMIndex from "./pages/dashboard/pm/Index";
@@ -78,14 +78,14 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route element={<PublicLayout />}>
                     <Route path="/landing" element={<Landing />} />
-                    <Route path="/engineer-signup" element={<EngineerSignup />} />
+                    <Route path="/talent-signup" element={<TalentSignup />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/verify-otp" element={<VerifyOTP />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/accept-invite" element={<AcceptInvite />} />
                     <Route path="/onboarding" element={
-                      <ProtectedRoute requiredRole="engineer">
+                      <ProtectedRoute requiredRole="talent">
                         <Onboarding />
                       </ProtectedRoute>
                     } />
@@ -94,45 +94,45 @@ const App = () => (
 
                   {/* Dashboard Layout for all roles */}
                   <Route element={<DashboardLayout />}>
-                    {/* Engineer Dashboard routes */}
-                    <Route path="/dashboard/engineer" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerIndex />
+                    {/* Talent Dashboard routes */}
+                    <Route path="/dashboard/talent" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentIndex />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/jobs" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerJobs />
+                    <Route path="/dashboard/talent/jobs" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentJobs />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/projects" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerProjects />
+                    <Route path="/dashboard/talent/projects" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentProjects />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/applications" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerApplications />
+                    <Route path="/dashboard/talent/applications" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentApplications />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/interviews" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerInterviews />
+                    <Route path="/dashboard/talent/interviews" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentInterviews />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/invoices" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerInvoicesPage />
+                    <Route path="/dashboard/talent/invoices" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentInvoicesPage />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/messages" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerMessages />
+                    <Route path="/dashboard/talent/messages" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentMessages />
                       </ProtectedRoute>
                     } />
-                    <Route path="/dashboard/engineer/profile" element={
-                      <ProtectedRoute requiredRole="engineer">
-                        <EngineerProfile />
+                    <Route path="/dashboard/talent/profile" element={
+                      <ProtectedRoute requiredRole="talent">
+                        <TalentProfile />
                       </ProtectedRoute>
                     } />
 
@@ -197,9 +197,9 @@ const App = () => (
                         <PMManageJobs />
                       </ProtectedRoute>
                     } />
-                  <Route path="/dashboard/pm/engineers" element={
+                  <Route path="/dashboard/pm/talents" element={
                     <ProtectedRoute requiredRole="project_manager">
-                      <AdminEngineers />
+                      <AdminTalents />
                     </ProtectedRoute>
                   } />
                     <Route path="/dashboard/pm/projects" element={
@@ -262,9 +262,9 @@ const App = () => (
                         <AdminIndex />
                       </ProtectedRoute>
                     } />
-                    <Route path="/admin/engineers" element={
+                    <Route path="/admin/talents" element={
                       <ProtectedRoute requiredRole={["admin", "super_admin"]}>
-                        <AdminEngineers />
+                        <AdminTalents />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/project-managers" element={
@@ -297,9 +297,9 @@ const App = () => (
                         <AdminApplications />
                       </ProtectedRoute>
                     } />
-                    <Route path="/admin/engineer-vetting" element={
+                    <Route path="/admin/talent-vetting" element={
                       <ProtectedRoute requiredRole={["admin", "super_admin"]}>
-                        <AdminEngineerVetting />
+                        <AdminTalentVetting />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/messages" element={

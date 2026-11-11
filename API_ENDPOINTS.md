@@ -20,22 +20,22 @@
 - ✅ Pagination support
 - ✅ Advanced filtering (status, location, skills, etc.)
 
-### Applications (`/api/applications` & `/api/engineers/jobs`)
+### Applications (`/api/applications` & `/api/talents/jobs`)
 - ✅ GET / - List applications with filters
 - ✅ GET /:applications_id - Get application details
-- ✅ POST /engineers/jobs/:job_id/apply - Submit application
+- ✅ POST /talents/jobs/:job_id/apply - Submit application
 - ✅ PUT /:applications_id/status - Update application status
 - ✅ DELETE /:applications_id - Delete application
 - ✅ GET /jobs/:job_id/applicants - Get job applicants
 
-### Engineers (`/api/admin/engineers` & `/api/engineers`)
-- ✅ GET /admin/engineers - List all engineers
-- ✅ GET /admin/engineers/:id - Get engineer details
-- ✅ PUT /admin/engineers/:id - Update engineer
-- ✅ DELETE /admin/engineers/:id - Delete engineer
-- ✅ POST /engineers/onboarding - Complete onboarding
-- ✅ PUT /engineers/profile - Update profile with files
-- ✅ GET /engineers/dashboard - Get dashboard data
+### Talents (`/api/admin/talents` & `/api/talents`)
+- ✅ GET /admin/talents - List all talents
+- ✅ GET /admin/talents/:id - Get talent details
+- ✅ PUT /admin/talents/:id - Update talent
+- ✅ DELETE /admin/talents/:id - Delete talent
+- ✅ POST /talents/onboarding - Complete onboarding
+- ✅ PUT /talents/profile - Update profile with files
+- ✅ GET /talents/dashboard - Get dashboard data
 
 ### Project Managers (`/api/admin/project-managers` & `/api/pm`)
 - ✅ GET /admin/project-managers - List all PMs
@@ -51,7 +51,7 @@
 - ✅ POST / - Create project
 - ✅ PUT /:projects_id - Update project
 - ✅ DELETE /:projects_id - Delete project
-- ✅ Filtering by status, priority, PM, engineer
+- ✅ Filtering by status, priority, PM, talent
 
 ### Notifications (`/api/notifications`)
 - ✅ GET / - Get user notifications
@@ -90,9 +90,9 @@
 - ✅ GET /dashboard - Admin dashboard
 - ✅ GET /stats - Platform statistics
 - ✅ PUT /profile - Update admin profile
-- ✅ GET /engineer-vetting - Pending vetting
-- ✅ PUT /engineers/:id/vet - Vet engineer
-- ✅ DELETE /engineers/:id/vet - Remove vetting
+- ✅ GET /talent-vetting - Pending vetting
+- ✅ PUT /talents/:id/vet - Vet talent
+- ✅ DELETE /talents/:id/vet - Remove vetting
 - ✅ GET /settings - Get platform settings
 - ✅ PUT /settings - Update settings
 
@@ -103,7 +103,7 @@
 - ✅ GET /platform - Platform metrics
 
 ### Export (`/api/export`)
-- ✅ GET /engineers - Export engineers data
+- ✅ GET /talents - Export talents data
 - ✅ GET /jobs - Export jobs data
 - ✅ GET /applications - Export applications data
 - ✅ Multiple formats (CSV, Excel, JSON)
@@ -121,7 +121,7 @@
 - ✅ `useAuthContext.jsx` - Authentication state
 - ✅ `JobsContext.jsx` - Job listings management
 - ✅ `ApplicationsContext.jsx` - Applications management
-- ✅ `EngineersContext.jsx` - Engineers data
+- ✅ `TalentsContext.jsx` - Talents data
 - ✅ `ProjectManagersContext.jsx` - PM data
 - ✅ `ProjectsContext.jsx` - Projects management
 - ✅ `NotificationsContext.jsx` - Notifications with unread count
@@ -216,7 +216,7 @@ markAsRead(chatId, [messageId1, messageId2]);
 ## ✨ Features Implemented
 
 - ✅ JWT authentication with automatic token refresh
-- ✅ Role-based access control (admin, PM, engineer)
+- ✅ Role-based access control (admin, PM, talent)
 - ✅ File uploads (CV, avatars) with signed URLs
 - ✅ Real-time chat with WebSocket
 - ✅ Pagination on all list endpoints

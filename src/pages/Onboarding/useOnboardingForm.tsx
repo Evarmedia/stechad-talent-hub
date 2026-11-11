@@ -253,16 +253,16 @@ export const useOnboardingForm = () => {
       }
 
       // STEP 18: Submit to backend
-      // console.log('🟢 [ONBOARDING] ========== STEP 3: Sending PUT request to /engineers/onboarding ==========');
-      const response = await apiService.putNoId('engineers/onboarding', formData, true);
+      // console.log('🟢 [ONBOARDING] ========== STEP 3: Sending PUT request to /talents/onboarding ==========');
+      const response = await apiService.putNoId('talents/onboarding', formData, true);
       // console.log('🟢 [ONBOARDING] ✅ SUCCESS Response received:', response);
 
       if (response.success && response.data) {
         // Treat onboarding like login
         updateUser(response.data.user);
 
-        // console.log("🟢 [ONBOARDING] ========== STEP 5: Redirecting to /dashboard/engineer ==========");
-        navigate("/dashboard/engineer");
+        // console.log("🟢 [ONBOARDING] ========== STEP 5: Redirecting to /dashboard/talent ==========");
+        navigate("/dashboard/talent");
 
         toast({
           title: "Onboarding Complete! 🎉",
