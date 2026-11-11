@@ -51,6 +51,11 @@ export const chatService = {
       }),
     );
   },
+  async leave(chatId: string) {
+    return data<Conversation>(
+      await apiService.post(`chat/${chatId}/leave`, {}),
+    );
+  },
   async settings(
     chatId: string,
     values: { chat_name: string; description: string; posting_policy: string },

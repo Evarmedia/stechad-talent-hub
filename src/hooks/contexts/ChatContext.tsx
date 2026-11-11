@@ -62,6 +62,7 @@ function useChatState() {
   const inboxRequest = useRef(0);
   const historyRequest = useRef(0);
   const boundaries = useRef(new Map<string, string>());
+  const departures = useRef(new Map<string, string>());
   const revoked = useRef(new Set<string>());
   const accessEpochs = useRef(new Map<string, number>());
   const [historyVersion, setHistoryVersion] = useState(0);
@@ -78,6 +79,13 @@ function useChatState() {
     if (
       message.message_sequence &&
       BigInt(message.message_sequence) <= boundary
+    )
+      return null;
+    const departure = departures.current.get(message.chat_id);
+    if (
+      departure &&
+      message.message_sequence &&
+      BigInt(message.message_sequence) > BigInt(departure)
     )
       return null;
     if (
@@ -180,6 +188,9 @@ function useChatState() {
         for (const chat of result.chats) {
           revoked.current.delete(chat.chats_id);
           applyBoundary(chat.chats_id, chat.cleared_through_sequence || "0");
+          if (chat.left_through_sequence)
+            departures.current.set(chat.chats_id, chat.left_through_sequence);
+          else departures.current.delete(chat.chats_id);
         }
         setChats(sortChats(result.chats.map(protectConversation)));
         setChatsLoading(false);
@@ -288,17 +299,20 @@ function useChatState() {
     setHasOlderMessages(false);
     setLoadingOlder(false);
   }, []);
+  const activeHasLeft = chats.find(
+    (chat) => chat.chats_id === activeChatId,
+  )?.has_left;
 
   useEffect(() => {
     if (activeChatId && userId) {
-      websocketService.joinChat(activeChatId);
+      if (!activeHasLeft) websocketService.joinChat(activeChatId);
       void loadMessages(activeChatId);
       return () => {
         websocketService.typingStop(activeChatId);
         websocketService.leaveChat(activeChatId);
       };
     }
-  }, [activeChatId, userId, loadMessages]);
+  }, [activeChatId, activeHasLeft, userId, loadMessages]);
 
   const loadOlder = useCallback(async () => {
     const chatId = activeId.current;
@@ -494,6 +508,7 @@ function useChatState() {
   useEffect(() => {
     outbox.current.clear();
     boundaries.current.clear();
+    departures.current.clear();
     revoked.current.clear();
     accessEpochs.current.clear();
     setChats([]);
@@ -554,6 +569,37 @@ function useChatState() {
         ({ chat_id, cleared_through_sequence }) =>
           hideConversation(chat_id, cleared_through_sequence),
       ),
+      websocketService.on("chat_purged", ({ chat_id }) => {
+        revoked.current.add(chat_id);
+        departures.current.delete(chat_id);
+        setChats((previous) =>
+          previous.filter((chat) => chat.chats_id !== chat_id),
+        );
+        if (activeId.current === chat_id) {
+          ++historyRequest.current;
+          activeId.current = null;
+          setActiveChatId(null);
+          setMessages([]);
+        }
+      }),
+      websocketService.on("group_left", ({ chat }: { chat: Conversation }) => {
+        departures.current.set(
+          chat.chats_id,
+          chat.left_through_sequence || "0",
+        );
+        for (const [id, pending] of outbox.current)
+          if (pending.chat_id === chat.chats_id) outbox.current.delete(id);
+        setChats((previous) =>
+          sortChats([
+            protectConversation(chat),
+            ...previous.filter((item) => item.chats_id !== chat.chats_id),
+          ]),
+        );
+        if (activeId.current === chat.chats_id)
+          setMessages((previous) =>
+            previous.map(visibleMessage).filter(Boolean),
+          );
+      }),
       websocketService.on("group_updated", () => {
         void refreshChats();
       }),
@@ -704,6 +750,7 @@ function useChatState() {
     applyMutation,
     applyBoundary,
     hideConversation,
+    protectConversation,
     visibleMessage,
   ]);
 
@@ -737,6 +784,21 @@ function useChatState() {
     },
     [hideConversation],
   );
+  const leaveGroup = useCallback(
+    async (chatId: string) => {
+      const session = sessionId.current;
+      const result = await chatService.leave(chatId);
+      if (sessionId.current !== session) return;
+      departures.current.set(chatId, result.left_through_sequence || "0");
+      setChats((previous) =>
+        sortChats([
+          protectConversation(result),
+          ...previous.filter((chat) => chat.chats_id !== chatId),
+        ]),
+      );
+    },
+    [protectConversation],
+  );
   const openConversation = useCallback(
     async (chatId: string) => {
       const session = sessionId.current;
@@ -765,6 +827,7 @@ function useChatState() {
     historyVersion,
     clearChat,
     deleteChat,
+    leaveGroup,
     openConversation,
     activeChatId,
     activeChat: chats.find((chat) => chat.chats_id === activeChatId) || null,

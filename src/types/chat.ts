@@ -38,7 +38,10 @@ export interface Conversation {
   created_by?: string;
   can_manage?: boolean;
   can_post?: boolean;
+  can_leave?: boolean;
+  has_left?: boolean;
   cleared_through_sequence?: string;
+  left_through_sequence?: string | null;
   participants: string[];
   participant_details: ChatUser[];
   unread_count: number;

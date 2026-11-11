@@ -18,10 +18,22 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [popupEnabled, setPopupEnabled] = useState(true);
   const audio = useRef<AudioContext | null>(null);
-  const current = useRef({ activeChatId, soundEnabled, userId: user?.user_id });
-  current.current = { activeChatId, soundEnabled, userId: user?.user_id };
+  const current = useRef({
+    activeChatId,
+    soundEnabled,
+    popupEnabled,
+    userId: user?.user_id,
+  });
+  current.current = {
+    activeChatId,
+    soundEnabled,
+    popupEnabled,
+    userId: user?.user_id,
+  };
   const soundKey = `stechad-chat-sound:${user?.user_id}`;
+  const popupKey = `stechad-chat-popup:${user?.user_id}`;
   useEffect(() => {
     try {
       setSoundEnabled(localStorage.getItem(soundKey) !== "off");
@@ -34,6 +46,18 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
   }, [soundKey]);
+  useEffect(() => {
+    try {
+      setPopupEnabled(localStorage.getItem(popupKey) !== "off");
+    } catch {
+      setPopupEnabled(true);
+    }
+    const sync = (event: StorageEvent) => {
+      if (event.key === popupKey) setPopupEnabled(event.newValue !== "off");
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, [popupKey]);
   useEffect(() => {
     if (!user?.user_id) return;
     const publish = () =>
@@ -110,6 +134,14 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
         blocked.add(chat_id);
         dismiss(chat_id);
       }),
+      websocketService.on("group_left", ({ chat }) => {
+        blocked.add(chat.chats_id);
+        dismiss(chat.chats_id);
+      }),
+      websocketService.on("chat_purged", ({ chat_id }) => {
+        blocked.add(chat_id);
+        dismiss(chat_id);
+      }),
       websocketService.on("group_updated", ({ chat_id }) =>
         blocked.delete(chat_id),
       ),
@@ -150,22 +182,24 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
             return;
           }
           if (!claimed) return;
-          const id = toast(n.title || "New message", {
-            description: n.message,
-            duration: 7000,
-            classNames: {
-              toast: "!border-slate-200 !bg-white !text-slate-950 shadow-xl",
-              title: "!text-slate-950",
-              description: "!text-slate-600",
-              actionButton: "!bg-primary !text-white hover:!bg-primary/90",
-              closeButton: "!border-slate-200 !bg-white !text-slate-700",
-            },
-            action: {
-              label: "Open chat",
-              onClick: () => navigate(n.action_url),
-            },
-          });
-          alerts.set(`${chatId}:${n.notifications_id}`, id);
+          if (current.current.popupEnabled) {
+            const id = toast(n.title || "New message", {
+              description: n.message,
+              duration: 7000,
+              classNames: {
+                toast: "!border-slate-200 !bg-white !text-slate-950 shadow-xl",
+                title: "!text-slate-950",
+                description: "!text-slate-600",
+                actionButton: "!bg-primary !text-white hover:!bg-primary/90",
+                closeButton: "!border-slate-200 !bg-white !text-slate-700",
+              },
+              action: {
+                label: "Open chat",
+                onClick: () => navigate(n.action_url),
+              },
+            });
+            alerts.set(`${chatId}:${n.notifications_id}`, id);
+          }
           const context = audio.current;
           if (
             !current.current.soundEnabled ||
@@ -216,8 +250,19 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
       }
       return !previous;
     });
+  const togglePopup = () =>
+    setPopupEnabled((previous) => {
+      try {
+        localStorage.setItem(popupKey, previous ? "off" : "on");
+      } catch {
+        /* Keep this session's preference when storage is blocked. */
+      }
+      return !previous;
+    });
   return (
-    <ChatSoundContext.Provider value={{ soundEnabled, toggleSound }}>
+    <ChatSoundContext.Provider
+      value={{ soundEnabled, toggleSound, popupEnabled, togglePopup }}
+    >
       {children}
     </ChatSoundContext.Provider>
   );

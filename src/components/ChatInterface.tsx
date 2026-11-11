@@ -13,11 +13,14 @@ import {
   VolumeX,
   ArrowDown,
   ArrowLeft,
+  Bell,
+  BellOff,
   CheckCheck,
   ChevronDown,
   CircleAlert,
   Eraser,
   Loader2,
+  LogOut,
   MessageCircle,
   MessageSquare,
   Plus,
@@ -110,10 +113,12 @@ const inboxTime = (timestamp?: string) =>
 
 export default function ChatInterface() {
   const { user } = useAuthContext();
-  const { soundEnabled, toggleSound } = useChatSound();
+  const { soundEnabled, toggleSound, popupEnabled, togglePopup } =
+    useChatSound();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [deleteChatOpen, setDeleteChatOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const {
     chats,
     activeChatId,
@@ -138,6 +143,7 @@ export default function ChatInterface() {
     deleteMessage,
     clearChat,
     deleteChat,
+    leaveGroup,
     historyVersion,
   } = useChatContext();
   const [search, setSearch] = useState("");
@@ -764,6 +770,27 @@ export default function ChatInterface() {
                           ? "Mute message sounds"
                           : "Enable message sounds"}
                       </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={togglePopup}>
+                        {popupEnabled ? (
+                          <Bell className="mr-2 h-4 w-4" />
+                        ) : (
+                          <BellOff className="mr-2 h-4 w-4" />
+                        )}
+                        {popupEnabled
+                          ? "Turn off message popups"
+                          : "Turn on message popups"}
+                      </DropdownMenuItem>
+                      {activeChat.can_leave && (
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            setActionError("");
+                            setLeaveOpen(true);
+                          }}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Leave group
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => {
@@ -966,8 +993,9 @@ export default function ChatInterface() {
               <div className="shrink-0 border-t border-slate-200 bg-white p-3 sm:px-6 sm:py-4">
                 {activeChat.can_post === false && (
                   <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                    Only the creator can post in this group. You can still read
-                    its messages.
+                    {activeChat.has_left
+                      ? "You left this group. You can read messages sent before you left, but you cannot send or receive newer messages."
+                      : "Only the creator can post in this group. You can still read its messages."}
                   </p>
                 )}
                 {actionError && !editing && !deleting && (
@@ -1151,6 +1179,53 @@ export default function ChatInterface() {
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}Clear chat
               for me
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={leaveOpen}
+        onOpenChange={(open) => {
+          if (!saving) setLeaveOpen(open);
+        }}
+      >
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will stop receiving new messages and cannot post. Messages
+              sent before you leave remain in an archived copy, which you can
+              clear or delete from the conversation menu afterward.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {actionError && (
+            <p role="alert" className="text-sm text-red-700">
+              {actionError}
+            </p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={saving}
+              onClick={async () => {
+                const chatId = activeChatId;
+                if (!chatId) return;
+                setSaving(true);
+                setActionError("");
+                try {
+                  await leaveGroup(chatId);
+                  setReply(null);
+                  setLeaveOpen(false);
+                } catch (error) {
+                  setActionError(error.message || "Could not leave the group");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Leave group
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

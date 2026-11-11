@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
@@ -32,6 +31,15 @@ export default {
           light: "#FCECED",
         },
         background: "#FFFFFF",
+        foreground: "#1a1a1a",
+        popover: "#FFFFFF",
+        "popover-foreground": "#1a1a1a",
+        card: "#FFFFFF",
+        "card-foreground": "#1a1a1a",
+        accent: "#F3F4F6",
+        "accent-foreground": "#1a1a1a",
+        input: "#E5E7EB",
+        ring: "#8B0000",
         sidebar: "#F8F8F8",
         "sidebar-active": "#FFF8F8",
         muted: "#F3F4F6",
