@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import apiService from "../../services/apiService.js";
 import { useAuthContext } from "../useAuthContext.jsx";
 
@@ -11,11 +18,12 @@ export const JobsProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false); // prevents double fetching
+  const initializingRef = useRef(false);
 
   // -----------------------------------------------------
   // FETCH JOBS
   // -----------------------------------------------------
-  const getJobs = async (filters = {}) => {
+  const getJobs = useCallback(async (filters = {}) => {
     setLoading(true);
     try {
       let params = {
@@ -49,33 +57,30 @@ export const JobsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // -----------------------------------------------------
   // FETCH ALL JOB DATA ONCE
   // -----------------------------------------------------
   useEffect(() => {
-    if (!token || !user || initialized) return;
+    if (!token || !user || initialized || initializingRef.current) return;
 
     const init = async () => {
+      initializingRef.current = true;
       setLoading(true);
       try {
         await getJobs();
-        // console.log("Initialized Jobs:", list);
-        setInitialized(true);
-        setLoading(false);
-
       } catch (error) {
         console.error("JobsContext Init Error:", error);
       } finally {
         setInitialized(true);
+        initializingRef.current = false;
         setLoading(false);
       }
-
     };
 
     init();
-  }, [token, user]);
+  }, [getJobs, initialized, token, user]);
 
   // -----------------------------------------------------
   // OTHER ACTIONS

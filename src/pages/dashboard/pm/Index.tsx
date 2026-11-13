@@ -7,8 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Briefcase, Calendar, Clock, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ProjectManagerAttendanceWidget from "./AttendanceWidget";
 
 const PMDashboard = () => {
 
@@ -59,7 +59,7 @@ const PMDashboard = () => {
   };
 
   return (
-    <div className="py-8 max-w-6xl mx-auto px-4">
+    <div className="p-4 md:p-8 mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold text-primary">Project Manager Dashboard</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -98,6 +98,8 @@ const PMDashboard = () => {
             </Card>
           ))}
       </div>
+
+      <ProjectManagerAttendanceWidget />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Your Jobs */}

@@ -2,16 +2,27 @@
 import { useState, useEffect } from "react";
 import { useDataContext } from "@/hooks/useDataContext";
 
+type ManagedJob = {
+  jobs_id: string;
+  job_id?: string;
+  title: string;
+  company: string;
+  status: string;
+};
+
+type JobApplication = {
+  jobId?: string;
+};
+
 export const useManageJobs = () => {
   const [loading, setLoading] = useState(true);
-  // const [jobs, setJobs] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<ManagedJob | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const { jobs, getJobs, getApplications, updateJob, deleteJob } = useDataContext();
+  const { jobs, getJobs, getApplications, updateJob } = useDataContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,18 +32,6 @@ export const useManageJobs = () => {
           getApplications()
         ]);
         
-        // Calculate application counts for each job and normalize status
-        const jobsWithRealApplications = jobs.map((job: any) => {
-          const jobApplications = applicationsData.filter((app: any) => app.jobId === job.job_id);
-          return {
-            ...job,
-            applications: jobApplications.length,
-            // Normalize status to only 'active' or 'closed'
-            status: job.status === 'Active' || job.status === 'active' ? 'active' : 'closed'
-          };
-        });
-        
-        // setJobs(jobsWithRealApplications);
         setApplications(applicationsData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -51,29 +50,18 @@ export const useManageJobs = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewJob = (job: any) => {
+  const handleViewJob = (job: ManagedJob) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
   };
 
-  const handleToggleStatus = async (job: any) => {
+  const handleToggleStatus = async (job: ManagedJob) => {
     try {
       const newStatus = job.status === "active" ? "closed" : "active";
       await updateJob(job.jobs_id, { status: newStatus });
       // setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: newStatus } : j));
     } catch (error) {
       console.error('Error updating job status:', error);
-    }
-  };
-
-  const handleDeleteJob = async (jobId: number) => {
-    if (window.confirm('Are you sure you want to delete this job?')) {
-      try {
-        await deleteJob(jobId);
-        // setJobs(prev => prev.filter(j => j.id !== jobId));
-      } catch (error) {
-        console.error('Error deleting job:', error);
-      }
     }
   };
 
@@ -89,7 +77,6 @@ export const useManageJobs = () => {
     isDetailsOpen,
     setIsDetailsOpen,
     handleViewJob,
-    handleToggleStatus,
-    handleDeleteJob
+    handleToggleStatus
   };
 };

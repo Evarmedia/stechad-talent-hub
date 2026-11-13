@@ -70,7 +70,7 @@ export const AdminProvider = ({ children }) => {
     if (!token || !user || initialized) return;
 
     const init = async () => {
-      if (user && user.role == "admin") {
+      if (user && ["admin", "super_admin"].includes(user.role)) {
         try {
         setLoading(true);
           // Admin fetch their dashboard ONLY

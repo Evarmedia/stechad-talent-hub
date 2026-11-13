@@ -139,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       await apiService.post("auth/logout", {});
       console.clear();
       setUser(null);
-      localStorage.clear();
+      apiService.clearTokens();
+      localStorage.removeItem("stechad_user");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -201,11 +202,13 @@ export const AuthProvider = ({ children }) => {
       let isFormData = profileData instanceof FormData;
 
       // Route to correct endpoint based on role
-      if (user.role === "engineer") {
-        endpoint = "engineers/profile";
+      if (user.role === "talent") {
+        endpoint = "talents/profile";
       } else if (user.role === "project_manager") {
         endpoint = "pm/profile";
-      } else if (user.role === "admin") {
+      } else if (user.role === "staff") {
+        endpoint = "staff/profile";
+      } else if (user.role === "admin" || user.role === "super_admin") {
         endpoint = "admin/profile";
       } else {
         throw new Error("Invalid user role");
@@ -259,7 +262,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isOnboarded = () => {
-    return user?.engineer?.is_onboarded === true;
+    return user?.talent?.is_onboarded === true;
   };
 
   const acceptInvites = async (token, payload) => {

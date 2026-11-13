@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { DashboardJob } from "@/types/dashboard";
 
 interface JobsGridProps {
   loading: boolean;
-  jobs: any[];
-  onViewJob: (job: any) => void;
-  onToggleStatus: (job: any) => void;
+  jobs: DashboardJob[];
+  onViewJob: (job: DashboardJob) => void;
+  onToggleStatus: (job: DashboardJob) => void;
   getStatusColor: (status: string) => string;
 }
 

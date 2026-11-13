@@ -4,9 +4,9 @@ import {
   useApplicationsContext,
 } from "./contexts/ApplicationsContext";
 import {
-  EngineersProvider,
-  useEngineersContext,
-} from "./contexts/EngineersContext";
+  TalentsProvider,
+  useTalentsContext,
+} from "./contexts/TalentsContext";
 import { JobsProvider, useJobsContext } from "./contexts/JobsContext";
 import {
   ProjectManagersProvider,
@@ -31,7 +31,7 @@ const DataContext = createContext();
 export const DataProvider = ({ children }) => {
   return (
     <AdminProvider>
-      <EngineersProvider>
+      <TalentsProvider>
         <JobsProvider>
           <ApplicationsProvider>
             <InterviewProvider>
@@ -45,13 +45,13 @@ export const DataProvider = ({ children }) => {
             </InterviewProvider>
           </ApplicationsProvider>
         </JobsProvider>
-      </EngineersProvider>
+      </TalentsProvider>
     </AdminProvider>
   );
 };
 
 const DataProviderInner = ({ children }) => {
-  const engineersContext = useEngineersContext();
+  const talentsContext = useTalentsContext();
   const jobsContext = useJobsContext();
   const applicationsContext = useApplicationsContext();
   const projectsContext = useProjectsContext();
@@ -62,20 +62,21 @@ const DataProviderInner = ({ children }) => {
 
   const value = {
     // State
-    engineers: engineersContext.engineers,
-    engrDashboardData: engineersContext.engrDashboardData,
-    engrProjects: engineersContext.engrProjects,
+    talents: talentsContext.talents,
+    talentDashboardData: talentsContext.talentDashboardData,
+    talentProjects: talentsContext.talentProjects,
     jobs: jobsContext.jobs,
+    jobsLoading: jobsContext.loading,
     applications: applicationsContext.applications,
     jobApplications: applicationsContext.jobApplications,
-    engrApplications: applicationsContext.engrApplications,
+    talentApplications: applicationsContext.talentApplications,
     projects: projectsContext.projects,
     projectManagers: projectManagersContext.projectManagers,
     pmDashboardData: projectManagersContext.pmDashboardData,
     interviews: interviewContext.interviews,
     allInterviews: interviewContext.allInterviews,
     loading:
-      engineersContext.loading ||
+      talentsContext.loading ||
       jobsContext.loading ||
       applicationsContext.loading ||
       projectsContext.loading ||
@@ -88,13 +89,13 @@ const DataProviderInner = ({ children }) => {
     resetAdminDashboardState: AdminContext.resetAdminDashboardState,
     inviteProjectManager: AdminContext.inviteProjectManager,
 
-    // Engineers
-    getEngineers: engineersContext.getEngineers,
-    getEngineerById: engineersContext.getEngineerById,
-    updateEngineer: engineersContext.updateEngineer,
-    deleteEngineer: engineersContext.deleteEngineer,
-    resetEngineerState: engineersContext.resetEngineerState,
-    refreshAllEngineers: engineersContext.refreshAll,
+    // Talents
+    getTalents: talentsContext.getTalents,
+    getTalentById: talentsContext.getTalentById,
+    updateTalent: talentsContext.updateTalent,
+    deleteTalent: talentsContext.deleteTalent,
+    resetTalentState: talentsContext.resetTalentState,
+    refreshAllTalents: talentsContext.refreshAll,
 
     // Jobs
     getJobs: jobsContext.getJobs,
@@ -107,7 +108,7 @@ const DataProviderInner = ({ children }) => {
 
     // Applications
     getApplications: applicationsContext.getApplications,
-    getEngineersApplication: applicationsContext.getEngineersApplication,
+    getTalentsApplication: applicationsContext.getTalentsApplication,
     getApplicationsByJobId: applicationsContext.getApplicationsByJobId,
     createApplication: applicationsContext.createApplication,
     updateApplication: applicationsContext.updateApplication,
@@ -125,7 +126,7 @@ const DataProviderInner = ({ children }) => {
     resetProjectsState: projectsContext.resetProjectsState,
 
     // Project Managers
-    // getProjectManagers: projectManagersContext.getProjectManagers,
+    getProjectManagers: projectManagersContext.getProjectManagers,
     getPmDashboard: projectManagersContext.getPmDashboardData,
     resetPMsState: projectManagersContext.resetPMsState,
 

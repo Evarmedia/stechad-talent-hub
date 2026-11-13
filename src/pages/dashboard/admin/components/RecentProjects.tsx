@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import type { DashboardProject } from "@/types/dashboard";
 
 interface RecentProjectsProps {
   loading: boolean;
-  projects: any[];
+  projects: DashboardProject[];
 }
 
 const RecentProjects: React.FC<RecentProjectsProps> = ({ loading, projects }) => {

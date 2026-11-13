@@ -4,25 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Building, Calendar, Clock, DollarSign, MapPin, Users } from "lucide-react";
 import React from "react";
-
-interface Job {
-  jobs_id: number;
-  title: string;
-  company: string;
-  location: string;
-  employment_type: string;
-  status: string;
-  applications: number;
-  posted_at?: string;
-  posted?: string;
-  salary: string;
-  requirements?: string[];
-  applications_count: number;
-  description?: string;
-}
+import type { DashboardJob } from "@/types/dashboard";
 
 interface JobDetailsDialogProps {
-  job: Job | null;
+  job: DashboardJob | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -138,7 +123,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
                 <span className="text-sm font-medium">Requirements</span>
               </div>
               
-              {job.requirements.map(requirement => (
+              {(job.requirements || []).map(requirement => (
                 <p key={requirement} className="text-sm text-muted-foreground mb-1">• {requirement}</p>
                 
               ))}

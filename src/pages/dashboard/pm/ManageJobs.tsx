@@ -13,16 +13,17 @@ import { JobsFilters } from "@/pages/dashboard/pm/components/JobsFilters";
 import { JobsHeader } from "@/pages/dashboard/pm/components/JobsHeader";
 import { JobsTable } from "@/pages/dashboard/pm/components/JobsTable";
 import { useState } from "react";
+import type { DashboardJob } from "@/types/dashboard";
 
 const ManageJobs = () => {
   const { toast } = useToast();
-  const { jobs, applications, loading, updateJob, deleteJob } = useDataContext();
+  const { jobs, applications, loading, updateJob } = useDataContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<DashboardJob | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [editingJob, setEditingJob] = useState<any>(null);
+  const [editingJob, setEditingJob] = useState<DashboardJob | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -53,13 +54,13 @@ const ManageJobs = () => {
     return status === "active" ? "bg-green-500 text-black" : "bg-red-400 text-black";
   };
 
-  const handleViewJob = (job: any) => {
+  const handleViewJob = (job: DashboardJob) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
   };
 
-  const handleEditJob = (job: any) => {
-    const toMultiline = (value: any) =>
+  const handleEditJob = (job: DashboardJob) => {
+    const toMultiline = (value: string[] | string | undefined) =>
       Array.isArray(value) ? value.join("\n") : value || "";
 
     setEditingJob(job);
@@ -102,7 +103,7 @@ const ManageJobs = () => {
         .map((item) => item.trim())
         .filter(Boolean);
 
-    const payload: any = {
+    const payload: Partial<DashboardJob> = {
       title: editForm.title,
       company: editForm.company,
       location: editForm.location,
@@ -134,23 +135,13 @@ const ManageJobs = () => {
     }
   };
 
-  const handleToggleStatus = async (job: any) => {
+  const handleToggleStatus = async (job: DashboardJob) => {
     try {
       const newStatus = job.status === "active" || job.status === "active" ? "closed" : "active";
       console.log("updating Job Status with", newStatus);
       await updateJob(job.jobs_id, { status: newStatus });
     } catch (error) {
       console.error('Error updating job status:', error);
-    }
-  };
-
-  const handleDeleteJob = async (jobId: string) => {
-    if (window.confirm('Are you sure you want to delete this job?')) {
-      try {
-        await deleteJob(jobId);
-      } catch (error) {
-        console.error('Error deleting job:', error);
-      }
     }
   };
 

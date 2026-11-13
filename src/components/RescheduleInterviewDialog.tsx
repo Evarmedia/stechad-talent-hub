@@ -17,7 +17,12 @@ import React, { useState } from 'react';
 interface RescheduleInterviewDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  interview: any;
+  interview: {
+    interviews_id: string;
+    candidate_name: string;
+    job_title: string;
+    date_time: string;
+  };
 }
 
 const RescheduleInterviewDialog: React.FC<RescheduleInterviewDialogProps> = ({

@@ -2,39 +2,40 @@
 import STECHADLogo from "@/components/STECHADLogo";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useDataContext } from "@/hooks/useDataContext";
-import { AlertTriangle, Bell, CheckCircle2, Info, User, X, LogOut } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Info, LogOut, User, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const navRoles = [
-  { name: "Engineer", path: "/dashboard/engineer" },
+  { name: "Talent", path: "/dashboard/talent" },
+  { name: "Staff", path: "/dashboard/staff" },
   { name: "PM", path: "/dashboard/pm" },
   { name: "Admin", path: "/admin" },
 ];
 
 // Helper function to get the route for the profile based on role and current route
 function getProfileRoute(pathname: string) {
-  if (pathname.startsWith("/dashboard/engineer")) return "/dashboard/engineer/profile";
+  if (pathname.startsWith("/dashboard/talent")) return "/dashboard/talent/profile";
+  if (pathname.startsWith("/dashboard/staff")) return "/dashboard/staff/profile";
   if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm/profile";
   if (pathname.startsWith("/admin")) return "/admin/profile";
-  return "/dashboard/engineer/profile"; // default fallback
+  return "/dashboard/talent/profile"; // default fallback
 }
 
 export function AppNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
   const {
-    resetEngineerState,
+    resetTalentState,
     resetJobsState,
     resetApplicationState,
     resetPMsState,
@@ -54,9 +55,7 @@ export function AppNavbar() {
   const currentRole =
     navRoles.find((r) => pathname.startsWith(r.path))?.name || "Dashboard";
   const profileRoute = getProfileRoute(pathname);
-  const showNotifications =
-    notificationsEligible &&
-    (user?.role === "engineer" || user?.role === "project_manager");
+  const showNotifications = notificationsEligible;
   const notificationsToShow = useMemo(
     () => (notifications || []).slice(0, 10),
     [notifications]
@@ -116,7 +115,7 @@ export function AppNavbar() {
 
   const handleLogout = () => {
     logout();
-    resetEngineerState();
+    resetTalentState();
     resetJobsState();
     resetApplicationState();
     resetPMsState();
@@ -194,8 +193,13 @@ export function AppNavbar() {
                     return (
                       <DropdownMenuItem
                         key={key}
-                        onSelect={(e) => e.preventDefault()}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-blue-200 focus:bg-slate-50"
+                        onSelect={() => {
+                          if (typeof n.action_url === "string" && n.action_url.startsWith("/") && !n.action_url.startsWith("//")) {
+                            setNotifOpen(false);
+                            navigate(n.action_url);
+                          }
+                        }}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 focus:bg-primary-light"
                       >
                         <span
                           className={`mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 ${n.is_read ? "" : "ring-2 ring-primary/40"}`}

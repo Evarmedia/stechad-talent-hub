@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle, AlertCircle, Circle, Edit, OctagonPause, CircleOff } from "lucide-react";
 
-interface Task {
+export interface Task {
   id: number;
   title: string;
   status: string;
   assignee: string;
 }
 
-interface ProjectFormData {
+export interface ProjectFormData {
   title: string;
   description: string;
   status: string;

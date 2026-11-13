@@ -8,8 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ApplicantProfile from "./ApplicantProfile";
+import type { DashboardApplicant, DashboardApplication } from "@/types/dashboard";
 
 
 const statusColor = (status: string) => {
@@ -32,16 +33,18 @@ const Applications = () => {
   const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<DashboardApplicant | DashboardApplication | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const getApplicationsRef = useRef(getApplications);
+  getApplicationsRef.current = getApplications;
 
 
   // Fetch all applications on mount
   useEffect(() => {
-    getApplications();
+    void getApplicationsRef.current();
   }, []);
 
-  const handleViewProfile = (applicant: any) => {
+  const handleViewProfile = (applicant: DashboardApplicant) => {
     // Pass the full applicant object including name and email
     setSelectedApplicant(applicant);
     setProfileDialogOpen(true);
@@ -92,7 +95,7 @@ const Applications = () => {
     setResumeDialogOpen(true);
   };
 
-  const handleScheduleInterview = (app: any) => {
+  const handleScheduleInterview = (app: DashboardApplication) => {
     setSelectedApplicant(app);
     setScheduleDialogOpen(true);
   };

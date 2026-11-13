@@ -1,15 +1,14 @@
 
-import React, { useEffect, useState } from "react";
+import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar } from "lucide-react";
 import AdminStats from "./components/AdminStats";
-import RecentEngineers from "./components/RecentEngineers";
 import LatestJobs from "./components/LatestJobs";
+import RecentTalents from "./components/RecentTalents";
 import RecentProjects from "./components/RecentProjects";
-import { useDataContext } from "@/hooks/useDataContext";
 
 const AdminDashboard = () => {
   // const [loading, setLoading] = useState(true);
-  // const [engineers, setEngineers] = useState([]);
+  // const [talents, setTalents] = useState([]);
   // const [jobs, setJobs] = useState([]);
   // const [applications, setApplications] = useState([]);
   // const [projects, setProjects] = useState([]);
@@ -21,7 +20,7 @@ const AdminDashboard = () => {
 
   return (
       <>
-      { adminDashboardData && <div className="py-8 max-w-6xl mx-auto px-4">
+      { adminDashboardData && <div className="p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -36,7 +35,7 @@ const AdminDashboard = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <RecentEngineers loading={loading} engineers={adminDashboardData?.recentActivity?.recentEngineers} />
+          <RecentTalents loading={loading} talents={adminDashboardData?.recentActivity?.recentTalents} />
           <LatestJobs loading={loading} jobs={adminDashboardData?.recentActivity?.recentJobs} />
         </div>
 

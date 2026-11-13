@@ -6,9 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useDataContext } from "@/hooks/useDataContext";
 import { FileText } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import ApplicantProfile from "./ApplicantProfile";
+import type { DashboardApplicant } from "@/types/dashboard";
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -25,13 +26,15 @@ const Applicants = () => {
   const { jobId } = useParams();
   const { toast } = useToast();
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<DashboardApplicant | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   
   const { jobApplications, loading, getApplicationsByJobId, updateApplication, jobs } = useDataContext();
+  const getApplicationsByJobRef = useRef(getApplicationsByJobId);
+  getApplicationsByJobRef.current = getApplicationsByJobId;
 
   // Get job details from jobs list
   const job = jobs.find(j => j.jobs_id === jobId);
@@ -39,7 +42,7 @@ const Applicants = () => {
   // Fetch applicants for this job on mount
   useEffect(() => {
     if (jobId) {
-      getApplicationsByJobId(jobId);
+      void getApplicationsByJobRef.current(jobId);
     }
   }, [jobId]);
 
@@ -77,13 +80,13 @@ const Applicants = () => {
     setResumeDialogOpen(true);
   };
 
-  const handleViewProfile = (applicant: any) => {
+  const handleViewProfile = (applicant: DashboardApplicant) => {
     // Pass the full applicant object including name and email
     setSelectedApplicant(applicant);
     setProfileDialogOpen(true);
   };
 
-  const handleScheduleInterview = (applicant: any) => {
+  const handleScheduleInterview = (applicant: DashboardApplicant) => {
     // Pass the full application object for schedule interview
     setSelectedApplicant(applicant);
     setScheduleDialogOpen(true);

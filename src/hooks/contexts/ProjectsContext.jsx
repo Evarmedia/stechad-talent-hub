@@ -30,8 +30,8 @@ export const ProjectsProvider = ({ children }) => {
       //   params.project_manager_id =
       //     filters.project_manager_id || filters.projectManagerId;
       // }
-      // if (filters.engineer_id || filters.engineerId) {
-      //   params.engineer_id = filters.engineer_id || filters.engineerId;
+      // if (filters.talent_id || filters.talentId) {
+      //   params.talent_id = filters.talent_id || filters.talentId;
       // }
 
       const response = await apiService.get("projects");
@@ -154,7 +154,7 @@ export const ProjectsProvider = ({ children }) => {
     const init = async () => {
       setLoading(true);
       try {
-        if (user.role === "admin" || user.role === "project_manager") {
+        if (["admin", "super_admin", "project_manager"].includes(user.role)) {
           // adjust this if Pm need to see all projects(check backend access too)
           getProjects();
           setInitialized(true);

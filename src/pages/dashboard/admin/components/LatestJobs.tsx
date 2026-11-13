@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import React from "react";
 import { Link } from "react-router-dom";
+import type { DashboardJob } from "@/types/dashboard";
 
 interface LatestJobsProps {
   loading: boolean;
-  jobs: any[];
+  jobs: DashboardJob[];
 }
 
 const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {

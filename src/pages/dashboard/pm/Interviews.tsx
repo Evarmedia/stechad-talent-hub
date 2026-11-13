@@ -7,23 +7,26 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar, CheckCheck, Edit, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import RescheduleInterviewDialog from '../../../components/RescheduleInterviewDialog';
 import { useAuthContext } from '../../../hooks/useAuthContext';
+import type { DashboardInterview } from '@/types/dashboard';
 
 const Interviews = () => {
   const { interviews, loading, fetchAllInterviews, fetchUserInterviews, updateInterview, refreshAllInterviews } = useDataContext();
   const { user } = useAuthContext();
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
-  const [selectedInterview, setSelectedInterview] = useState(null);
+  const [selectedInterview, setSelectedInterview] = useState<DashboardInterview | null>(null);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-    const [interviewToCancel, setInterviewToCancel] = useState(null);
+    const [interviewToCancel, setInterviewToCancel] = useState<DashboardInterview | null>(null);
+  const fetchUserInterviewsRef = useRef(fetchUserInterviews);
+  fetchUserInterviewsRef.current = fetchUserInterviews;
 
   useEffect(() => {
     if (!user) return;
 
     const run = async () => {
-      await fetchUserInterviews();
+      await fetchUserInterviewsRef.current();
     };
 
     run();
@@ -45,7 +48,7 @@ const Interviews = () => {
     }
   };
 
-  const handleReschedule = (interview: any) => {
+  const handleReschedule = (interview: DashboardInterview) => {
     setSelectedInterview(interview);
     setRescheduleDialogOpen(true);
   };

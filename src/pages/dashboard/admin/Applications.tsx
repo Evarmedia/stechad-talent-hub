@@ -41,7 +41,7 @@ const AdminApplications = () => {
       if (searchTerm) {
         filtered = filtered.filter(app => 
           app.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          app.engineer_name.toLowerCase().includes(searchTerm.toLowerCase())
+          app.talent_name.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
 
@@ -190,7 +190,7 @@ const AdminApplications = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Search by job title or engineer name..."
+                  placeholder="Search by job title or talent name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -232,7 +232,7 @@ const AdminApplications = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-lg font-semibold">{application.job_title}</h3>
-                    <p className="text-gray-600">Applied by {application.engineer_name}</p>
+                    <p className="text-gray-600">Applied by {application.talent_name}</p>
                     <p className="text-sm text-gray-500">Applied on {new Date(application.applied_at).toLocaleDateString()}</p>
                   </div>
                   <div className="flex items-center gap-3">

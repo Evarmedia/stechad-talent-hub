@@ -19,7 +19,9 @@ const Login = () => {
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
     const r = params.get("role");
-    if (r === "engineer" || r === "project_manager" || r === "admin") setForm((f) => ({ ...f, role: r }));
+    if (r === "talent" || r === "project_manager" || r === "admin" || r === "super_admin" || r === "staff") {
+      setForm((f) => ({ ...f, role: r }));
+    }
   }, [location.search]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -48,16 +50,18 @@ const Login = () => {
       if (from !== "/") {
         navigate(from, { replace: true });
       } else {
-        if (response.data.user.role === "engineer"|| form.role === "engineer") {
-          // Check if engineer has completed onboarding
-          // if (!response.data.user.engineer.is_onboarded) {
+        if (response.data.user.role === "talent"|| form.role === "talent") {
+          // Check if talent has completed onboarding
+          // if (!response.data.user.talent.is_onboarded) {
           //   navigate("/onboarding");
           // } else {
-          navigate("/dashboard/engineer");
+          navigate("/dashboard/talent");
           // }
         } else if (response.data.user.role === "project_manager" || form.role === "project_manager") {
           navigate("/dashboard/pm");
-        } else if (response.data.user.role === "admin" ||form.role === "admin") {
+        } else if (response.data.user.role === "staff" || form.role === "staff") {
+          navigate("/dashboard/staff");
+        } else if (["admin", "super_admin"].includes(response.data.user.role) || ["admin", "super_admin"].includes(form.role)) {
           navigate("/admin");
         }
       }
@@ -84,9 +88,11 @@ const Login = () => {
             disabled={authLoading}
             style={{ display: 'none'}}
           >
-            <option value="engineer">Engineer</option>
+            <option value="talent">Talent</option>
             <option value="project_manager">Project Manager</option>
+            <option value="staff">Staff</option>
             <option value="admin">Admin</option>
+            <option value="super_admin">Super Admin</option>
           </select>
           <Input
             type="email"
@@ -150,8 +156,8 @@ const Login = () => {
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-text-muted mt-4 gap-2">
           <Link to="/forgot-password" className="text-primary font-semibold underline text-center">Forgot password?</Link>
           <div>
-            New engineer?{" "}
-            <Link to="/engineer-signup" className="text-primary font-semibold underline">
+            New talent?{" "}
+            <Link to="/talent-signup" className="text-primary font-semibold underline">
               Create account
             </Link>
           </div>

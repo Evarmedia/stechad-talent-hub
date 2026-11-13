@@ -1,151 +1,94 @@
-import apiService from './apiService';
+import { io } from "socket.io-client";
+import apiService from "./apiService";
 
 class WebSocketService {
-  constructor() {
-    this.socket = null;
-    this.listeners = new Map();
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 3000;
+  socket = null;
+  listeners = new Map();
+  refreshingToken = false;
+  reconnectTimer = null;
+
+  notify(event, payload) {
+    this.listeners.get(event)?.forEach((callback) => callback(payload));
   }
 
   connect() {
-    const token = apiService.getToken();
-    
-    if (!token) {
-      console.error('No authentication token found');
-      return;
-    }
-
-    // Connect to WebSocket server
-    const wsUrl = 'ws://localhost:5000';
-    
-    this.socket = new WebSocket(wsUrl);
-
-    this.socket.onopen = () => {
-      console.log('WebSocket connected');
-      this.reconnectAttempts = 0;
-      
-      // Authenticate after connection
-      this.socket.send(JSON.stringify({
-        type: 'auth',
-        token: token
-      }));
-    };
-
-    this.socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        this.handleMessage(data);
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+    if (this.socket) return;
+    const configuredUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      import.meta.env.VITE_BACKEND_URL ||
+      window.location.origin;
+    const origin = new URL(configuredUrl, window.location.origin).origin;
+    this.socket = io(origin, {
+      auth: (callback) => callback({ token: apiService.getToken() }),
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
+      // Polling is retained as a fallback for proxies that do not support upgrades.
+      transports: ["polling", "websocket"],
+    });
+    this.socket.onAny((event, payload) => this.notify(event, payload));
+    this.socket.on("connect", () =>
+      this.notify("connection_status", "connected"),
+    );
+    this.socket.on("disconnect", () =>
+      this.notify("connection_status", "reconnecting"),
+    );
+    this.socket.on("connect_error", async (error) => {
+      this.notify("connection_status", "reconnecting");
+      if (error.message === "Authentication error" && !this.refreshingToken) {
+        this.refreshingToken = true;
+        const socket = this.socket;
+        try {
+          const token = await apiService.refreshAccessToken();
+          if (token && this.socket === socket) socket.connect();
+          else if (this.socket === socket && apiService.getRefreshToken()) {
+            this.reconnectTimer = window.setTimeout(() => {
+              if (this.socket === socket) socket.connect();
+            }, 3000);
+          }
+        } finally {
+          this.refreshingToken = false;
+        }
       }
-    };
-
-    this.socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    this.socket.onclose = () => {
-      console.log('WebSocket disconnected');
-      this.attemptReconnect();
-    };
+    });
+    this.notify("connection_status", "connecting");
   }
 
   disconnect() {
-    if (this.socket) {
-      this.socket.close();
-      this.socket = null;
-    }
-    this.listeners.clear();
+    window.clearTimeout(this.reconnectTimer);
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
+    this.socket = null;
   }
 
-  attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
-      setTimeout(() => {
-        this.connect();
-      }, this.reconnectDelay);
-    } else {
-      console.error('Max reconnection attempts reached');
-    }
+  on(event, callback) {
+    if (!this.listeners.has(event)) this.listeners.set(event, new Set());
+    this.listeners.get(event).add(callback);
+    return () => this.off(event, callback);
   }
 
-  handleMessage(data) {
-    const eventType = data.type;
-    const listeners = this.listeners.get(eventType);
-    
-    if (listeners) {
-      listeners.forEach(callback => callback(data));
-    }
+  off(event, callback) {
+    this.listeners.get(event)?.delete(callback);
+    if (!this.listeners.get(event)?.size) this.listeners.delete(event);
   }
 
-  on(eventType, callback) {
-    if (!this.listeners.has(eventType)) {
-      this.listeners.set(eventType, []);
-    }
-    this.listeners.get(eventType).push(callback);
+  emit(event, payload) {
+    if (!this.socket?.connected) return false;
+    this.socket.emit(event, payload);
+    return true;
   }
 
-  off(eventType, callback) {
-    const listeners = this.listeners.get(eventType);
-    if (listeners) {
-      const index = listeners.indexOf(callback);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
-    }
-  }
-
-  emit(eventType, data) {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: eventType,
-        ...data
-      }));
-    } else {
-      console.warn('WebSocket is not connected');
-    }
-  }
-
-  // Chat-specific methods
   joinChat(chatId) {
-    this.emit('join_chat', { chatId });
+    this.emit("join_chat", chatId);
   }
-
   leaveChat(chatId) {
-    this.emit('leave_chat', { chatId });
+    this.emit("leave_chat", chatId);
   }
-
-  sendMessage(chatId, content, messageType = 'text', attachments = [], replyTo = null) {
-    this.emit('send_message', {
-      chat_id: chatId,
-      content,
-      message_type: messageType,
-      attachments,
-      reply_to: replyTo
-    });
-  }
-
   typingStart(chatId) {
-    this.emit('typing_start', { chat_id: chatId });
+    this.emit("typing_start", { chat_id: chatId });
   }
-
   typingStop(chatId) {
-    this.emit('typing_stop', { chat_id: chatId });
-  }
-
-  markMessagesRead(chatId, messageIds = []) {
-    this.emit('mark_messages_read', {
-      chat_id: chatId,
-      message_ids: messageIds
-    });
-  }
-
-  getOnlineUsers() {
-    this.emit('get_online_users', {});
+    this.emit("typing_stop", { chat_id: chatId });
   }
 }
 

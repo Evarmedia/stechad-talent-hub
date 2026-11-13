@@ -28,7 +28,7 @@ type Stat = { label: string; value: number; suffix?: string; prefix?: string };
 const services: { title: string; description: string; icon: IconType }[] = [
   {
     title: "IT Staffing & Outstaffing",
-    description: "Deploy vetted engineers on demand with 24/7 coverage across Europe and Africa.",
+    description: "Deploy vetted talents on demand with 24/7 coverage across Europe and Africa.",
     icon: Users,
   },
   {
@@ -86,7 +86,7 @@ const differentiators: { title: string; description: string; icon: IconType }[] 
   },
   {
     title: "Proven Talent",
-    description: "Vetted engineers across levels L1 to L3, ready for onsite or remote work.",
+    description: "Vetted talents across levels L1 to L3, ready for onsite or remote work.",
     icon: BadgeCheck,
   },
 ];
@@ -112,7 +112,7 @@ const caseHighlights = [
 const stats: Stat[] = [
   { label: "Countries covered", value: 50, suffix: "+" },
   { label: "Avg. response time", value: 1, suffix: " min" },
-  { label: "Certified engineers", value: 1400, suffix: "+" },
+  { label: "Certified talents", value: 1400, suffix: "+" },
   { label: "Projects delivered", value: 600, suffix: "+" },
 ];
 
@@ -137,7 +137,7 @@ const steps = [
 
 const testimonials = [
   {
-    quote: "STECHAD mobilized engineers across three countries in under a week and kept our stores online through a critical rollout.",
+    quote: "STECHAD mobilized talents across three countries in under a week and kept our stores online through a critical rollout.",
     name: "Retail Operations Lead",
     org: "Global Retail Brand",
   },
@@ -186,10 +186,10 @@ const CTAButtons = () => (
       <ArrowRight className="h-4 w-4" />
     </Link>
     <Link
-      to="/engineer-signup"
+      to="/talent-signup"
       className="inline-flex items-center justify-center gap-2 border border-primary text-primary bg-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition"
     >
-      Join as an Engineer
+      Join as a Talent
     </Link>
   </div>
 );
@@ -203,7 +203,7 @@ const HowItWorks = () => (
           Simple, transparent, and fast.
         </h2>
         <p className="text-text-muted text-base">
-          Whether you are hiring talent or joining as an engineer, we keep the process lean so you can focus on delivery.
+          Whether you are hiring talent or joining as a talent, we keep the process lean so you can focus on delivery.
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -315,7 +315,7 @@ const Landing = () => {
             <div className="relative rounded-[28px] overflow-hidden shadow-xl border border-border bg-white">
               <img
                 src="https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=1200&q=80"
-                alt="Engineers collaborating"
+                alt="Talents collaborating"
                 className="w-full h-[420px] object-cover"
               />
               <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur rounded-2xl border border-border p-4 shadow-smooth">
@@ -323,7 +323,7 @@ const Landing = () => {
                   <Server className="h-9 w-9 text-primary" />
                   <div>
                     <p className="text-sm text-text-muted">Live projects</p>
-                    <p className="font-semibold">Onsite and remote engineers ready to deploy today.</p>
+                    <p className="font-semibold">Onsite and remote talents ready to deploy today.</p>
                   </div>
                 </div>
               </div>
@@ -398,11 +398,11 @@ const Landing = () => {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 md:px-0 py-14" aria-labelledby="engineers">
+      <section className="max-w-6xl mx-auto px-4 md:px-0 py-14" aria-labelledby="talents">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-4">
-            <p className="uppercase tracking-[0.18em] text-sm text-primary font-semibold">For engineers</p>
-            <h2 id="engineers" className="text-3xl font-extrabold">Build a global career with STECHAD.</h2>
+            <p className="uppercase tracking-[0.18em] text-sm text-primary font-semibold">For talents</p>
+            <h2 id="talents" className="text-3xl font-extrabold">Build a global career with STECHAD.</h2>
             <p className="text-text-muted">
               Work on meaningful projects from on-the-ground network builds to cloud migrations and cybersecurity rollouts. We back you with training, clear SLAs, and support from senior leads.
             </p>
@@ -412,10 +412,10 @@ const Landing = () => {
               <div className="flex items-center gap-2"><Lock className="h-4 w-4 text-primary" /> Security and safety standards on every engagement.</div>
             </div>
             <Link
-              to="/engineer-signup"
+              to="/talent-signup"
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-sm hover:bg-primary-faint transition"
             >
-              Get started as an engineer
+              Get started as a talent
             </Link>
           </div>
           <div className="rounded-[28px] border border-border shadow-smooth p-6 bg-white relative overflow-hidden">

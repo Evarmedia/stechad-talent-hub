@@ -18,10 +18,10 @@ const PublicLayout: React.FC = () => {
           </Link>
           
           {token ? (<nav className="hidden md:flex gap-6">
-            <Link to="/engineer-signup" className="font-medium hover:underline text-primary">Engineer Signup</Link>
+            <Link to="/talent-signup" className="font-medium hover:underline text-primary">Talent Signup</Link>
             <button onClick={logout} className="font-medium hover:underline text-text-main">Logout</button>
           </nav>) : (<nav className="hidden md:flex gap-6">
-            <Link to="/engineer-signup" className="font-medium hover:underline text-primary">Engineer Signup</Link>
+            <Link to="/talent-signup" className="font-medium hover:underline text-primary">Talent Signup</Link>
             <Link to="/login" className="font-medium hover:underline text-text-main">Login</Link>
           </nav>)}
 

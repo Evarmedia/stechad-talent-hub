@@ -1,58 +1,104 @@
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Briefcase, Calendar, ClipboardList, FileText, FolderKanban, Home, Pickaxe, Settings, User, Users } from "lucide-react";
+import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, MessageSquare, Pickaxe, ReceiptText, Settings, ShieldCheck, TrendingUp, User, Users, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-const engineerMenu = [
-  { icon: Home,    label: "Dashboard", to: "/dashboard/engineer" },
-  { icon: Briefcase, label: "Jobs",     to: "/dashboard/engineer/jobs" },
-  { icon: FolderKanban, label: "Projects", to: "/dashboard/engineer/projects" },
-  { icon: ClipboardList, label: "Applications", to: "/dashboard/engineer/applications" },
-  { icon: Calendar, label: "Interviews", to: "/dashboard/engineer/interviews" },
-  // { icon: MessageSquare, label: "Messages", to: "/dashboard/engineer/messages" },
-  { icon: User,    label: "Profile",   to: "/dashboard/engineer/profile" },
+import { useAuthContext } from "@/hooks/useAuthContext";
+import { useChatContext } from "@/hooks/contexts/ChatContext";
+type MenuItem = {
+  icon: LucideIcon;
+  label: string;
+  to: string;
+  permission?: "approvals";
+  superAdminOnly?: boolean;
+};
+
+const talentMenu: MenuItem[] = [
+  { icon: Home, label: "Dashboard", to: "/dashboard/talent" },
+  { icon: Briefcase, label: "Jobs", to: "/dashboard/talent/jobs" },
+  { icon: FolderKanban, label: "Projects", to: "/dashboard/talent/projects" },
+  { icon: ClipboardList, label: "Applications", to: "/dashboard/talent/applications" },
+  { icon: Calendar, label: "Interviews", to: "/dashboard/talent/interviews" },
+  { icon: DollarSign, label: "Invoices", to: "/dashboard/talent/invoices" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/talent/messages" },
+  { icon: User, label: "Profile", to: "/dashboard/talent/profile" },
 ];
 
-const pmMenu = [
+const staffMenu: MenuItem[] = [
+  { icon: Home, label: "Dashboard", to: "/dashboard/staff" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/staff/messages" },
+  { icon: Clock3, label: "Attendance", to: "/dashboard/staff/attendance" },
+  { icon: CalendarDays, label: "Leave", to: "/dashboard/staff/leave" },
+  { icon: ReceiptText, label: "Expenses", to: "/dashboard/staff/expenses" },
+  { icon: ClipboardList, label: "Approvals", to: "/dashboard/staff/approvals", permission: "approvals" },
+  { icon: TrendingUp, label: "KPIs", to: "/dashboard/staff/kpis" },
+  { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/staff/holidays" },
+  { icon: User, label: "Profile", to: "/dashboard/staff/profile" },
+];
+
+const pmMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/pm" },
   { icon: FileText, label: "Post Job", to: "/dashboard/pm/post-job" },
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
-  { icon: Pickaxe, label: "Engineers", to: "dashboard/pm/engineers" },
+  { icon: Pickaxe, label: "Talents", to: "/dashboard/pm/talents" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
-  // { icon: Users, label: "Applicants", to: "/dashboard/pm/applicants/1" },
+  { icon: DollarSign, label: "Project Invoices", to: "/dashboard/pm/project-invoices" },
+  { icon: Clock3, label: "Attendance", to: "/dashboard/pm/attendance" },
+  { icon: CalendarDays, label: "Leave", to: "/dashboard/pm/leave" },
+  { icon: ReceiptText, label: "Expenses", to: "/dashboard/pm/expenses" },
+  { icon: TrendingUp, label: "KPIs", to: "/dashboard/pm/kpis" },
+  { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/pm/holidays" },
+  { icon: ClipboardList, label: "Approvals", to: "/dashboard/pm/approvals", permission: "approvals" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
-  // { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
 ];
 
-const adminMenu = [
+const adminMenu: MenuItem[] = [
   { icon: Home, label: "Overview", to: "/admin" },
-  { icon: Pickaxe, label: "Engineers", to: "/admin/engineers" },
+  { icon: Pickaxe, label: "Talents", to: "/admin/talents" },
   { icon: User, label: "Project Managers", to: "/admin/project-managers" },
+  { icon: FolderKanban, label: "Projects", to: "/admin/projects" },
+  { icon: ShieldCheck, label: "Roles", to: "/admin/roles", superAdminOnly: true },
+  { icon: ClipboardList, label: "Workforce", to: "/admin/workforce" },
   { icon: Briefcase, label: "Jobs", to: "/admin/jobs" },
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
-  { icon: ClipboardList, label: "Engineer Vetting", to: "/admin/engineer-vetting" },
-  // { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
+  { icon: ClipboardList, label: "Talent Vetting", to: "/admin/talent-vetting" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
+  { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
 ];
 
-function getRoleMenu(pathname: string) {
-  if (pathname.startsWith("/dashboard/engineer")) return engineerMenu;
+function getRoleMenu(pathname: string): MenuItem[] {
+  if (pathname.startsWith("/dashboard/talent")) return talentMenu;
+  if (pathname.startsWith("/dashboard/staff")) return staffMenu;
   if (pathname.startsWith("/dashboard/pm")) return pmMenu;
   if (pathname.startsWith("/admin")) return adminMenu;
   return [];
 }
 
 export function AppSidebar() {
+  const { chats } = useChatContext();
+  const unreadMessages = chats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
   const { pathname } = useLocation();
-  const menu = getRoleMenu(pathname);
+  const { user } = useAuthContext();
+  const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
+  const canApprove = user?.effective_permissions?.includes("*") || approvalPermissions.some((permission) => user?.effective_permissions?.includes(permission));
+  const menu = getRoleMenu(pathname).filter((item) =>
+    (item.permission !== "approvals" || canApprove) &&
+    (!item.superAdminOnly || user?.role === "super_admin"),
+  );
+  const activeMenuPath = menu
+    .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
+    .sort((first, second) => second.to.length - first.to.length)[0]?.to;
   
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {pathname.includes("/engineer")
-              ? "Engineer"
+            {pathname.includes("/talent")
+              ? "Talent"
+              : pathname.includes("/staff")
+              ? "Staff"
               : pathname.includes("/pm")
               ? "Project Manager"
               : pathname.includes("/admin")
@@ -62,7 +108,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menu.map((item) => {
-                const isActive = pathname === item.to;
+                const isActive = item.to === activeMenuPath;
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive}>
@@ -76,6 +122,7 @@ export function AppSidebar() {
                       >
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
+                        {item.to.endsWith('/messages') && unreadMessages > 0 && <span className="ml-auto rounded-full bg-primary-light px-1.5 py-0.5 text-[10px] font-semibold text-primary" aria-label={`${unreadMessages} unread messages`}>{unreadMessages > 99 ? '99+' : unreadMessages}</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -6,31 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar, Eye, MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { DashboardJob } from "@/types/dashboard";
 
 const AdminJobs = () => {
-  const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedJob, setSelectedJob] = useState<DashboardJob | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const { getJobs } = useDataContext();
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const jobsData = await getJobs();
-        setJobs(jobsData);
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobs();
-  }, [getJobs]);
+  const { jobs, jobsLoading: loading } = useDataContext() as {
+    jobs: DashboardJob[];
+    jobsLoading: boolean;
+  };
 
   const filteredJobs = statusFilter === "All" 
     ? jobs 
@@ -40,7 +27,7 @@ const AdminJobs = () => {
     return status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
   };
 
-  const handleViewJob = (job: any) => {
+  const handleViewJob = (job: DashboardJob) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
   };

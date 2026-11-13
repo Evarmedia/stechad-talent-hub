@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-export const exportToCSV = (data: Record<string, any>[]) => {
+export const exportToCSV = (data: Record<string, unknown>[]) => {
   if (!data || data.length === 0) return;
 
   const rawHeaders = Object.keys(data[0]);
@@ -13,7 +13,7 @@ export const exportToCSV = (data: Record<string, any>[]) => {
       .join(" ")
   );
 
-  const escapeValue = (value: any) => {
+  const escapeValue = (value: unknown) => {
     if (value === null || value === undefined) return "";
     return `"${String(value).replace(/"/g, '""')}"`;
   };
@@ -31,7 +31,7 @@ export const exportToCSV = (data: Record<string, any>[]) => {
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
-  const filename = `engineers_${yyyy}-${mm}-${dd}.csv`;
+  const filename = `talents_${yyyy}-${mm}-${dd}.csv`;
 
   const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   const url = window.URL.createObjectURL(blob);
@@ -49,8 +49,8 @@ export const exportToCSV = (data: Record<string, any>[]) => {
 };
 
 export const exportToXLSX = (
-  data: Record<string, any>[],
-  fileName = "engineers"
+  data: Record<string, unknown>[],
+  fileName = "talents"
 ) => {
   if (!data || data.length === 0) return;
 
@@ -62,7 +62,7 @@ export const exportToXLSX = (
       .join(" ");
 
   const formattedData = data.map((row) => {
-    const formattedRow: Record<string, any> = {};
+    const formattedRow: Record<string, unknown> = {};
     Object.entries(row).forEach(([key, value]) => {
       formattedRow[formatHeader(key)] = value ?? "";
     });
@@ -85,7 +85,7 @@ export const exportToXLSX = (
 
   // 4. Create workbook
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Engineers");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Talents");
 
   // 5. Generate filename with date
   const today = new Date();

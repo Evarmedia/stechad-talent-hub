@@ -3,16 +3,17 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Briefcase, FileText, UserCheck, TrendingUp } from "lucide-react";
+import type { AdminStatistics } from "@/types/dashboard";
 
 interface AdminStatsProps {
   loading: boolean;
-  statistics: any;
+  statistics: AdminStatistics | null;
 
 }
 
 const AdminStats: React.FC<AdminStatsProps> = ({ loading, statistics }) => {
   const stats = [
-    { label: "Engineers", value: statistics?.totalEngineers, icon: Users, change: "+12%" },
+    { label: "Talents", value: statistics?.totalTalents, icon: Users, change: "+12%" },
     { label: "Project Managers", value: statistics?.totalProjectManagers, icon: UserCheck, change: "+2%" },
     { label: "Active Jobs", value: statistics?.totalJobs, icon: Briefcase, change: "+5%" },
     { label: "Applications", value: statistics?.totalApplications, icon: FileText, change: "+18%" },
