@@ -104,7 +104,7 @@ export const ProjectManagersProvider = ({ children }) => {
 
   const value = {
     projectManagers,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager'].includes(user.role)),
     pmDashboardData,
     getProjectManagers,
     getPmDashboard,

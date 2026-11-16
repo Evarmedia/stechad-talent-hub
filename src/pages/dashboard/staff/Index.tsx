@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AttendanceTimer from "@/components/AttendanceTimer";
 import { Badge } from "@/components/ui/badge";
@@ -25,20 +27,28 @@ import {
   ReceiptText,
   TrendingUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 const StaffDashboard = () => {
   const { toast } = useToast();
+  const loadVersion = useRef(0);
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [data, setData] = useState<any>(null);
   const [workLog, setWorkLog] = useState("");
   const [busy, setBusy] = useState(false);
 
   const loadDashboard = async () => {
+    start();
+    const version = ++loadVersion.current;
     try {
       const response = await apiService.get("staff/dashboard");
+      if (version !== loadVersion.current) return;
       setData(response?.data || response);
+      resolve();
     } catch (error: any) {
+      if (version !== loadVersion.current) return;
+      reject(error);
       toast({
         title: "Could not load dashboard",
         description: error.message,
@@ -51,6 +61,7 @@ const StaffDashboard = () => {
     loadDashboard();
     const interval = window.setInterval(loadDashboard, 60_000);
     window.addEventListener("stechad:location-updated", loadDashboard);
+
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("stechad:location-updated", loadDashboard);
@@ -78,6 +89,7 @@ const StaffDashboard = () => {
     try {
       await apiService.post("staff/attendance/clock-in", await getLocation());
       toast({ title: "Clocked in" });
+      start(true);
       await loadDashboard();
     } catch (error: any) {
       toast({
@@ -110,6 +122,7 @@ const StaffDashboard = () => {
         description: "Your daily work log has been saved.",
       });
       setWorkLog("");
+      start(true);
       await loadDashboard();
     } catch (error: any) {
       toast({
@@ -190,6 +203,8 @@ const StaffDashboard = () => {
       icon: TrendingUp,
     },
   ];
+
+  if (dataLoading || dataError) return <ServerDataState title="Staff dashboard" error={dataError} onRetry={() => void loadDashboard()} />;
 
   return (
     <div className='p-4 md:p-8 space-y-8'>

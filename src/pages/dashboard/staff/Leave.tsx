@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +29,8 @@ type LeaveRequest = {
 
 const StaffLeavePage = () => {
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [form, setForm] = useState({
     type: "Annual Leave",
     start_date: "",
@@ -41,25 +45,30 @@ const StaffLeavePage = () => {
   });
 
   const loadLeaves = useCallback(async () => {
+    start();
     try {
       const response = await apiService.get("staff/leave");
       const payload = response?.data || response;
       setLeaves(payload.requests || []);
       setBalance(payload.balance || { allowance: 0, used: 0, remaining: 0 });
+      resolve();
     } catch (error) {
+      reject(error);
       toast({
         title: "Could not load leave",
         description: getErrorMessage(error),
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, start, resolve, reject]);
   useEffect(() => {
     void loadLeaves();
   }, [loadLeaves]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await apiService.post("staff/leave", form);
       toast({
@@ -79,8 +88,10 @@ const StaffLeavePage = () => {
         description: getErrorMessage(error),
         variant: "destructive",
       });
-    }
+    } finally { setSubmitting(false); }
   };
+
+  if (dataLoading || dataError) return <ServerDataState title="Leave" error={dataError} onRetry={() => void loadLeaves()} />;
 
   return (
     <div className='p-4 md:p-8 space-y-6'>
@@ -189,7 +200,7 @@ const StaffLeavePage = () => {
                   setForm((p) => ({ ...p, reason: e.target.value }))
                 }
               />
-              <Button>Submit leave request</Button>
+              <Button disabled={submitting}>{submitting ? "Submitting…" : "Submit leave request"}</Button>
             </form>
           </CardContent>
         </Card>

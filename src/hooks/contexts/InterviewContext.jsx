@@ -208,7 +208,7 @@ export const InterviewProvider = ({ children }) => {
     allInterviews,
     fetchAllInterviews,
     fetchInterviewsById,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager', 'talent'].includes(user.role)),
     scheduleInterview,
     fetchUserInterviews,
     updateInterview,

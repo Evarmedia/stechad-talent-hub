@@ -1,3 +1,4 @@
+import ServerDataState from "@/components/ServerDataState";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,8 @@ const PMDashboard = () => {
       default: return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (!loading && !pmDashboardData) return <ServerDataState title="Project manager dashboard" error="Dashboard data is unavailable. Please try again." onRetry={() => window.location.reload()} />;
 
   return (
     <div className="p-4 md:p-8 mx-auto">

@@ -1,3 +1,4 @@
+import ServerDataState from "@/components/ServerDataState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -139,6 +140,8 @@ const AdminProjects = () => {
       setDeletingProjectId(null);
     }
   };
+
+  if (loading) return <ServerDataState title="Projects" />;
 
   return (
     <div className="p-4 md:p-8 space-y-6">

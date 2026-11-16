@@ -1,3 +1,4 @@
+import ServerDataState from "@/components/ServerDataState";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Calendar } from "lucide-react";
@@ -34,6 +35,8 @@ const TalentDashboard = () => {
 
   const activeProjects =
     talentDashboardData?.activeProjects ?? [];
+
+  if (!loading && !talentDashboardData) return <ServerDataState title="Talent dashboard" error="Dashboard data is unavailable. Please try again." onRetry={() => window.location.reload()} />;
 
   return (
     <div className="p-4 md:p-8 mx-auto">

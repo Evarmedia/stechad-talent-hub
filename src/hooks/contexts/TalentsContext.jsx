@@ -89,7 +89,7 @@ export const TalentsProvider = ({ children }) => {
           await getTalentProjects();
         }
 
-        if (user.role === "admin" || user.role === "project_manager") {
+        if (["admin", "super_admin", "project_manager"].includes(user.role)) {
           // Admins + PMs fetch talent list ONLY
           await getTalents();
         }
@@ -164,7 +164,7 @@ export const TalentsProvider = ({ children }) => {
     talents,
     talentDashboardData,
     talentProjects,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager', 'talent'].includes(user.role)),
     getTalents,
     getTalentById,
     getTalentProjects,

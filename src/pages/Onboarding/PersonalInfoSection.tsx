@@ -1,3 +1,5 @@
+import BirthdayInput from "@/components/BirthdayInput";
+import { useState } from "react";
 
 import React from "react";
 import { Label } from "@/components/ui/label";
@@ -15,23 +17,6 @@ interface PersonalInfoSectionProps {
   handleDateChange: (date: Date | null) => void;
 }
 
-const MONTHS = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" }
-];
-
-const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
-
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   form,
   handleInputChange,
@@ -39,15 +24,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   handleRadioChange,
   handleDateChange
 }) => {
-  const handleMonthDayChange = (type: 'month' | 'day', value: string) => {
-    const currentDate = form.dateOfBirth || new Date();
-    const month = type === 'month' ? parseInt(value) : currentDate.getMonth() + 1;
-    const day = type === 'day' ? parseInt(value) : currentDate.getDate();
-    
-    // Create a new date with the selected month and day (using current year as placeholder)
-    const newDate = new Date(currentDate.getFullYear(), month - 1, day);
-    handleDateChange(newDate);
-  };
+  const [birthday, setBirthday] = useState(form.dateOfBirth ? `${String(form.dateOfBirth.getMonth() + 1).padStart(2, "0")}-${String(form.dateOfBirth.getDate()).padStart(2, "0")}` : "");
 
   return (
     <div className="space-y-4">
@@ -77,45 +54,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         </div>
       </div>
 
-      <div>
-        <Label className="block font-semibold text-primary mb-2">Date of Birth (Day and Month) *</Label>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Select 
-              value={form.dateOfBirth ? (form.dateOfBirth.getMonth() + 1).toString() : ""} 
-              onValueChange={(value) => handleMonthDayChange('month', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select month" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg">
-                {MONTHS.map(month => (
-                  <SelectItem key={month.value} value={month.value.toString()}>
-                    {month.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Select 
-              value={form.dateOfBirth ? form.dateOfBirth.getDate().toString() : ""} 
-              onValueChange={(value) => handleMonthDayChange('day', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select day" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg">
-                {DAYS.map(day => (
-                  <SelectItem key={day} value={day.toString()}>
-                    {day}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
+      <BirthdayInput required value={birthday} onChange={(value) => {
+        setBirthday(value);
+        handleDateChange(/^\d{2}-\d{2}$/.test(value) ? new Date(`2000-${value}T12:00:00`) : null);
+      }} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

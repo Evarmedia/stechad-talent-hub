@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import ReviewActionDialog from "@/components/ReviewActionDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,7 @@ const createEmptyKpi = () => ({ assigned_to_user_id: "", title: "", description:
 
 const AdminWorkforce = () => {
   const { toast } = useToast();
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const { user } = useAuthContext();
   const [staff, setStaff] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -44,10 +47,18 @@ const AdminWorkforce = () => {
   const [permissionValue, setPermissionValue] = useState<string[]>([]);
   const [approvalDialog, setApprovalDialog] = useState<{ item: any; action: string } | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [memberChange, setMemberChange] = useState<{ member: { id: string; name: string }; updates: Record<string, unknown>; title: string; description: string } | null>(null);
+  const roleLabel = (role: string) => ({ admin: "Admin", project_manager: "Project Manager", staff: "Staff" }[role] || role);
+  const confirmMemberChange = async () => {
+    if (!memberChange || busy) return;
+    const saved = await updateMember(memberChange.member.id, memberChange.updates);
+    if (saved) setMemberChange(null);
+  };
   const [appraisalDialog, setAppraisalDialog] = useState<any>(null);
   const [appraisal, setAppraisal] = useState<{ scores: Record<string, string>; notes: string }>({ scores: {}, notes: "" });
 
   const loadWorkforce = async () => {
+    start();
     try {
       const response = await apiService.get("admin/workforce");
       const payload = response?.data || response;
@@ -59,7 +70,9 @@ const AdminWorkforce = () => {
       setKpis(payload.kpiLibrary || []);
       setZohoMetrics(payload.zohoMetrics || []);
       setZohoConfigured(Boolean(payload.zoho?.configured));
+      resolve();
     } catch (error: any) {
+      reject(error);
       toast({ title: "Could not load workforce", description: error.message, variant: "destructive" });
     }
   };
@@ -208,6 +221,8 @@ const AdminWorkforce = () => {
     "Permission matrix updated",
   );
 
+  if (dataLoading || dataError) return <ServerDataState title="Workforce operations" error={dataError} onRetry={() => void loadWorkforce()} />;
+
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
@@ -215,6 +230,11 @@ const AdminWorkforce = () => {
         <h1 className="text-2xl font-bold text-primary">Workforce operations</h1>
       </div>
 
+      <Dialog open={Boolean(memberChange)} onOpenChange={(open) => !open && !busy && setMemberChange(null)}>
+        <DialogContent><DialogHeader><DialogTitle>{memberChange?.title}</DialogTitle><DialogDescription>{memberChange?.description}</DialogDescription></DialogHeader>
+          <DialogFooter><Button variant="outline" disabled={busy} onClick={() => setMemberChange(null)}>Cancel</Button><Button disabled={busy} onClick={() => void confirmMemberChange()}>{busy ? "Saving…" : "Confirm change"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Tabs defaultValue="people" className="space-y-6">
         <TabsList className="h-auto flex-wrap justify-start">
           <TabsTrigger value="people">People</TabsTrigger>
@@ -229,16 +249,17 @@ const AdminWorkforce = () => {
         <TabsContent value="people">
           <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_0.5fr] gap-6">
             <Card><CardHeader><CardTitle>Staff directory</CardTitle></CardHeader><CardContent>
-              <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+              <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                 <TableBody>{staff.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.employeeId ? `${member.employeeId} · ` : ""}{member.jobTitle}</p></TableCell>
                     <TableCell><select value={member.departmentId || ""} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
-                    <TableCell>{member.roleKey === "super_admin" ? <Badge className='bg-blue-100 text-blue-800'>Super Admin</Badge> : <select value={member.roleKey} onChange={(event) => updateMember(member.id, { role: event.target.value })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
+                    <TableCell>{member.roleKey === "super_admin" ? <Badge className='bg-blue-100 text-blue-800'>Super Admin</Badge> : <select value={member.roleKey} disabled={busy} onChange={(event) => setMemberChange({ member, updates: { role: event.target.value }, title: "Change user role?", description: `Change ${member.name}'s role from ${roleLabel(member.roleKey)} to ${roleLabel(event.target.value)}? Their access and permissions will change.` })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
                     <TableCell><span className={`inline-flex items-center gap-1 text-sm ${member.browserLocation ? "text-primary" : "text-muted-foreground"}`} title={member.browserLocation?.formattedAddress || undefined}><MapPin className="h-3.5 w-3.5" />{member.location}</span></TableCell>
                     <TableCell><Badge variant="outline">{member.attendance}</Badge></TableCell>
                     <TableCell><Button size="sm" variant="outline" onClick={() => manageMemberPermissions(member)}>{member.permissions?.length || 0} grants</Button></TableCell>
-                    <TableCell><Button size="sm" variant={member.status === "Active" ? "outline" : "default"} disabled={busy || member.roleKey === "super_admin"} onClick={() => updateMember(member.id, { is_active: member.status !== "Active" })}>{member.status}</Button></TableCell>
+                    <TableCell><Badge variant={member.status === "Active" ? "white" : "secondary"}>{member.status}</Badge></TableCell>
+                    <TableCell><Button size="sm" variant="outline" disabled={busy || member.roleKey === "super_admin"} aria-label={`${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}`} onClick={() => setMemberChange({ member, updates: { is_active: member.status !== "Active" }, title: `${member.status === "Active" ? "Deactivate" : "Activate"} staff member?`, description: `${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}'s account? ${member.status === "Active" ? "They will lose access to the platform." : "They will regain access to the platform."}` })}>{member.status === "Active" ? "Deactivate" : "Activate"}</Button></TableCell>
                   </TableRow>
                 ))}</TableBody>
               </Table>

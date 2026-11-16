@@ -167,7 +167,7 @@ export const JobsProvider = ({ children }) => {
   // -----------------------------------------------------
   const value = {
     jobs,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager', 'talent'].includes(user.role)),
     getJobs,
     getJobById,
     createJob,

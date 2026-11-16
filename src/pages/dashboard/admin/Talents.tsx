@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDataContext } from "@/hooks/useDataContext";
 import { Download, Eye, Search, User } from "lucide-react";
+import { formatBirthday } from "@/lib/birthday";
 import { useState } from "react";
 import { exportToXLSX } from "./exportUtils";
 import VetRemarkDialog from "./VetRemarkDialog";
@@ -83,7 +84,7 @@ const Talents = () => {
       name: `${talent.user.first_name} ${talent.user.last_name}`,
       email: talent.user.email,
       phone: talent.user.phone_number || 'N/A',
-      date_Of_Birth: talent.date_of_birth,
+      date_Of_Birth: formatBirthday(talent.date_of_birth),
       skills: talent.specialization.join(", "),
       languages: talent.languages.join(", "),
       language_Proficiency: talent.language_proficiency,

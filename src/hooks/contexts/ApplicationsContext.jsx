@@ -205,10 +205,10 @@ const updateApplication = async (id, updateData) => {
       try {
         if (user.role === "talent") {
           // Talents fetch their dashboard ONLY
-          getTalentsApplication();
+          await getTalentsApplication();
         }
 
-        if (user.role === "admin" || user.role === "project_manager") {
+        if (["admin", "super_admin", "project_manager"].includes(user.role)) {
           // Admins + PMs fetch all Application list
           await getApplications();
         }
@@ -235,7 +235,7 @@ const updateApplication = async (id, updateData) => {
     applications,
     jobApplications,
     talentApplications,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager', 'talent'].includes(user.role)),
     getApplications,
     getTalentsApplication,
     getApplicationsByJobId,

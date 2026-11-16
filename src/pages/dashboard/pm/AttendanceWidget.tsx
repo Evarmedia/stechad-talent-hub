@@ -1,3 +1,5 @@
+import { Skeleton } from "@/components/ui/skeleton";
+import ServerDataState from "@/components/ServerDataState";
 import AttendanceTimer from "@/components/AttendanceTimer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/apiService";
 import { Clock3, Loader2, LogIn, LogOut } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 type AttendanceSummary = {
@@ -26,22 +28,29 @@ const getErrorMessage = (error: unknown) => {
 
 const ProjectManagerAttendanceWidget = () => {
   const { toast } = useToast();
+  const loadVersion = useRef(0);
   const [summary, setSummary] = useState<AttendanceSummary>({});
   const [workLog, setWorkLog] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadAttendance = useCallback(async (showError = true) => {
+    const version = ++loadVersion.current;
     try {
       const response = await apiService.get("staff/attendance");
       const payload = response?.data || response || {};
+      if (version !== loadVersion.current) return;
       setSummary(payload.summary || {});
+      setLoadError(null);
     } catch (error) {
+      if (version !== loadVersion.current) return;
+      setLoadError(getErrorMessage(error));
       if (showError) {
         toast({ title: "Could not load attendance", description: getErrorMessage(error), variant: "destructive" });
       }
     } finally {
-      setLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
   }, [toast]);
 
@@ -65,6 +74,7 @@ const ProjectManagerAttendanceWidget = () => {
       );
       toast({ title: clockOut ? "Clocked out" : "Clocked in" });
       setWorkLog("");
+      setLoading(true);
       await loadAttendance();
     } catch (error) {
       toast({ title: "Attendance action failed", description: getErrorMessage(error), variant: "destructive" });
@@ -85,7 +95,7 @@ const ProjectManagerAttendanceWidget = () => {
             Today&apos;s work session
           </span>
           <div className="flex items-center gap-2">
-            <Badge variant={isOpen ? "white" : "secondary"}>{summary.currentStatus || "Not clocked in"}</Badge>
+            {loading ? <Skeleton className="h-6 w-28" /> : <Badge variant={isOpen ? "white" : "secondary"}>{loadError ? "Status unavailable" : summary.currentStatus || "Not clocked in"}</Badge>}
             <Button asChild variant="outline" size="sm" className="text-xs">
               <Link to="/dashboard/pm/attendance">View attendance</Link>
             </Button>
@@ -98,7 +108,7 @@ const ProjectManagerAttendanceWidget = () => {
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading today&apos;s attendance...
           </div>
-        ) : isOpen ? (
+        ) : loadError ? <ServerDataState title="Attendance" error={loadError} onRetry={() => { setLoading(true); void loadAttendance(); }} /> : isOpen ? (
           <>
             <AttendanceTimer active startedAt={summary.today.clockInAt} compact />
             <Textarea

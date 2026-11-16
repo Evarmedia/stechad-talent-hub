@@ -98,7 +98,7 @@ export const AdminProvider = ({ children }) => {
   // ---------------------------
   const value = {
     adminDashboardData,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin'].includes(user.role)),
     resetAdminDashboardState,
     refreshAll: async () => {
       setInitialized(false); // allow re-run

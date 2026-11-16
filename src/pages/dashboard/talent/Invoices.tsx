@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +38,8 @@ type ReferralSummary = {
 
 const TalentInvoicesPage = () => {
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [referrals, setReferrals] = useState<ReferralSummary>({});
   const [form, setForm] = useState({
@@ -45,6 +49,7 @@ const TalentInvoicesPage = () => {
     notes: "",
   });
   const load = useCallback(async () => {
+    start();
     try {
       const [invoiceResponse, referralResponse] = await Promise.all([
         apiService.get("staff/invoices"),
@@ -52,19 +57,23 @@ const TalentInvoicesPage = () => {
       ]);
       setInvoices(invoiceResponse?.data || invoiceResponse || []);
       setReferrals(referralResponse?.data || referralResponse || {});
+      resolve();
     } catch (error) {
+      reject(error);
       toast({
         title: "Could not load payment data",
         description: getErrorMessage(error),
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, start, resolve, reject]);
   useEffect(() => {
     void load();
   }, [load]);
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await apiService.post("staff/invoices", {
         ...form,
@@ -79,8 +88,10 @@ const TalentInvoicesPage = () => {
         description: getErrorMessage(error),
         variant: "destructive",
       });
-    }
+    } finally { setSubmitting(false); }
   };
+  if (dataLoading || dataError) return <ServerDataState title="Talent invoicing" error={dataError} onRetry={() => void load()} />;
+
   return (
     <div className='p-4 md:p-8 mx-auto space-y-6'>
       <div>
@@ -136,7 +147,7 @@ const TalentInvoicesPage = () => {
                   setForm((p) => ({ ...p, notes: e.target.value }))
                 }
               />
-              <Button className='w-full'>Submit for review</Button>
+              <Button className='w-full' disabled={submitting}>{submitting ? 'Submitting…' : 'Submit for review'}</Button>
             </form>
           </CardContent>
         </Card>

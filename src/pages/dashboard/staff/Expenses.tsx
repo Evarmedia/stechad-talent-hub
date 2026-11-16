@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +43,7 @@ const getErrorMessage = (error: unknown) => {
 
 const StaffExpensesPage = () => {
   const { toast } = useToast();
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const receiptInput = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     category: "Travel",
@@ -54,17 +57,20 @@ const StaffExpensesPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadExpenses = useCallback(async () => {
+    start();
     try {
       const response = await apiService.get("staff/expenses");
       setClaims(response?.data || response || []);
+      resolve();
     } catch (error) {
+      reject(error);
       toast({
         title: "Could not load expenses",
         description: getErrorMessage(error),
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, start, resolve, reject]);
   useEffect(() => {
     void loadExpenses();
   }, [loadExpenses]);
@@ -115,6 +121,8 @@ const StaffExpensesPage = () => {
       ["Approved", "Receipt Verified", "Paid"].includes(item.status),
     )
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+  if (dataLoading || dataError) return <ServerDataState title="Expenses" error={dataError} onRetry={() => void loadExpenses()} />;
 
   return (
     <div className='p-4 md:p-8 mx-auto space-y-6'>

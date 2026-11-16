@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +31,8 @@ type ProjectInvoice = {
 
 const PMProjectInvoicePage = () => {
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [projects, setProjects] = useState<CompletedProject[]>([]);
   const [invoices, setInvoices] = useState<ProjectInvoice[]>([]);
   const [form, setForm] = useState({
@@ -40,6 +44,7 @@ const PMProjectInvoicePage = () => {
     notes: "",
   });
   const load = useCallback(async () => {
+    start();
     try {
       const [billingResponse, projectsResponse] = await Promise.all([
         apiService.get("staff/project-invoices"),
@@ -49,19 +54,23 @@ const PMProjectInvoicePage = () => {
       const completedProjects = projectsResponse?.data || projectsResponse;
       setProjects(Array.isArray(completedProjects) ? completedProjects : []);
       setInvoices(billing.invoices || []);
+      resolve();
     } catch (error) {
+      reject(error);
       toast({
         title: "Could not load project billing",
         description: getErrorMessage(error),
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, start, resolve, reject]);
   useEffect(() => {
     void load();
   }, [load]);
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await apiService.post("staff/project-invoices", {
         ...form,
@@ -83,8 +92,10 @@ const PMProjectInvoicePage = () => {
         description: getErrorMessage(error),
         variant: "destructive",
       });
-    }
+    } finally { setSubmitting(false); }
   };
+  if (dataLoading || dataError) return <ServerDataState title="Project billing" error={dataError} onRetry={() => void load()} />;
+
   return (
     <div className='p-4 md:p-8 mx-auto space-y-6'>
       <div>
@@ -171,8 +182,8 @@ const PMProjectInvoicePage = () => {
                   setForm((p) => ({ ...p, notes: e.target.value }))
                 }
               />
-              <Button className='w-full' disabled={!projects.length}>
-                Submit for accounts approval
+              <Button className='w-full' disabled={submitting || !projects.length}>
+                {submitting ? "Submitting…" : "Submit for accounts approval"}
               </Button>
             </form>
           </CardContent>

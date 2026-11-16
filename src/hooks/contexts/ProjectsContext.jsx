@@ -156,7 +156,7 @@ export const ProjectsProvider = ({ children }) => {
       try {
         if (["admin", "super_admin", "project_manager"].includes(user.role)) {
           // adjust this if Pm need to see all projects(check backend access too)
-          getProjects();
+          await getProjects();
           setInitialized(true);
         }
       } catch (err) {
@@ -178,7 +178,7 @@ export const ProjectsProvider = ({ children }) => {
 
   const value = {
     projects,
-    loading,
+    loading: loading || Boolean(token && user && !initialized && ['admin', 'super_admin', 'project_manager'].includes(user.role)),
     getProjects,
     getProjectById,
     createProject,

@@ -1,3 +1,5 @@
+import BirthdayInput from "@/components/BirthdayInput";
+import { birthdayMonthDay } from "@/lib/birthday";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +13,7 @@ interface ProfileFormData {
   first_name: string;
   last_name: string;
   phone_number: string;
+  date_of_birth: string;
   email: string;
   city: string;
   country: string;
@@ -34,6 +37,7 @@ const PMProfile = () => {
     first_name: "",
     last_name: "",
     phone_number: "",
+    date_of_birth: "",
     email: "",
     city: "",
     country: "",
@@ -53,6 +57,7 @@ const PMProfile = () => {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         phone_number: user.phone_number || "",
+        date_of_birth: birthdayMonthDay(user.date_of_birth),
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
@@ -118,6 +123,7 @@ const PMProfile = () => {
       profileData.append("first_name", formData.first_name.trim());
       profileData.append("last_name", formData.last_name.trim());
       profileData.append("phone_number", formData.phone_number);
+      profileData.append("date_of_birth", formData.date_of_birth);
       profileData.append("city", formData.city);
       profileData.append("country", formData.country);
 
@@ -155,6 +161,7 @@ const PMProfile = () => {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         phone_number: user.phone_number || "",
+        date_of_birth: birthdayMonthDay(user.date_of_birth),
         email: user.email || "",
         city: user.city || "",
         country: user.country || "",
@@ -320,6 +327,7 @@ const PMProfile = () => {
                     Basic Details
                   </h3>
                   <div className="grid grid-cols-2 gap-6">
+                    <BirthdayInput value={formData.date_of_birth} onChange={value => setFormData(prev => ({ ...prev, date_of_birth: value }))} disabled={!isEditing || loading} />
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         First Name *

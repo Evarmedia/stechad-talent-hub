@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 import AttendanceTimer from "@/components/AttendanceTimer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/errors";
 import apiService from "@/services/apiService";
 import { CalendarDays, CheckCircle2, Clock3 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type AttendanceEntry = {
   id: string;
@@ -38,28 +40,37 @@ type AttendanceSummary = {
 
 const StaffAttendancePage = () => {
   const { toast } = useToast();
+  const loadVersion = useRef(0);
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [attendance, setAttendance] = useState<AttendanceEntry[]>([]);
   const [summary, setSummary] = useState<AttendanceSummary>({});
   const [workLog, setWorkLog] = useState("");
   const [busy, setBusy] = useState(false);
 
   const loadAttendance = useCallback(async () => {
+    start();
+    const version = ++loadVersion.current;
     try {
       const response = await apiService.get("staff/attendance");
       const payload = response?.data || response;
+      if (version !== loadVersion.current) return;
       setAttendance(payload.entries || []);
       setSummary(payload.summary || {});
+      resolve();
     } catch (error) {
+      if (version !== loadVersion.current) return;
+      reject(error);
       toast({
         title: "Could not load attendance",
         description: getErrorMessage(error),
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, start, resolve, reject]);
   useEffect(() => {
     loadAttendance();
     const interval = window.setInterval(loadAttendance, 60_000);
+
     return () => window.clearInterval(interval);
   }, [loadAttendance]);
 
@@ -74,6 +85,7 @@ const StaffAttendancePage = () => {
       );
       toast({ title: clockOut ? "Clocked out" : "Clocked in" });
       setWorkLog("");
+      start(true);
       await loadAttendance();
     } catch (error) {
       toast({
@@ -85,6 +97,8 @@ const StaffAttendancePage = () => {
       setBusy(false);
     }
   };
+
+  if (dataLoading || dataError) return <ServerDataState title="Attendance" error={dataError} onRetry={() => void loadAttendance()} />;
 
   return (
     <div className='p-4 md:p-8 space-y-6'>

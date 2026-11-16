@@ -1,3 +1,5 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ReviewActionDialog from "@/components/ReviewActionDialog";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,7 @@ import { useEffect, useState } from "react";
 
 const StaffApprovalsPage = () => {
   const { toast } = useToast();
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [items, setItems] = useState<any[]>([]);
   const [reviewDialog, setReviewDialog] = useState<{
     item: any;
@@ -25,10 +28,13 @@ const StaffApprovalsPage = () => {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const load = async () => {
+    start();
     try {
       const response = await apiService.get("staff/approvals");
       setItems(response?.data || response || []);
+      resolve();
     } catch (error: any) {
+      reject(error);
       toast({
         title: "Could not load approvals",
         description: error.message,
@@ -71,6 +77,8 @@ const StaffApprovalsPage = () => {
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+  if (dataLoading || dataError) return <ServerDataState title="Approvals" error={dataError} onRetry={() => void load()} />;
+
   return (
     <div className='p-4 md:p-8 mx-auto space-y-6'>
       <div>

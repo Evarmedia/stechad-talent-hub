@@ -134,7 +134,7 @@ export const useOnboardingForm = () => {
       
       // STEP 1: Date of birth
       if (form.dateOfBirth) {
-        const dobString = format(form.dateOfBirth, 'yyyy-MM-dd');
+        const dobString = format(form.dateOfBirth, 'MM-dd');
         formData.append('date_of_birth', dobString);
         // console.log('  ✓ date_of_birth:', dobString);
       }

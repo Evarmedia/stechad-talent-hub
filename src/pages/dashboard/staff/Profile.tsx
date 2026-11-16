@@ -1,3 +1,7 @@
+import ServerDataState from "@/components/ServerDataState";
+import { useServerState } from "@/hooks/useServerState";
+import BirthdayInput from "@/components/BirthdayInput";
+import { birthdayMonthDay } from "@/lib/birthday";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +21,7 @@ const locationLabel = (profile: any) => [...new Set([profile?.browser_location_c
 // [profile?.browser_location_city, profile?.browser_location_state, profile?.browser_location_country]
 const StaffProfile = () => {
   const { toast } = useToast();
+  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [profile, setProfile] = useState<any>(null);
   const [form, setForm] = useState(emptyForm);
   const [avatar, setAvatar] = useState<File | null>(null);
@@ -24,6 +29,7 @@ const StaffProfile = () => {
   const [saving, setSaving] = useState(false);
 
   const loadProfile = async () => {
+    start();
     try {
       const response = await apiService.get("staff/profile");
       const user = response?.data || response;
@@ -37,15 +43,18 @@ const StaffProfile = () => {
         city: user.city || "",
         current_assignment: user.current_assignment || "",
         work_region: user.work_region || "",
-        date_of_birth: user.date_of_birth || "",
+        date_of_birth: birthdayMonthDay(user.date_of_birth),
       });
+      resolve();
     } catch (error: any) {
+      reject(error);
       toast({ title: "Could not load profile", description: error.message, variant: "destructive" });
     }
   };
   useEffect(() => {
     loadProfile();
     window.addEventListener("stechad:location-updated", loadProfile);
+
     return () => window.removeEventListener("stechad:location-updated", loadProfile);
   }, []);
 
@@ -82,7 +91,7 @@ const StaffProfile = () => {
 
   const toggleLocation = async (enabled: boolean) => {
     try {
-      const result = enabled ? await requestBrowserLocationPermission() : { status: profile?.location_permission_status };
+      const result = enabled ? await requestBrowserLocationPermission() : { status: profile?.location_permission_status, location: undefined };
       const canEnable = enabled && result.status === "granted";
       const response = await apiService.putNoId("staff/location-sharing", { enabled: canEnable, ...(result.status ? { permission_status: result.status } : {}), ...result.location });
       setProfile((current: any) => ({
@@ -102,6 +111,8 @@ const StaffProfile = () => {
     }
     catch (error: any) { toast({ title: "Could not update location consent", description: error.message, variant: "destructive" }); }
   };
+
+  if (dataLoading || dataError) return <ServerDataState title="Staff profile" error={dataError} onRetry={() => void loadProfile()} />;
 
   return (
     <form onSubmit={save} className="p-4 md:p-8 mx-auto space-y-6">
@@ -128,7 +139,7 @@ const StaffProfile = () => {
           <Input disabled value={profile?.email || ""} />
           <Input placeholder="Country" value={form.country} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} />
           <Input placeholder="City" value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} />
-          <div><label className="mb-1 block text-xs text-muted-foreground">Date of birth</label><Input type="date" value={form.date_of_birth} onChange={(e) => setForm((p) => ({ ...p, date_of_birth: e.target.value }))} /></div>
+          <BirthdayInput value={form.date_of_birth} onChange={(value) => setForm((p) => ({ ...p, date_of_birth: value }))} disabled={saving} />
         </CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5" />Employment</CardTitle></CardHeader><CardContent className="space-y-3">
           <div className="flex justify-between rounded-lg border p-3"><span>Role</span><Badge variant="outline">{profile?.role?.replace("_", " ") || "Staff"}</Badge></div>
