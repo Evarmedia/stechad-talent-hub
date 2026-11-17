@@ -180,7 +180,7 @@ const PMDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {activeProjects.slice(0, 3).map((project, idx) => (
+                {activeProjects?.slice(0, 3).map((project, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{project.title}</span>

@@ -13,7 +13,7 @@ interface RecentProjectsProps {
 }
 
 const RecentProjects: React.FC<RecentProjectsProps> = ({ loading, projects }) => {
-  const recentProjects = projects.slice(0, 3);
+  const recentProjects = projects?.slice(0, 3);
 
   const getProjectStatusColor = (status: string) => {
     switch (status) {

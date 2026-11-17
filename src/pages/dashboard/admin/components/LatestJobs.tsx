@@ -2,9 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { DashboardJob } from "@/types/dashboard";
 import React from "react";
 import { Link } from "react-router-dom";
-import type { DashboardJob } from "@/types/dashboard";
 
 interface LatestJobsProps {
   loading: boolean;
@@ -12,7 +12,7 @@ interface LatestJobsProps {
 }
 
 const LatestJobs: React.FC<LatestJobsProps> = ({ loading, jobs }) => {
-  const recentJobs = jobs.slice(0, 3);
+  const recentJobs = jobs?.slice(0, 3);
 
   // console.log("Gotten Jobs:", jobs);
 

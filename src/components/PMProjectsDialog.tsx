@@ -116,14 +116,14 @@ export const PMProjectsDialog: React.FC<PMProjectsDialogProps> = ({
                     <div className="md:text-right">
                       <p className="text-sm text-muted-foreground mb-1">Team</p>
                       <div className="flex flex-wrap gap-1">
-                        {project.team.slice(0, 3).map(member => (
+                        {project.team?.slice(0, 3).map(member => (
                           <Badge key={member} variant="outline" className="text-xs">
                             {member}
                           </Badge>
                         ))}
-                        {project.team.length > 3 && (
+                        {project.team?.length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{project.team.length - 3}
+                            +{project.team?.length - 3}
                           </Badge>
                         )}
                       </div>

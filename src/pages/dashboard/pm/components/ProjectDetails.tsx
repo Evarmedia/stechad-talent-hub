@@ -99,7 +99,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onEdit,
         <div>
           <p className="text-sm font-medium text-gray-600 mb-2">Recent Tasks</p>
           <div className="space-y-2">
-            {project.tasks.slice(0, 3).map((task) => (
+            {project.tasks?.slice(0, 3).map((task) => (
               <div key={task.id} className="flex items-center gap-2 text-sm">
                 {getTaskIcon(task.status)}
                 <span>{task.title}</span>

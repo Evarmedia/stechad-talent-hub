@@ -13,7 +13,7 @@ interface RecentTalentsProps {
 }
 
 const RecentTalents: React.FC<RecentTalentsProps> = ({ loading, talents }) => {
-  const recentTalents = talents.slice(0, 3);
+  const recentTalents = talents?.slice(0, 3);
 
   return (
     <Card>

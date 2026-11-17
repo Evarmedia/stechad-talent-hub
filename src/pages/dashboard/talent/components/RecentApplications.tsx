@@ -51,7 +51,7 @@ const RecentApplications: React.FC<RecentApplicationsProps> = ({ loading, applic
           </div>
         ) : (
           <div className="space-y-3">
-            {applications.slice(0, 3).map((app) => (
+            {applications?.slice(0, 3).map((app) => (
               <div key={app.job_id} className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-sm">{app.job_title}</span>

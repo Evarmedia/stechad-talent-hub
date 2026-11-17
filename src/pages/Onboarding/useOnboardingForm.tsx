@@ -229,7 +229,7 @@ export const useOnboardingForm = () => {
       // console.log('🟢 [ONBOARDING] ========== STEP 2: Adding personal info fields ==========');
       const nameParts = form.fullName.trim().split(' ');
       const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      const lastName = nameParts?.slice(1).join(' ') || '';
       
       if (firstName) {
         formData.append('first_name', firstName);
