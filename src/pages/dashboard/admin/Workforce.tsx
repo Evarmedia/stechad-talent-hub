@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import apiService from "@/services/apiService";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown, Loader2, MapPin, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyInvite = { first_name: "", last_name: "", email: "", department_id: "", job_title: "", role: "staff" };
@@ -37,6 +37,7 @@ const AdminWorkforce = () => {
   const [zohoMetrics, setZohoMetrics] = useState<any[]>([]);
   const [zohoConfigured, setZohoConfigured] = useState(false);
   const [invite, setInvite] = useState(emptyInvite);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [holiday, setHoliday] = useState(emptyHoliday);
   const [department, setDepartment] = useState(emptyDepartment);
   const [kpi, setKpi] = useState(createEmptyKpi);
@@ -96,10 +97,12 @@ const AdminWorkforce = () => {
 
   const handleInvite = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     const result = await mutate(() => apiService.post("admin/workforce/invite", { ...invite, department_id: invite.department_id || null }), "");
     if (result) {
       toast({ title: "Invitation sent", description: result?.data?.employee_id ? `Employee ID ${result.data.employee_id} has been reserved.` : undefined });
       setInvite(emptyInvite);
+      setInviteOpen(false);
     }
   };
 
@@ -224,7 +227,7 @@ const AdminWorkforce = () => {
   if (dataLoading || dataError) return <ServerDataState title="Workforce operations" error={dataError} onRetry={() => void loadWorkforce()} />;
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="min-w-0 p-4 md:p-8">
       <div className="mb-6">
         <p className="text-sm uppercase tracking-[0.2em] text-primary/80">HR & Finance Controls</p>
         <h1 className="text-2xl font-bold text-primary">Workforce operations</h1>
@@ -247,9 +250,24 @@ const AdminWorkforce = () => {
         </TabsList>
 
         <TabsContent value="people">
-          <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_0.5fr] gap-6">
-            <Card><CardHeader><CardTitle>Staff directory</CardTitle></CardHeader><CardContent>
-              <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+          <Dialog open={inviteOpen} onOpenChange={(open) => !busy && setInviteOpen(open)}>
+            <Card className="min-w-0">
+              <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <CardTitle>Staff directory</CardTitle>
+                    <Badge variant="secondary">{staff.length} {staff.length === 1 ? "member" : "members"}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Manage departments, roles and account access across your team.</p>
+                </div>
+                <DialogTrigger asChild>
+                  <Button disabled={busy} className="w-full shrink-0 gap-2 sm:w-auto">
+                    <UserPlus className="h-4 w-4" aria-hidden="true" />Invite member
+                  </Button>
+                </DialogTrigger>
+              </CardHeader>
+              <CardContent className="min-w-0">
+              <Table className="min-w-[960px]"><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Department</TableHead><TableHead>Role</TableHead><TableHead>Location</TableHead><TableHead>Attendance</TableHead><TableHead>Delegated access</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                 <TableBody>{staff.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.employeeId ? `${member.employeeId} · ` : ""}{member.jobTitle}</p></TableCell>
@@ -261,21 +279,53 @@ const AdminWorkforce = () => {
                     <TableCell><Badge variant={member.status === "Active" ? "white" : "secondary"}>{member.status}</Badge></TableCell>
                     <TableCell><Button size="sm" variant="outline" disabled={busy || member.roleKey === "super_admin"} aria-label={`${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}`} onClick={() => setMemberChange({ member, updates: { is_active: member.status !== "Active" }, title: `${member.status === "Active" ? "Deactivate" : "Activate"} staff member?`, description: `${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}'s account? ${member.status === "Active" ? "They will lose access to the platform." : "They will regain access to the platform."}` })}>{member.status === "Active" ? "Deactivate" : "Activate"}</Button></TableCell>
                   </TableRow>
-                ))}</TableBody>
+                ))}{!staff.length && <TableRow><TableCell colSpan={8} className="h-32 text-center text-muted-foreground">No workforce members yet. Invite someone to get started.</TableCell></TableRow>}</TableBody>
               </Table>
-            </CardContent></Card>
-
-            <Card><CardHeader><CardTitle>Invite workforce member</CardTitle></CardHeader><CardContent>
-              <form onSubmit={handleInvite} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2"><Input required placeholder="First name" value={invite.first_name} onChange={(e) => setInvite((p) => ({ ...p, first_name: e.target.value }))} /><Input placeholder="Last name" value={invite.last_name} onChange={(e) => setInvite((p) => ({ ...p, last_name: e.target.value }))} /></div>
-                <Input required type="email" placeholder="Work email" value={invite.email} onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))} />
-                <Input placeholder="Job title" value={invite.job_title} onChange={(e) => setInvite((p) => ({ ...p, job_title: e.target.value }))} />
-                <select value={invite.department_id} onChange={(e) => setInvite((p) => ({ ...p, department_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">No department</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select>
-                <select value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>
-                <Button disabled={busy} type="submit" className="w-full">Send invitation</Button>
+              </CardContent>
+            </Card>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto rounded-lg sm:max-w-xl">
+              <DialogHeader className="pr-6 text-left">
+                <DialogTitle>Invite workforce member</DialogTitle>
+                <DialogDescription>Add someone to your team. They’ll receive an email to set up their account.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleInvite} className="space-y-6" aria-busy={busy}>
+                <fieldset disabled={busy} className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-first-name">First name <span className="text-destructive" aria-hidden="true">*</span></Label>
+                    <Input id="invite-first-name" required autoComplete="given-name" placeholder="e.g. Amara" value={invite.first_name} onChange={(e) => setInvite((p) => ({ ...p, first_name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-last-name">Last name <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                    <Input id="invite-last-name" autoComplete="family-name" placeholder="e.g. Okafor" value={invite.last_name} onChange={(e) => setInvite((p) => ({ ...p, last_name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="invite-email">Work email <span className="text-destructive" aria-hidden="true">*</span></Label>
+                    <Input id="invite-email" required type="email" autoComplete="email" placeholder="name@company.com" value={invite.email} onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="invite-job-title">Job title <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                    <Input id="invite-job-title" autoComplete="organization-title" placeholder="e.g. Frontend Engineer" value={invite.job_title} onChange={(e) => setInvite((p) => ({ ...p, job_title: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-department">Department <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                    <select id="invite-department" value={invite.department_id} onChange={(e) => setInvite((p) => ({ ...p, department_id: e.target.value }))} className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm disabled:opacity-50"><option value="">No department</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-role">Role</Label>
+                    <select id="invite-role" aria-describedby="invite-role-help" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm disabled:opacity-50"><option value="staff">Staff</option><option value="project_manager">Project Manager</option><option value="admin">Admin</option></select>
+                  </div>
+                  <p id="invite-role-help" className="text-sm text-muted-foreground sm:col-span-2">Their role determines what they can access. You can change it later.</p>
+                </fieldset>
+                <DialogFooter className="gap-2 border-t pt-4 sm:space-x-0">
+                  <Button type="button" variant="outline" disabled={busy} onClick={() => setInviteOpen(false)}>Cancel</Button>
+                  <Button disabled={busy} type="submit" className="gap-2">
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <UserPlus className="h-4 w-4" aria-hidden="true" />}
+                    {busy ? "Sending invitation…" : "Send invitation"}
+                  </Button>
+                </DialogFooter>
               </form>
-            </CardContent></Card>
-          </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="departments">
