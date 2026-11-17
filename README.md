@@ -1,5 +1,9 @@
 # STECHAD frontend
 
+## Authentication
+
+Signup, password reset, and invitation acceptance display live password length and confirmation feedback. The minimum is six characters, matching `stechad-backend/utils/passwordPolicy.js`; keep `src/lib/authValidation.ts` aligned if that policy changes. Password resets must also differ from the current password. Server errors remain visible in the form, and failed submissions can be corrected and retried. Email casing is normalized when authentication requests are sent.
+
 ## Messages
 
 Messages is available from the Admin, Project Manager, Talent, and Staff dashboards. The shared inbox supports direct and group conversations, unread filters, message search, older history, replies, edit/delete, read receipts, typing, and online presence. Drafts and failed sends are retained when switching conversations during the session. Logout clears chat state.

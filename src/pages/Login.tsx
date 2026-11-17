@@ -1,3 +1,4 @@
+import { emailError } from "@/lib/authValidation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "", role: "" });
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login, authLoading, user, googleLogin } = useAuthContext();
   const navigate = useNavigate();
@@ -25,20 +27,22 @@ const Login = () => {
   }, [location.search]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setError("");
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validate = () => {
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Valid email required";
+    if (emailError(form.email)) return emailError(form.email);
     if (!form.password) return "Password is required";
     return "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     const err = validate();
     if (err) {
-      toast({ title: "Login Failed", description: err });
+      setError(err);
       return;
     }
 
@@ -66,10 +70,7 @@ const Login = () => {
         }
       }
     } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials"
-      });
+      setError(error.message || "Invalid credentials");
       // Keep user on page to edit credentials; avoid throwing to React boundary
       return;
     }
@@ -79,7 +80,7 @@ const Login = () => {
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-2">
       <div className="w-full max-w-md bg-white shadow-smooth rounded-xl p-8">
         <h1 className="text-2xl font-bold text-primary mb-8">Login to STECHAD</h1>
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <form noValidate className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <select
             name="role"
             value={form.role}
@@ -98,6 +99,11 @@ const Login = () => {
             type="email"
             name="email"
             placeholder="jane.doe@example.com"
+            aria-label="Email address"
+            aria-describedby="login-email-error"
+            aria-invalid={Boolean(form.email && emailError(form.email))}
+            autoComplete="username"
+            autoCapitalize="none"
             value={form.email}
             onChange={handleChange}
             className="p-3"
@@ -105,6 +111,7 @@ const Login = () => {
             autoFocus
             // autoComplete="username"
           />
+          {form.email && emailError(form.email) && <p id="login-email-error" className="text-xs text-destructive" aria-live="polite">{emailError(form.email)}</p>}
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -145,6 +152,7 @@ const Login = () => {
               LinkedIn
             </button>
           </div>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <Button
             type="submit"
             className={`w-full mt-2 bg-primary text-white font-bold rounded-md p-3 transition ${authLoading ? "opacity-60" : "hover:bg-primary-faint"}`}

@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setAuthLoading(true);
     try {
-      const response = await apiService.post("auth/login", { email, password });
+      const response = await apiService.post("auth/login", { email: email.trim().toLowerCase(), password });
 
       if (!response.success || !response.data) {
         throw new Error(response.message || "Invalid credentials");
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     setAuthLoading(true);
     try {
-      const response = await apiService.post("auth/signup", userData);
+      const response = await apiService.post("auth/signup", { ...userData, email: userData.email.trim().toLowerCase() });
 
       if (!response.success || !response.data) {
         throw new Error(response.message || "Error signing up");
@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }) => {
   const sendOtp = async (email, purpose = "password_reset") => {
     // password_reset or email_verification
     try {
-      await apiService.post("auth/send-otp", { email, purpose });
+      await apiService.post("auth/send-otp", { email: email.trim().toLowerCase(), purpose });
       toast({
         title: "Verification Code Sent",
         description: "A 6-digit verification code has been sent to your email.",
@@ -171,25 +171,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPassword = async (payload) => {
-    setLoading(true);
-    try {
-      await apiService.post("auth/reset-password", payload);
-      toast({
-        title: "Success",
-        description: "Password reset successful! Please log in.",
-      });
-      setLoading(false);
-    } catch (error) {
-      // console.log("resetPasword Error:", error);
-      throw error;
-      toast({
-        title: "Error resetting password",
-        description: error?.message || "Error resetting password",
-        variant: "destructive",
-      });
-
-      setLoading(false);
-    }
+    const response = await apiService.post("auth/reset-password", payload);
+    if (!response.success) throw new Error(response.message || "Password reset failed");
+    toast({ title: "Success", description: "Password reset successful! Please log in." });
+    return response;
   };
 
   // Update profile function (role-specific)
@@ -266,20 +251,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const acceptInvites = async (token, payload) => {
-    // console.log("token recieved", token );
-    // console.log("payload recieved", payload );
-    setLoading(true);
-    try {
-      await apiService.request(`/auth/accept-invite/${token}`, {
-        method: "POST",
-        data: payload,
-      });
-    } catch (error) {
-      console.error("Accept invites error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    const response = await apiService.post(`/auth/accept-invite/${token}`, payload);
+    if (!response.success) throw new Error(response.message || "Failed to accept invitation");
+    return response;
   };
 
   const value = {

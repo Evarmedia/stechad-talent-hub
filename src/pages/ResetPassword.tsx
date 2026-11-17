@@ -1,3 +1,5 @@
+import { PasswordFeedback } from "@/components/PasswordFeedback";
+import { passwordError } from "@/lib/authValidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -19,6 +21,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +40,7 @@ const ResetPassword = () => {
 
   // Handle OTP change
   const handleOTPChange = (newValue: string) => {
+    setError("");
     setFormData({
       ...formData,
       otp: newValue,  // Handle OTP input change
@@ -45,6 +49,7 @@ const ResetPassword = () => {
 
   // Handle input change (for password and confirmPassword)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError("");
     setFormData({
       ...formData,
       [e.target.name]: e.target.value, // Dynamically set password or confirmPassword
@@ -53,11 +58,12 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    if (formData.new_password.length < 8) {
+    if (passwordError(formData.new_password)) {
       toast({
         title: "Password Too Short",
-        description: "Password must be at least 8 characters long.",
+        description: passwordError(formData.new_password),
         variant: "destructive"
       });
       return;
@@ -72,10 +78,19 @@ const ResetPassword = () => {
       return;
     }
 
+    if (!/^\d{6}$/.test(formData.otp)) {
+      setError("Enter the 6-digit verification code");
+      return;
+    }
     setLoading(true);
-    // console.log("Resetting password with:", formData);
-    await resetPassword(formData);
-    navigate("/login");
+    try {
+      await resetPassword(formData);
+      navigate("/login");
+    } catch (error) {
+      setError(error.message || "Password reset failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResend = () => {
@@ -100,6 +115,8 @@ const ResetPassword = () => {
                 <div className="space-y-2">
                   <InputOTP
                     maxLength={6}
+                    pattern="[0-9]*"
+                    aria-label="Verification code"
                     value={formData.otp}
                     onChange={handleOTPChange}  // Call the OTP-specific handler
                     disabled={loading}
@@ -119,11 +136,15 @@ const ResetPassword = () => {
                 </div>
               </div>
 
-              <label className="text-sm font-medium">New Password</label>
+              <label htmlFor="new-password" className="text-sm font-medium">New Password</label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
+                  id="new-password"
                   name="new_password"
+                  autoComplete="new-password"
+                  aria-describedby="password-feedback"
+                  aria-invalid={Boolean(formData.new_password && passwordError(formData.new_password))}
                   placeholder="Enter new password"
                   value={formData.new_password}
                   onChange={handleInputChange}  // Call the input change handler
@@ -138,17 +159,19 @@ const ResetPassword = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Password must be at least 8 characters long
-              </p>
+
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Confirm Password</label>
+              <label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</label>
               <div className="relative">
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
+                  id="confirm-password"
                   name="confirm_password"
+                  autoComplete="new-password"
+                  aria-describedby="password-feedback"
+                  aria-invalid={Boolean(formData.confirm_password && formData.new_password !== formData.confirm_password)}
                   placeholder="Confirm new password"
                   value={formData.confirm_password}
                   onChange={handleInputChange}  // Call the input change handler
@@ -165,10 +188,12 @@ const ResetPassword = () => {
               </div>
             </div>
 
+            <PasswordFeedback password={formData.new_password} confirmation={formData.confirm_password} reset />
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <Button
               type="submit"
               className="w-full mt-4 text-white"
-              disabled={loading || !formData.new_password || !formData.confirm_password}
+              disabled={loading || Boolean(passwordError(formData.new_password)) || formData.new_password !== formData.confirm_password || !/^\d{6}$/.test(formData.otp)}
             >
               {loading ? "Updating Password..." : "Update Password"}
             </Button>

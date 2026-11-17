@@ -1,3 +1,5 @@
+import { PasswordFeedback } from "@/components/PasswordFeedback";
+import { passwordError } from "@/lib/authValidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
@@ -18,6 +20,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -27,6 +30,7 @@ const ResetPassword = () => {
 
   // Handle input change (for password and confirmPassword)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError("");
     setFormData({
       ...formData,
       [e.target.name]: e.target.value, // Dynamically set password or confirmPassword
@@ -35,6 +39,7 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (!token) {
       toast({
@@ -45,10 +50,10 @@ const ResetPassword = () => {
       return;
     }
 
-    if (formData.new_password.length < 8) {
+    if (passwordError(formData.new_password)) {
       toast({
         title: "Password Too Short",
-        description: "Password must be at least 8 characters long.",
+        description: passwordError(formData.new_password),
         variant: "destructive"
       });
       return;
@@ -72,6 +77,7 @@ const ResetPassword = () => {
       });
       navigate("/login");
     } catch (error) {
+      setError(error.message || "Please try again or request a new link.");
       toast({
         title: "Invite acceptance failed",
         description: error.message || "Please try again or request a new link.",
@@ -130,6 +136,9 @@ const ResetPassword = () => {
                 <Input
                   type={showPassword ? "text" : "password"}
                   name="new_password"
+                  autoComplete="new-password"
+                  aria-describedby="password-feedback"
+                  aria-invalid={Boolean(formData.new_password && passwordError(formData.new_password))}
                   placeholder="Enter new password"
                   value={formData.new_password}
                   onChange={handleInputChange}
@@ -145,9 +154,7 @@ const ResetPassword = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Password must be at least 8 characters long
-              </p>
+
             </div>
 
             <div className="space-y-2">
@@ -156,6 +163,9 @@ const ResetPassword = () => {
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirm_password"
+                  autoComplete="new-password"
+                  aria-describedby="password-feedback"
+                  aria-invalid={Boolean(formData.confirm_password && formData.new_password !== formData.confirm_password)}
                   placeholder="Confirm new password"
                   value={formData.confirm_password}
                   onChange={handleInputChange}
@@ -173,10 +183,12 @@ const ResetPassword = () => {
               </div>
             </div>
 
+            <PasswordFeedback password={formData.new_password} confirmation={formData.confirm_password} />
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <Button
               type="submit"
               className="w-full mt-4 text-white"
-              disabled={loading || !formData.new_password || !formData.confirm_password}
+              disabled={loading || Boolean(passwordError(formData.new_password)) || formData.new_password !== formData.confirm_password}
             >
               {loading ? "Updating Password..." : "Update Password"}
             </Button>

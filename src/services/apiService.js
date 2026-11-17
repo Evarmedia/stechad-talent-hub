@@ -47,7 +47,7 @@ class ApiService {
       (response) => response.data,
       async (error) => {
         const originalRequest = error.config || {};
-        const url = originalRequest.url || "";
+        const url = `/${(originalRequest.url || "").replace(/^\/+/, "")}`;
         const isPublicAuthEndpoint = [
           "/auth/login",
           "/auth/signup",
@@ -55,6 +55,7 @@ class ApiService {
           "/auth/reset-password",
           "/auth/accept-invite",
           "/auth/verify-otp",
+          "/auth/verify-email",
         ].some((path) => url.startsWith(path));
 
         // Token expired → refresh (skip for public auth endpoints)
@@ -98,7 +99,9 @@ class ApiService {
 
         return Promise.reject({
           status: error.response.status,
+          errors: error.response.data?.errors,
           message:
+            (error.response.data?.errors && Object.values(error.response.data.errors).join(". ")) ||
             error.response.data?.message ||
             error.response.data?.error ||
             "Request failed",
