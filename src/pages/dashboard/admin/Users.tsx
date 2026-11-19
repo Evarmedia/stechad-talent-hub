@@ -63,7 +63,6 @@ export default function AdminUsers() {
   const [selected, setSelected] = useState<Person | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [blockers, setBlockers] = useState<string[]>([]);
   const [grantUser, setGrantUser] = useState<Person | null>(null);
   const [grants, setGrants] = useState<string[]>([]);
   const saveGrants = async () => {
@@ -101,7 +100,6 @@ export default function AdminUsers() {
     if (!selected) return;
     setBusy(true);
     setError("");
-    setBlockers([]);
     try {
       if (selected.deleted_at)
         await apiService.post(`admin/users/${selected.user_id}/restore`, {});
@@ -115,28 +113,6 @@ export default function AdminUsers() {
       remote.reload();
     } catch (cause: unknown) {
       setError(getErrorMessage(cause));
-      const details = (
-        cause as {
-          blockers?: Record<
-            string,
-            {
-              name?: string;
-              title?: string;
-              first_name?: string;
-              last_name?: string;
-            }[]
-          >;
-        }
-      ).blockers;
-      if (details)
-        setBlockers(
-          Object.entries(details).flatMap(([kind, rows]) =>
-            rows.map(
-              (row) =>
-                `${kind.replace(/_/g, " ")}: ${row.name || row.title || [row.first_name, row.last_name].filter(Boolean).join(" ")}`,
-            ),
-          ),
-        );
     } finally {
       setBusy(false);
     }
@@ -291,7 +267,6 @@ export default function AdminUsers() {
                             onClick={() => {
                               setSelected(person);
                               setError("");
-                              setBlockers([]);
                             }}
                           >
                             {person.deleted_at ? "Restore" : "Delete"}
@@ -386,20 +361,13 @@ export default function AdminUsers() {
             </DialogTitle>
             <DialogDescription>
               {selected?.deleted_at
-                ? `Restore ${selected && name(selected)}. They must log in again; their previous active/inactive status is preserved.`
-                : `Delete ${selected && name(selected)} and revoke access. Their historical records remain available. Assignments must be reassigned first.`}
+                ? `Restore ${selected && name(selected)} with their current relationships and previous active/inactive status. Later reassignments are preserved. They must log in again.`
+                : `Soft-delete ${selected && name(selected)} and revoke access. Their history and existing relationships are preserved for restoration. You can reassign their work at any time.`}
             </DialogDescription>
           </DialogHeader>
           {error && (
             <div role='alert' className='space-y-2 text-sm text-destructive'>
               <p>{error}</p>
-              {blockers.length > 0 && (
-                <ul className='list-inside list-disc'>
-                  {blockers.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              )}
             </div>
           )}
           <DialogFooter>

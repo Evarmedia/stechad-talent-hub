@@ -59,6 +59,23 @@ describe("account settings", () => {
     await waitFor(() => expect(mocks.setToken).toHaveBeenCalledWith("replacement")); expect(mocks.setRefreshToken).toHaveBeenCalledWith("replacement-refresh");
     expect(screen.getByLabelText("Current password")).toHaveValue("");
   });
+  it("toggles visibility for each change-password field", async () => {
+    show();
+    const fields = [
+      ["Current password", "Show current password", "Hide current password"],
+      ["New password", "Show new password", "Hide new password"],
+      ["Confirm new password", "Show confirm new password", "Hide confirm new password"],
+    ] as const;
+
+    for (const [label, showLabel, hideLabel] of fields) {
+      const input = await screen.findByLabelText(label);
+      expect(input).toHaveAttribute("type", "password");
+      fireEvent.click(screen.getByRole("button", { name: showLabel }));
+      expect(input).toHaveAttribute("type", "text");
+      fireEvent.click(screen.getByRole("button", { name: hideLabel }));
+      expect(input).toHaveAttribute("type", "password");
+    }
+  });
   it("provides password setup guidance for a passwordless account", async () => {
     mocks.get.mockResolvedValue({ success: true, data: { user: { ...user, has_password: false } } }); show();
     expect(await screen.findByRole("link", { name: /Set a password/ })).toHaveAttribute("href", "/forgot-password");

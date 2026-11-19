@@ -9,6 +9,7 @@ import { getErrorMessage } from "@/lib/errors";
 import apiService from "@/services/apiService";
 import websocketService from "@/services/websocketService";
 import { requestBrowserLocationPermission } from "@/utils/locationPermission";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -24,6 +25,11 @@ export default function AccountSettings({
     old_password: "",
     new_password: "",
     confirm_password: "",
+  });
+  const [visiblePasswords, setVisiblePasswords] = useState({
+    old_password: false,
+    new_password: false,
+    confirm_password: false,
   });
   const [error, setError] = useState("");
   const changePreference = async (updates: Record<string, boolean>) => {
@@ -84,6 +90,11 @@ export default function AccountSettings({
       websocketService.disconnect();
       websocketService.connect();
       setPassword({ old_password: "", new_password: "", confirm_password: "" });
+      setVisiblePasswords({
+        old_password: false,
+        new_password: false,
+        confirm_password: false,
+      });
       toast({
         title: "Password changed",
         description: "Other sessions have been signed out.",
@@ -205,21 +216,42 @@ export default function AccountSettings({
               ).map(([key, label, autoComplete]) => (
                 <div key={key} className='space-y-2'>
                   <Label htmlFor={key}>{label}</Label>
-                  <Input
-                    id={key}
-                    type='password'
-                    autoComplete={autoComplete}
-                    required
-                    minLength={key === "old_password" ? 1 : 6}
-                    value={password[key]}
-                    onChange={(event) =>
-                      setPassword((current) => ({
-                        ...current,
-                        [key]: event.target.value,
-                      }))
-                    }
-                    disabled={busy}
-                  />
+                  <div className='relative'>
+                    <Input
+                      id={key}
+                      type={visiblePasswords[key] ? "text" : "password"}
+                      autoComplete={autoComplete}
+                      required
+                      minLength={key === "old_password" ? 1 : 6}
+                      value={password[key]}
+                      onChange={(event) =>
+                        setPassword((current) => ({
+                          ...current,
+                          [key]: event.target.value,
+                        }))
+                      }
+                      disabled={busy}
+                      className='pr-10'
+                    />
+                    <button
+                      type='button'
+                      onClick={() =>
+                        setVisiblePasswords((current) => ({
+                          ...current,
+                          [key]: !current[key],
+                        }))
+                      }
+                      disabled={busy}
+                      aria-label={`${visiblePasswords[key] ? "Hide" : "Show"} ${label.toLowerCase()}`}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                    >
+                      {visiblePasswords[key] ? (
+                        <EyeOff className='h-4 w-4' />
+                      ) : (
+                        <Eye className='h-4 w-4' />
+                      )}
+                    </button>
+                  </div>
                 </div>
               ))}
               <Button disabled={busy}>

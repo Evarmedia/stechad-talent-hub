@@ -1,7 +1,4 @@
-import { can } from "@/lib/permissions";
-import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
-import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +13,11 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/hooks/useAuthContext";
+import { useServerState } from "@/hooks/useServerState";
+import { can } from "@/lib/permissions";
 import apiService from "@/services/apiService";
-import { DollarSign, Loader2, ReceiptText } from "lucide-react";
+import { Hash, Loader2, ReceiptText } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type ExpenseClaim = {
@@ -143,10 +143,10 @@ const StaffExpensesPage = () => {
                 Claim total
               </p>
               <p className='text-2xl font-bold text-primary mt-2'>
-                ${total.toLocaleString()}
+                #{total.toLocaleString()}
               </p>
             </div>
-            <DollarSign className='w-5 h-5 text-primary' />
+            <Hash className='w-5 h-5 text-primary' />
           </CardContent>
         </Card>
         <Card>
@@ -156,7 +156,7 @@ const StaffExpensesPage = () => {
                 Approved
               </p>
               <p className='text-2xl font-bold text-primary mt-2'>
-                ${approved.toLocaleString()}
+                #{approved.toLocaleString()}
               </p>
             </div>
             <ReceiptText className='w-5 h-5 text-emerald-700' />
