@@ -1,3 +1,12 @@
+import ApprovalsRedirect from "@/components/ApprovalsRedirect";
+import { workforcePermissions } from "@/lib/permissions";
+import AccountSettings from "./pages/AccountSettings";
+import AdminUsers from "./pages/dashboard/admin/Users";
+import UserAttendance from "./pages/dashboard/admin/UserAttendance";
+import AuditLogs from "./pages/dashboard/admin/AuditLogs";
+import AdminNotifications from "./pages/dashboard/admin/Notifications";
+import Management from "./pages/Management";
+import CreatedProjects from "./pages/CreatedProjects";
 import ChatAlerts from "@/components/chat/ChatAlerts";
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -53,7 +62,6 @@ import PMProfile from "./pages/dashboard/pm/Profile";
 import PMProjectInvoicePage from "./pages/dashboard/pm/ProjectInvoices";
 import PMProjects from "./pages/dashboard/pm/Projects";
 import StaffAttendance from "./pages/dashboard/staff/Attendance";
-import StaffApprovals from "./pages/dashboard/staff/Approvals";
 import StaffExpenses from "./pages/dashboard/staff/Expenses";
 import StaffHolidays from "./pages/dashboard/staff/Holidays";
 import StaffDashboard from "./pages/dashboard/staff/Index";
@@ -94,6 +102,16 @@ const App = () => (
 
                   {/* Dashboard Layout for all roles */}
                   <Route element={<DashboardLayout />}>
+                    <Route path="/attendance" element={<ProtectedRoute><StaffAttendance /></ProtectedRoute>} />
+                    <Route path="/approvals" element={<ProtectedRoute><ApprovalsRedirect /></ProtectedRoute>} />
+                    <Route path="/expenses" element={<ProtectedRoute requiredPermission="submit_expenses"><StaffExpenses /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+                    <Route path="/workforce/manage" element={<ProtectedRoute anyPermissions={workforcePermissions}><Management /></ProtectedRoute>} />
+                    <Route path="/projects" element={<ProtectedRoute requiredPermission="create_projects"><CreatedProjects /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute requiredRole={["admin", "super_admin"]}><AdminUsers /></ProtectedRoute>} />
+                    <Route path="/admin/users/:id/attendance" element={<ProtectedRoute requiredRole={["admin", "super_admin"]}><UserAttendance /></ProtectedRoute>} />
+                    <Route path="/admin/audit-logs" element={<ProtectedRoute requiredRole={["admin", "super_admin"]}><AuditLogs /></ProtectedRoute>} />
+                    <Route path="/admin/notifications" element={<ProtectedRoute requiredRole={["admin", "super_admin"]}><AdminNotifications /></ProtectedRoute>} />
                     {/* Talent Dashboard routes */}
                     <Route path="/dashboard/talent" element={
                       <ProtectedRoute requiredRole="talent">
@@ -138,45 +156,43 @@ const App = () => (
 
                     {/* Staff Dashboard routes */}
                     <Route path="/dashboard/staff/messages" element={
-                      <ProtectedRoute requiredRole="staff"><MessagesPage /></ProtectedRoute>
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee><MessagesPage /></ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffDashboard />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/attendance" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffAttendance />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/approvals" element={
-                      <ProtectedRoute requiredRole="staff">
-                        <StaffApprovals />
-                      </ProtectedRoute>
+                      <ProtectedRoute><ApprovalsRedirect /></ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/leave" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffLeave />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/expenses" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffExpenses />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/kpis" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffKpis />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/holidays" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffHolidays />
                       </ProtectedRoute>
                     } />
                     <Route path="/dashboard/staff/profile" element={
-                      <ProtectedRoute requiredRole="staff">
+                      <ProtectedRoute requiredRole="staff" allowCustomEmployee>
                         <StaffProfile />
                       </ProtectedRoute>
                     } />
@@ -228,7 +244,7 @@ const App = () => (
                       <ProtectedRoute requiredRole="project_manager"><StaffHolidays /></ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/approvals" element={
-                      <ProtectedRoute requiredRole="project_manager"><StaffApprovals /></ProtectedRoute>
+                      <ProtectedRoute><ApprovalsRedirect /></ProtectedRoute>
                     } />
                     <Route path="/dashboard/pm/applicants/:jobId" element={
                       <ProtectedRoute requiredRole="project_manager">

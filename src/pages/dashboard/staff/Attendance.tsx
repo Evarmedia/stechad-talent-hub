@@ -28,6 +28,7 @@ type AttendanceEntry = {
   workLog?: string;
   isOpen?: boolean;
   status: string;
+  clockOutSource?: string;
 };
 
 type AttendanceSummary = {
@@ -204,7 +205,7 @@ const StaffAttendancePage = () => {
                 <TableRow key={entry.id}>
                   <TableCell>{entry.date}</TableCell>
                   <TableCell>{entry.clockIn || "—"}</TableCell>
-                  <TableCell>{entry.clockOut || "—"}</TableCell>
+                  <TableCell>{entry.clockOut || "—"}{entry.clockOutSource === "automatic" && <Badge variant="secondary" className="ml-2">Automatic</Badge>}</TableCell>
                   <TableCell className='font-medium'>
                     {entry.workedDuration ||
                       (entry.isOpen ? "In progress" : "—")}

@@ -1,3 +1,6 @@
+import EmploymentEditor, { type EmploymentPerson } from "@/components/EmploymentEditor";
+import { useSearchParams } from "react-router-dom";
+import { can, approvalPermission } from "@/lib/permissions";
 import ReviewActionDialog from "@/components/ReviewActionDialog";
 import ServerDataState from "@/components/ServerDataState";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +31,12 @@ const AdminWorkforce = () => {
   const { toast } = useToast();
   const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const { user } = useAuthContext();
+  const [params, setParams] = useSearchParams();
+  const tabs = ["people", "approvals", "holidays", "zoho", "permissions", ...(can(user, "manage_departments") ? ["departments"] : []), ...(can(user, "manage_kpis") ? ["kpis"] : [])];
+  const tab = tabs.includes(params.get("tab") || "") ? params.get("tab")! : "people";
+  const [editingPerson, setEditingPerson] = useState<EmploymentPerson | null>(null);
   const [staff, setStaff] = useState<any[]>([]);
+  const [roles, setRoles] = useState<{ role_id: string; role_key: string; name: string; is_system: boolean; permission_keys: string[] }[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [permissions, setPermissions] = useState<any[]>([]);
   const [approvals, setApprovals] = useState<any[]>([]);
@@ -49,7 +57,7 @@ const AdminWorkforce = () => {
   const [approvalDialog, setApprovalDialog] = useState<{ item: any; action: string } | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
   const [memberChange, setMemberChange] = useState<{ member: { id: string; name: string }; updates: Record<string, unknown>; title: string; description: string } | null>(null);
-  const roleLabel = (role: string) => ({ admin: "Admin", project_manager: "Project Manager", staff: "Staff" }[role] || role);
+  const roleLabel = (role: string) => roles.find((item) => item.role_key === role)?.name || role.replace(/_/g, " ");
   const confirmMemberChange = async () => {
     if (!memberChange || busy) return;
     const saved = await updateMember(memberChange.member.id, memberChange.updates);
@@ -63,7 +71,8 @@ const AdminWorkforce = () => {
     try {
       const response = await apiService.get("admin/workforce");
       const payload = response?.data || response;
-      setStaff(payload.staff || []);
+      setStaff((payload.staff || []).map((member: any) => ({ ...member, employment: { ...member.employment, reporting_manager: member.reportingManager } })));
+      setRoles(payload.roles || []);
       setDepartments(payload.departments || []);
       setPermissions(payload.permissions || []);
       setApprovals(payload.approvalsQueue || []);
@@ -78,7 +87,7 @@ const AdminWorkforce = () => {
     }
   };
 
-  useEffect(() => { loadWorkforce(); }, []);
+  useEffect(() => { void loadWorkforce(); const refresh = () => void loadWorkforce(); window.addEventListener("focus", refresh); return () => window.removeEventListener("focus", refresh); }, []);
 
   const mutate = async (work: () => Promise<any>, success: string) => {
     setBusy(true);
@@ -107,7 +116,7 @@ const AdminWorkforce = () => {
   };
 
   const updateMember = (memberId: string, updates: Record<string, unknown>) => mutate(
-    () => apiService.put("admin/workforce/users", memberId, updates),
+    () => apiService.put(Object.keys(updates).every((key) => key === "department_id") ? "workforce/management/users" : "admin/workforce/users", memberId, updates),
     "Staff record updated",
   );
 
@@ -119,7 +128,7 @@ const AdminWorkforce = () => {
   const saveMemberPermissions = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!permissionDialog) return;
-    const saved = await updateMember(permissionDialog.id, { workforce_permissions: permissionValue });
+    const saved = await mutate(() => apiService.putNoId(`admin/users/${permissionDialog.id}/permissions`, { workforce_permissions: permissionValue }), "Individual permissions updated");
     if (saved) setPermissionDialog(null);
   };
 
@@ -233,18 +242,19 @@ const AdminWorkforce = () => {
         <h1 className="text-2xl font-bold text-primary">Workforce operations</h1>
       </div>
 
+      <EmploymentEditor person={editingPerson} people={staff.map((member) => member.employment)} departments={departments} onClose={() => setEditingPerson(null)} onSaved={() => void loadWorkforce()} />
       <Dialog open={Boolean(memberChange)} onOpenChange={(open) => !open && !busy && setMemberChange(null)}>
         <DialogContent><DialogHeader><DialogTitle>{memberChange?.title}</DialogTitle><DialogDescription>{memberChange?.description}</DialogDescription></DialogHeader>
           <DialogFooter><Button variant="outline" disabled={busy} onClick={() => setMemberChange(null)}>Cancel</Button><Button disabled={busy} onClick={() => void confirmMemberChange()}>{busy ? "Saving…" : "Confirm change"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-      <Tabs defaultValue="people" className="space-y-6">
+      <Tabs value={tab} onValueChange={(value) => setParams({ tab: value }, { replace: true })} className="space-y-6">
         <TabsList className="h-auto flex-wrap justify-start">
           <TabsTrigger value="people">People</TabsTrigger>
-          <TabsTrigger value="departments">Departments</TabsTrigger>
+          {can(user, "manage_departments") && <TabsTrigger value="departments">Departments</TabsTrigger>}
           <TabsTrigger value="approvals">Approvals</TabsTrigger>
           <TabsTrigger value="holidays">Holidays</TabsTrigger>
-          <TabsTrigger value="kpis">KPIs & appraisals</TabsTrigger>
+          {can(user, "manage_kpis") && <TabsTrigger value="kpis">KPIs & appraisals</TabsTrigger>}
           <TabsTrigger value="zoho">Zoho</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
@@ -255,13 +265,13 @@ const AdminWorkforce = () => {
               <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <CardTitle>Staff directory</CardTitle>
+                    <CardTitle>People</CardTitle>
                     <Badge variant="secondary">{staff.length} {staff.length === 1 ? "member" : "members"}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">Manage departments, roles and account access across your team.</p>
                 </div>
                 <DialogTrigger asChild>
-                  <Button disabled={busy} className="w-full shrink-0 gap-2 sm:w-auto">
+                  <Button disabled={busy || !can(user, "manage_staff")} className="w-full shrink-0 gap-2 sm:w-auto">
                     <UserPlus className="h-4 w-4" aria-hidden="true" />Invite member
                   </Button>
                 </DialogTrigger>
@@ -271,13 +281,13 @@ const AdminWorkforce = () => {
                 <TableBody>{staff.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell><p className="font-medium">{member.name}</p><p className="text-xs text-muted-foreground">{member.email}<br />{member.employeeId ? `${member.employeeId} · ` : ""}{member.jobTitle}</p></TableCell>
-                    <TableCell><select value={member.departmentId || ""} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
-                    <TableCell>{member.roleKey === "super_admin" ? <Badge className='bg-blue-100 text-blue-800'>Super Admin</Badge> : <select value={member.roleKey} disabled={busy} onChange={(event) => setMemberChange({ member, updates: { role: event.target.value }, title: "Change user role?", description: `Change ${member.name}'s role from ${roleLabel(member.roleKey)} to ${roleLabel(event.target.value)}? Their access and permissions will change.` })} className="rounded-md border px-2 py-1 text-sm"><option value="admin">Admin</option><option value="project_manager">Project Manager</option><option value="staff">Staff</option></select>}</TableCell>
+                    <TableCell><select value={member.departmentId || ""} disabled={busy || !can(user, "manage_staff")} onChange={(event) => updateMember(member.id, { department_id: event.target.value || null })} className="rounded-md border px-2 py-1 text-sm"><option value="">Unassigned</option>{departments.map((item) => <option key={item.department_id} value={item.department_id}>{item.name}</option>)}</select></TableCell>
+                    <TableCell><select aria-label={`Role for ${member.name}`} value={member.roleKey} disabled={busy || !can(user, "manage_staff")} onChange={(event) => setMemberChange({ member, updates: { role: event.target.value }, title: "Change user role?", description: `Change ${member.name}'s role from ${roleLabel(member.roleKey)} to ${roleLabel(event.target.value)}? Their access and permissions will change.` })} className="rounded-md border px-2 py-1 text-sm">{roles.map((role) => <option key={role.role_id} value={role.role_key}>{role.name}</option>)}</select></TableCell>
                     <TableCell><span className={`inline-flex items-center gap-1 text-sm ${member.browserLocation ? "text-primary" : "text-muted-foreground"}`} title={member.browserLocation?.formattedAddress || undefined}><MapPin className="h-3.5 w-3.5" />{member.location}</span></TableCell>
                     <TableCell><Badge variant="outline">{member.attendance}</Badge></TableCell>
-                    <TableCell><Button size="sm" variant="outline" onClick={() => manageMemberPermissions(member)}>{member.permissions?.length || 0} grants</Button></TableCell>
+                    <TableCell><Button size="sm" variant="outline" disabled={!can(user, "manage_staff") || member.roleKey === "super_admin"} onClick={() => manageMemberPermissions(member)}>{member.permissions?.length || 0} grants</Button></TableCell>
                     <TableCell><Badge variant={member.status === "Active" ? "white" : "secondary"}>{member.status}</Badge></TableCell>
-                    <TableCell><Button size="sm" variant="outline" disabled={busy || member.roleKey === "super_admin"} aria-label={`${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}`} onClick={() => setMemberChange({ member, updates: { is_active: member.status !== "Active" }, title: `${member.status === "Active" ? "Deactivate" : "Activate"} staff member?`, description: `${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}'s account? ${member.status === "Active" ? "They will lose access to the platform." : "They will regain access to the platform."}` })}>{member.status === "Active" ? "Deactivate" : "Activate"}</Button></TableCell>
+                    <TableCell><div className="flex gap-2"><Button size="sm" variant="outline" disabled={busy || !can(user, "manage_staff")} onClick={() => setEditingPerson(member.employment)}>Edit employment</Button><Button size="sm" variant="outline" disabled={busy || !can(user, "manage_staff")} aria-label={`${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}`} onClick={() => setMemberChange({ member, updates: { is_active: member.status !== "Active" }, title: `${member.status === "Active" ? "Deactivate" : "Activate"} staff member?`, description: `${member.status === "Active" ? "Deactivate" : "Activate"} ${member.name}'s account? ${member.status === "Active" ? "They will lose access to the platform." : "They will regain access to the platform."}` })}>{member.status === "Active" ? "Deactivate" : "Activate"}</Button></div></TableCell>
                   </TableRow>
                 ))}{!staff.length && <TableRow><TableCell colSpan={8} className="h-32 text-center text-muted-foreground">No workforce members yet. Invite someone to get started.</TableCell></TableRow>}</TableBody>
               </Table>
@@ -312,7 +322,7 @@ const AdminWorkforce = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="invite-role">Role</Label>
-                    <select id="invite-role" aria-describedby="invite-role-help" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm disabled:opacity-50"><option value="staff">Staff</option><option value="project_manager">Project Manager</option><option value="admin">Admin</option></select>
+                    <select id="invite-role" aria-describedby="invite-role-help" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm disabled:opacity-50">{roles.map((role) => <option key={role.role_id} value={role.role_key}>{role.name}</option>)}</select>
                   </div>
                   <p id="invite-role-help" className="text-sm text-muted-foreground sm:col-span-2">Their role determines what they can access. You can change it later.</p>
                 </fieldset>
@@ -328,7 +338,7 @@ const AdminWorkforce = () => {
           </Dialog>
         </TabsContent>
 
-        <TabsContent value="departments">
+        {can(user, "manage_departments") && <TabsContent value="departments">
           <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
             <Card><CardHeader><CardTitle>Departments</CardTitle></CardHeader><CardContent>
               <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Code</TableHead><TableHead>Manager</TableHead><TableHead>Members</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
@@ -341,12 +351,12 @@ const AdminWorkforce = () => {
                 <Input required placeholder="Code" value={department.code} onChange={(e) => setDepartment((p) => ({ ...p, code: e.target.value.toUpperCase() }))} />
                 <Input placeholder="Location" value={department.location} onChange={(e) => setDepartment((p) => ({ ...p, location: e.target.value }))} />
                 <Textarea placeholder="Description" value={department.description} onChange={(e) => setDepartment((p) => ({ ...p, description: e.target.value }))} />
-                <select value={department.manager_user_id} onChange={(e) => setDepartment((p) => ({ ...p, manager_user_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">No department manager</option>{staff.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+                <select value={department.manager_user_id} onChange={(e) => setDepartment((p) => ({ ...p, manager_user_id: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option value="">No department manager</option>{department.manager_user_id && !staff.some((member) => member.id === department.manager_user_id) && <option value={department.manager_user_id}>Keep current manager</option>}{staff.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
                 <div className="flex gap-2"><Button disabled={busy} className="flex-1" type="submit">{editingDepartmentId ? "Save changes" : "Create department"}</Button>{editingDepartmentId && <Button type="button" variant="outline" onClick={() => { setEditingDepartmentId(null); setDepartment(emptyDepartment); }}>Cancel</Button>}</div>
               </form>
             </CardContent></Card>
           </div>
-        </TabsContent>
+        </TabsContent>}
 
         <TabsContent value="approvals"><Card><CardHeader><CardTitle>Live approvals queue</CardTitle></CardHeader><CardContent>
           <Table>
@@ -378,11 +388,11 @@ const AdminWorkforce = () => {
                     {item.type === "invoice" && item.status === "Accounts Approved"
                       ? <Button size="sm" variant="outline" disabled>Accounts approved</Button>
                       : item.type === "expense" && item.status.startsWith("Approved")
-                      ? <Button size="sm" onClick={() => reviewApproval(item, "receipt_verified")}>Verify receipt</Button>
+                      ? <Button size="sm" disabled={!can(user, "verify_receipts")} onClick={() => reviewApproval(item, "receipt_verified")}>Verify receipt</Button>
                       : item.type === "invoice" && item.status === "Approved"
-                        ? <Button size="sm" onClick={() => reviewApproval(item, "accounts_approved")}>Accounts approve & sync</Button>
-                        : <Button size="sm" onClick={() => reviewApproval(item, "approved")}>Approve</Button>}
-                    {!(item.type === "invoice" && item.status === "Accounts Approved") && <Button size="sm" variant="destructive" onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>}
+                        ? <Button size="sm" disabled={!can(user, "approve_invoices")} onClick={() => reviewApproval(item, "accounts_approved")}>Accounts approve & sync</Button>
+                        : <Button size="sm" disabled={!can(user, approvalPermission(item.type, "approved"))} onClick={() => reviewApproval(item, "approved")}>Approve</Button>}
+                    {!(item.type === "invoice" && item.status === "Accounts Approved") && <Button size="sm" variant="destructive" disabled={!can(user, approvalPermission(item.type, "rejected"))} onClick={() => reviewApproval(item, item.type === "invoice" ? "disputed" : "rejected")}>{item.type === "invoice" ? "Dispute" : "Reject"}</Button>}
                   </TableCell>
                 </TableRow>
               );
@@ -396,7 +406,7 @@ const AdminWorkforce = () => {
           <Card><CardHeader><CardTitle>Add holiday</CardTitle></CardHeader><CardContent><form onSubmit={handleHoliday} className="space-y-3"><Input required placeholder="Holiday name" value={holiday.name} onChange={(e) => setHoliday((p) => ({ ...p, name: e.target.value }))} /><Input required type="date" value={holiday.date} onChange={(e) => setHoliday((p) => ({ ...p, date: e.target.value }))} /><select value={holiday.type} onChange={(e) => setHoliday((p) => ({ ...p, type: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm"><option>Public holiday</option><option>Regional</option><option>Optional</option></select><Input placeholder="Region (optional)" value={holiday.region} onChange={(e) => setHoliday((p) => ({ ...p, region: e.target.value }))} /><Button className="w-full" disabled={busy}>Save and notify staff</Button></form></CardContent></Card>
         </div></TabsContent>
 
-        <TabsContent value="kpis"><div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
+        {can(user, "manage_kpis") && <TabsContent value="kpis"><div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
           <Card><CardHeader><CardTitle>KPI and appraisal assignments</CardTitle></CardHeader><CardContent className="space-y-4">
             {kpis.map((item) => <details key={item.id} className="group rounded-lg border bg-card">
               <summary className="flex cursor-pointer list-none items-start justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
@@ -424,11 +434,11 @@ const AdminWorkforce = () => {
             </div>
             <div className="flex gap-2"><Button className="flex-1" disabled={busy}>{editingKpiId ? "Save KPI changes" : "Assign KPI"}</Button>{editingKpiId && <Button type="button" variant="outline" onClick={() => { setEditingKpiId(null); setKpi(createEmptyKpi()); }}>Cancel</Button>}</div>
           </form></CardContent></Card>
-        </div></TabsContent>
+        </div></TabsContent>}
 
         <TabsContent value="zoho"><div className="space-y-4"><div className="flex items-center gap-2"><Badge variant={zohoConfigured ? "default" : "secondary"}>{zohoConfigured ? "Zoho configured" : "Zoho credentials required"}</Badge><span className="text-sm text-muted-foreground">Operational cards remain live from STECHAD Hub.</span></div><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">{zohoMetrics.map((metric) => <Card key={metric.label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{metric.label}</p><p className="mt-2 text-3xl font-bold text-primary">{metric.value}</p><p className="mt-2 text-sm text-success">{metric.delta}</p></CardContent></Card>)}</div></div></TabsContent>
 
-        <TabsContent value="permissions"><Card><CardHeader><CardTitle>Role permissions</CardTitle></CardHeader><CardContent><p className="mb-4 text-sm text-muted-foreground">Admins can configure permissions for Admin, Project Manager, and Staff roles. Super Admin permissions are always enabled and cannot be changed.</p><Table><TableHeader><TableRow><TableHead>Permission</TableHead><TableHead>Super Admin</TableHead><TableHead>Admin</TableHead><TableHead>Project Manager</TableHead><TableHead>Staff</TableHead></TableRow></TableHeader><TableBody>{permissions.map((item) => <TableRow key={item.id}><TableCell>{item.name}</TableCell><TableCell><Switch checked disabled aria-label={`${item.name} for Super Admin`} /></TableCell>{["admin", "project_manager", "staff"].map((role) => <TableCell key={role}><Switch disabled={busy} checked={Boolean(item[role])} onCheckedChange={(value) => setPermission(item, role, value)} aria-label={`${item.name} for ${role.replace("_", " ")}`} /></TableCell>)}</TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+        <TabsContent value="permissions"><Card><CardHeader><CardTitle>Role permissions</CardTitle></CardHeader><CardContent><p className="mb-4 text-sm text-muted-foreground">Admins can configure permissions for Admin, Project Manager, and Staff roles. Only Super Admin can change custom role permissions. Super Admin permissions are always enabled and cannot be changed.</p><Table><TableHeader><TableRow><TableHead>Permission</TableHead><TableHead>Super Admin</TableHead><TableHead>Admin</TableHead><TableHead>Project Manager</TableHead><TableHead>Staff</TableHead>{roles.filter((role) => !role.is_system).map((role) => <TableHead key={role.role_id}>{role.name}</TableHead>)}</TableRow></TableHeader><TableBody>{permissions.map((item) => <TableRow key={item.id}><TableCell>{item.name}</TableCell><TableCell><Switch checked disabled aria-label={`${item.name} for Super Admin`} /></TableCell>{["admin", "project_manager", "staff"].map((role) => <TableCell key={role}><Switch disabled={busy} checked={Boolean(item[role])} onCheckedChange={(value) => setPermission(item, role, value)} aria-label={`${item.name} for ${role.replace("_", " ")}`} /></TableCell>)}{roles.filter((role) => !role.is_system).map((role) => <TableCell key={role.role_id}><Switch disabled={busy || user?.role !== "super_admin"} checked={role.permission_keys.includes(item.key)} onCheckedChange={(checked) => void mutate(() => apiService.put("admin/roles", role.role_id, { permission_keys: checked ? [...role.permission_keys, item.key] : role.permission_keys.filter((key) => key !== item.key) }), "Role permissions updated")} aria-label={`${item.name} for ${role.name}`} /></TableCell>)}</TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
       </Tabs>
 
       <Dialog open={Boolean(permissionDialog)} onOpenChange={(open) => !busy && !open && setPermissionDialog(null)}>

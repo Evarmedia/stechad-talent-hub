@@ -1,3 +1,6 @@
+import AccountSettings from "@/pages/AccountSettings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/errors";
 import apiService from "@/services/apiService";
 
-const AdminSettings = () => {
+const SystemSettings = () => {
   const { toast } = useToast();
   const { loading, error, start, resolve, reject } = useServerState();
   const [prefix, setPrefix] = useState("");
@@ -39,7 +42,7 @@ const AdminSettings = () => {
     } finally { setSaving(false); }
   };
   if (loading || error) return <ServerDataState title="System settings" error={error} onRetry={() => void load()} />;
-  return <div className="p-4 md:p-8 max-w-xl">
+  return <div>
     <Card><CardHeader><CardTitle>System settings</CardTitle></CardHeader><CardContent>
       <form onSubmit={event => { event.preventDefault(); setConfirming(true); }} className="space-y-4">
         <div className="space-y-2">
@@ -57,4 +60,8 @@ const AdminSettings = () => {
     </Dialog>
   </div>;
 };
-export default AdminSettings;
+export default function AdminSettings() {
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "system" ? "system" : "account";
+  return <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-8"><div><h1 className="text-2xl font-bold text-primary">Settings</h1><p className="mt-1 text-sm text-muted-foreground">Manage your account and system preferences.</p></div><Tabs value={tab} onValueChange={(value) => setParams({ tab: value }, { replace: true })}><TabsList><TabsTrigger value="account">Account</TabsTrigger><TabsTrigger value="system">System</TabsTrigger></TabsList><TabsContent value="account"><AccountSettings embedded /></TabsContent><TabsContent value="system"><SystemSettings /></TabsContent></Tabs></div>;
+}

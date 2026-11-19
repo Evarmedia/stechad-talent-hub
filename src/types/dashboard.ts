@@ -139,6 +139,8 @@ export interface DashboardInterview {
 }
 
 export interface AdminStatistics {
+  totalUsers?: number;
+  softDeletedUsers?: number;
   totalTalents?: number;
   totalProjectManagers?: number;
   totalJobs?: number;

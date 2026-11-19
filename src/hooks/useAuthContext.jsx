@@ -1,5 +1,6 @@
+import websocketService from "../services/websocketService";
 import { toast } from "@/hooks/use-toast";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import apiService from "../services/apiService.js";
 
 const AuthContext = createContext();
@@ -60,10 +61,34 @@ export const AuthProvider = ({ children }) => {
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google`;
   };
 
-  const updateUser = (updatedUser) => {
-    setUser(updatedUser);
-    localStorage.setItem("stechad_user", JSON.stringify(updatedUser));
-  };
+  const updateUser = useCallback((updatedUser) => {
+    setUser((current) => {
+      const next = current?.user_id === updatedUser.user_id ? { ...current, ...updatedUser } : updatedUser;
+      localStorage.setItem("stechad_user", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+  const sessionUser = useRef(user?.user_id);
+  sessionUser.current = user?.user_id;
+  useEffect(() => {
+    if (!user?.user_id) return;
+    const id = user.user_id;
+    let alive = true;
+    const refresh = async () => {
+      if (!apiService.getToken()) return;
+      try {
+        const response = await apiService.get("auth/me");
+        if (alive && sessionUser.current === id) {
+          const next = response.data.user;
+          setUser(next); localStorage.setItem("stechad_user", JSON.stringify(next));
+        }
+      } catch { /* The API interceptor handles revoked sessions; network errors preserve state. */ }
+    };
+    const off = [websocketService.on("account_updated", refresh), websocketService.on("connection_status", (status) => { if (status === "connected") void refresh(); })];
+    const sync = (event) => { if (event.key === "stechad_user") void refresh(); };
+    window.addEventListener("focus", refresh); window.addEventListener("storage", sync);
+    return () => { alive = false; off.forEach((unsubscribe) => unsubscribe()); window.removeEventListener("focus", refresh); window.removeEventListener("storage", sync); };
+  }, [user?.user_id]);
 
   // Direct API call for login
   const login = async (email, password) => {
@@ -214,8 +239,7 @@ export const AuthProvider = ({ children }) => {
         // console.log("✅ [updateProfile] Updated user object:", updatedUser);
 
         // Update auth context
-        setUser(updatedUser);
-        localStorage.setItem("stechad_user", JSON.stringify(updatedUser));
+        updateUser(updatedUser);
 
         // Update tokens if they were returned
         // if (response.data.token) {

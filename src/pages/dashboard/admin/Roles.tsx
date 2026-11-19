@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +26,10 @@ type Role = {
   name: string;
   description?: string | null;
   is_system: boolean;
+  permission_keys?: string[];
 };
 
-const emptyForm = { name: "", role_key: "", description: "" };
+const emptyForm = { name: "", role_key: "", description: "", permission_keys: [] as string[] };
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
@@ -38,6 +40,7 @@ const getErrorMessage = (error: unknown) => {
 const AdminRoles = () => {
   const { toast } = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [catalog, setCatalog] = useState<{ permission_key: string; name: string }[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
@@ -49,6 +52,7 @@ const AdminRoles = () => {
     try {
       const response = await apiService.get("admin/roles");
       setRoles(response?.data || response || []);
+      setCatalog(response?.permission_catalog || []);
     } catch (error) {
       toast({ title: "Could not load roles", description: getErrorMessage(error), variant: "destructive" });
     } finally {
@@ -58,6 +62,8 @@ const AdminRoles = () => {
 
   useEffect(() => {
     void loadRoles();
+    window.addEventListener("focus", loadRoles);
+    return () => window.removeEventListener("focus", loadRoles);
   }, [loadRoles]);
 
   const resetForm = () => {
@@ -72,6 +78,7 @@ const AdminRoles = () => {
       name: role.name,
       role_key: role.role_key,
       description: role.description || "",
+      permission_keys: role.permission_keys || [],
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -86,6 +93,7 @@ const AdminRoles = () => {
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || null,
+      permission_keys: form.permission_keys,
       ...(form.role_key.trim() ? { role_key: form.role_key.trim() } : {}),
     };
 
@@ -176,6 +184,7 @@ const AdminRoles = () => {
                   disabled={saving}
                 />
               </div>
+              <fieldset className="space-y-3" disabled={saving}><legend className="mb-2 text-sm font-medium">Role permissions</legend><p className="text-xs text-muted-foreground">Applies to everyone assigned this role. Individual grants remain additional.</p>{catalog.map((permission) => <label key={permission.permission_key} className="flex items-center gap-3 rounded-md border p-3"><Checkbox checked={form.permission_keys.includes(permission.permission_key)} onCheckedChange={(checked) => setForm((current) => ({ ...current, permission_keys: checked ? [...current.permission_keys, permission.permission_key] : current.permission_keys.filter((key) => key !== permission.permission_key) }))} /><span className="text-sm">{permission.name}</span></label>)}</fieldset>
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1" disabled={saving}>
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

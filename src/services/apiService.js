@@ -100,6 +100,7 @@ class ApiService {
         return Promise.reject({
           status: error.response.status,
           errors: error.response.data?.errors,
+          blockers: error.response.data?.blockers,
           message:
             (error.response.data?.errors && Object.values(error.response.data.errors).join(". ")) ||
             error.response.data?.message ||

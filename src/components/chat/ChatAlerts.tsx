@@ -1,3 +1,4 @@
+import apiService from "@/services/apiService";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,39 +14,44 @@ import {
 
 import { ChatSoundContext } from "@/hooks/contexts/ChatSoundContext";
 export default function ChatAlerts({ children }: { children: ReactNode }) {
-  const { user } = useAuthContext();
+  const { user, updateUser } = useAuthContext();
   const { activeChatId, markAsRead } = useChatContext();
   const location = useLocation();
   const navigate = useNavigate();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [popupEnabled, setPopupEnabled] = useState(true);
+  const effectiveSoundEnabled = user?.notification_sound_enabled ?? soundEnabled;
   const audio = useRef<AudioContext | null>(null);
   const current = useRef({
     activeChatId,
-    soundEnabled,
+    soundEnabled: effectiveSoundEnabled,
     popupEnabled,
     userId: user?.user_id,
   });
   current.current = {
     activeChatId,
-    soundEnabled,
+    soundEnabled: effectiveSoundEnabled,
     popupEnabled,
     userId: user?.user_id,
   };
   const soundKey = `stechad-chat-sound:${user?.user_id}`;
   const popupKey = `stechad-chat-popup:${user?.user_id}`;
+  const importedSound = useRef(new Set<string>());
+  const savingSound = useRef(false);
   useEffect(() => {
-    try {
-      setSoundEnabled(localStorage.getItem(soundKey) !== "off");
-    } catch {
-      setSoundEnabled(true);
+    if (!user?.user_id) return;
+    if (user.notification_sound_enabled !== null && user.notification_sound_enabled !== undefined) {
+      setSoundEnabled(user.notification_sound_enabled !== false);
+      return;
     }
-    const sync = (event: StorageEvent) => {
-      if (event.key === soundKey) setSoundEnabled(event.newValue !== "off");
-    };
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
-  }, [soundKey]);
+    let legacy = true;
+    try { legacy = localStorage.getItem(soundKey) !== "off"; } catch { /* Use the default when storage is unavailable. */ }
+    setSoundEnabled(legacy);
+    if (importedSound.current.has(user.user_id)) return;
+    importedSound.current.add(user.user_id);
+    void apiService.putNoId("auth/preferences", { notification_sound_enabled: legacy, import_sound_preference: true })
+      .then((response) => updateUser(response.data.user)).catch(() => {});
+  }, [soundKey, user?.user_id, user?.notification_sound_enabled, updateUser]);
   useEffect(() => {
     try {
       setPopupEnabled(localStorage.getItem(popupKey) !== "off");
@@ -107,6 +113,21 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
           alerts.delete(id);
         }
     };
+    const playSound = () => {
+      const context = audio.current;
+      if (!current.current.soundEnabled || !context || context.state !== "running") return;
+      try {
+        const oscillator = context.createOscillator(); const gain = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(660, context.currentTime);
+        oscillator.frequency.setValueAtTime(880, context.currentTime + 0.12);
+        gain.gain.setValueAtTime(0, context.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, context.currentTime + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.32);
+        oscillator.connect(gain); gain.connect(context.destination);
+        oscillator.start(); oscillator.stop(context.currentTime + 0.34);
+      } catch { /* Visual delivery remains available when audio is blocked. */ }
+    };
     const off = [
       websocketService.on(
         "history_cleared",
@@ -148,7 +169,15 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
       websocketService.on(
         "notification_created",
         async ({ notification: n }) => {
+          if (!n || n.is_read) return;
           const chatId = n.metadata?.chat_id;
+          if (!chatId) {
+            if (!await claimMessageAlert(user.user_id, n.notifications_id) || cancelled || current.current.userId !== user.user_id) return;
+            const safeAction = typeof n.action_url === "string" && n.action_url.startsWith("/") && !n.action_url.startsWith("//");
+            toast(n.title || "Notification", { description: n.message, duration: 7000, ...(safeAction ? { action: { label: "View", onClick: () => navigate(n.action_url) } } : {}) });
+            playSound();
+            return;
+          }
           if (
             !chatId ||
             n.is_read ||
@@ -200,38 +229,7 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
             });
             alerts.set(`${chatId}:${n.notifications_id}`, id);
           }
-          const context = audio.current;
-          if (
-            !current.current.soundEnabled ||
-            !context ||
-            context.state !== "running"
-          )
-            return;
-          try {
-            const oscillator = context.createOscillator();
-            const gain = context.createGain();
-            oscillator.type = "sine";
-            oscillator.frequency.setValueAtTime(660, context.currentTime);
-            oscillator.frequency.setValueAtTime(
-              880,
-              context.currentTime + 0.12,
-            );
-            gain.gain.setValueAtTime(0, context.currentTime);
-            gain.gain.linearRampToValueAtTime(
-              0.12,
-              context.currentTime + 0.015,
-            );
-            gain.gain.exponentialRampToValueAtTime(
-              0.001,
-              context.currentTime + 0.32,
-            );
-            oscillator.connect(gain);
-            gain.connect(context.destination);
-            oscillator.start();
-            oscillator.stop(context.currentTime + 0.34);
-          } catch {
-            /* The popup remains usable if playback is blocked. */
-          }
+          playSound();
         },
       ),
     ];
@@ -241,15 +239,16 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
       for (const id of alerts.values()) toast.dismiss(id);
     };
   }, [user?.user_id, markAsRead, navigate]);
-  const toggleSound = () =>
-    setSoundEnabled((previous) => {
-      try {
-        localStorage.setItem(soundKey, previous ? "off" : "on");
-      } catch {
-        /* Keep this session’s preference when storage is blocked. */
-      }
-      return !previous;
-    });
+  const toggleSound = async () => {
+    if (savingSound.current) return;
+    savingSound.current = true;
+    try {
+      const response = await apiService.putNoId("auth/preferences", { notification_sound_enabled: !current.current.soundEnabled });
+      updateUser(response.data.user);
+      setSoundEnabled(response.data.user.notification_sound_enabled !== false);
+    } catch { toast.error("Could not save the sound preference"); }
+    finally { savingSound.current = false; }
+  };
   const togglePopup = () =>
     setPopupEnabled((previous) => {
       try {
@@ -261,7 +260,7 @@ export default function ChatAlerts({ children }: { children: ReactNode }) {
     });
   return (
     <ChatSoundContext.Provider
-      value={{ soundEnabled, toggleSound, popupEnabled, togglePopup }}
+      value={{ soundEnabled: effectiveSoundEnabled, toggleSound, popupEnabled, togglePopup }}
     >
       {children}
     </ChatSoundContext.Provider>

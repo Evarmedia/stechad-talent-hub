@@ -1,3 +1,4 @@
+import { personalBasePath, roleName } from "@/lib/permissions";
 
 import STECHADLogo from "@/components/STECHADLogo";
 import { Badge } from "@/components/ui/badge";
@@ -12,27 +13,10 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useDataContext } from "@/hooks/useDataContext";
 import { AlertTriangle, Bell, CheckCircle2, Info, LogOut, User, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-const navRoles = [
-  { name: "Talent", path: "/dashboard/talent" },
-  { name: "Staff", path: "/dashboard/staff" },
-  { name: "PM", path: "/dashboard/pm" },
-  { name: "Admin", path: "/admin" },
-];
-
-// Helper function to get the route for the profile based on role and current route
-function getProfileRoute(pathname: string) {
-  if (pathname.startsWith("/dashboard/talent")) return "/dashboard/talent/profile";
-  if (pathname.startsWith("/dashboard/staff")) return "/dashboard/staff/profile";
-  if (pathname.startsWith("/dashboard/pm")) return "/dashboard/pm/profile";
-  if (pathname.startsWith("/admin")) return "/admin/profile";
-  return "/dashboard/talent/profile"; // default fallback
-}
-
 export function AppNavbar() {
-  const { pathname } = useLocation();
   const { user, logout } = useAuthContext();
   const {
     resetTalentState,
@@ -52,9 +36,8 @@ export function AppNavbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
   
-  const currentRole =
-    navRoles.find((r) => pathname.startsWith(r.path))?.name || "Dashboard";
-  const profileRoute = getProfileRoute(pathname);
+  const currentRole = roleName(user);
+  const profileRoute = `${personalBasePath(user)}/profile`;
   const showNotifications = notificationsEligible;
   const notificationsToShow = useMemo(
     () => (notifications || []).slice(0, 10),

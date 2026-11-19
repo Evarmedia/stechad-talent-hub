@@ -14,13 +14,7 @@ const NotificationsContext = createContext();
 export const NotificationsProvider = ({ children }) => {
   const { user } = useAuthContext();
   const userId = user?.user_id;
-  const isEligibleRole = [
-    "admin",
-    "super_admin",
-    "project_manager",
-    "staff",
-    "talent",
-  ].includes(user?.role);
+  const isEligibleRole = Boolean(userId);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);

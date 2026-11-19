@@ -1,3 +1,5 @@
+import { can } from "@/lib/permissions";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
 import {
   AlertDialog,
@@ -51,6 +53,7 @@ type AdminProject = {
 
 const AdminProjects = () => {
   const { createProject, updateProject, deleteProject, getProjects, getProjectManagers, projects, projectManagers, loading } = useDataContext();
+  const { user } = useAuthContext();
   const [form, setForm] = useState(defaultValues);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<AdminProject | null>(null);
@@ -153,7 +156,7 @@ const AdminProjects = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[0.8fr_1.2fr] gap-6">
-        <Card>
+        {(editingProjectId || can(user, "create_projects")) && <Card>
           <CardHeader>
             <CardTitle>{editingProjectId ? "Edit project" : "Create project"}</CardTitle>
           </CardHeader>
@@ -225,7 +228,7 @@ const AdminProjects = () => {
               </div>
             </form>
           </CardContent>
-        </Card>
+        </Card>}
 
         <Card>
           <CardHeader>

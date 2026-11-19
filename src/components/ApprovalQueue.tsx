@@ -1,5 +1,7 @@
+import { can, canAny, approvalPermission, approvalPermissions } from "@/lib/permissions";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
-import { useServerState } from "@/hooks/useServerState";
+import { useRemoteData } from "@/hooks/useRemoteData";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ReviewActionDialog from "@/components/ReviewActionDialog";
 import { Badge } from "@/components/ui/badge";
@@ -15,42 +17,32 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/apiService";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const StaffApprovalsPage = () => {
+export default function ApprovalQueue() {
   const { toast } = useToast();
-  const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
-  const [items, setItems] = useState<any[]>([]);
+  const { user } = useAuthContext();
+  const scope = approvalPermissions.filter((permission) => can(user, permission)).join(",");
+  const remote = useRemoteData<any[]>(scope ? "staff/approvals" : null);
+  const previousScope = useRef(scope);
+  useEffect(() => { if (previousScope.current !== scope) { previousScope.current = scope; remote.reload(); } }, [scope, remote.reload]);
+  const items = remote.data || [];
+  const visibleItems = items.filter((item) => item.actions?.some((action: string) => can(user, approvalPermission(item.type, action))));
   const [reviewDialog, setReviewDialog] = useState<{
     item: any;
     action: string;
   } | null>(null);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
-  const load = async () => {
-    start();
-    try {
-      const response = await apiService.get("staff/approvals");
-      setItems(response?.data || response || []);
-      resolve();
-    } catch (error: any) {
-      reject(error);
-      toast({
-        title: "Could not load approvals",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
   useEffect(() => {
-    load();
-  }, []);
+    if (reviewDialog && !can(user, approvalPermission(reviewDialog.item.type, reviewDialog.action))) setReviewDialog(null);
+  }, [scope, reviewDialog]);
   const review = (item: any, action: string) => {
     setNotes("");
     setReviewDialog({ item, action });
   };
   const submitReview = async () => {
-    if (!reviewDialog) return;
+    if (!reviewDialog || !can(user, approvalPermission(reviewDialog.item.type, reviewDialog.action))) return;
     setBusy(true);
     try {
       await apiService.put(
@@ -61,7 +53,7 @@ const StaffApprovalsPage = () => {
       toast({ title: "Approval updated" });
       setReviewDialog(null);
       setNotes("");
-      await load();
+      remote.reload();
     } catch (error: any) {
       toast({
         title: "Could not update approval",
@@ -77,16 +69,11 @@ const StaffApprovalsPage = () => {
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
-  if (dataLoading || dataError) return <ServerDataState title="Approvals" error={dataError} onRetry={() => void load()} />;
+  if (!canAny(user, approvalPermissions)) return null;
+  if (remote.loading || remote.error) return <ServerDataState title="Approvals" error={remote.error} onRetry={remote.reload} />;
 
   return (
-    <div className='p-4 md:p-8 mx-auto space-y-6'>
-      <div>
-        <p className='text-xs uppercase tracking-[0.2em] text-primary/80'>
-          Delegated access
-        </p>
-        <h1 className='text-2xl font-bold text-primary'>Approvals</h1>
-      </div>
+    <div className='space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>Assigned approval queue</CardTitle>
@@ -105,7 +92,7 @@ const StaffApprovalsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => {
+              {visibleItems.map((item) => {
                 const receiptUrl =
                   (item as any).receipt_url ||
                   (item as any).receipt?.url ||
@@ -148,14 +135,14 @@ const StaffApprovalsPage = () => {
                       )}
                     </TableCell>
                     <TableCell className='space-x-2'>
-                      {(item.actions || []).map((action: string) => {
+                      {(item.actions || []).filter((action: string) => can(user, approvalPermission(item.type, action))).map((action: string) => {
                         let actionLabel: string;
                         if (action === "receipt_verified") actionLabel = "Verify receipt";
                         else if (action === "approved") actionLabel = "Approve";
                         else if (action === "rejected") actionLabel = "Reject";
                         else if (action === "accounts_approved") actionLabel = "Accounts approve";
                         else if (action === "accounts_rejected") actionLabel = "Accounts reject";
-                        else if (action === "disputed") actionLabel = "Dispute";  
+                        else if (action === "disputed") actionLabel = "Dispute";
                         else actionLabel = label(action);
                         return (
                           <Button
@@ -178,7 +165,7 @@ const StaffApprovalsPage = () => {
               })}
             </TableBody>
           </Table>
-          {!items.length && (
+          {!visibleItems.length && (
             <p className='py-10 text-center text-muted-foreground'>
               No requests currently need your approval.
             </p>
@@ -201,6 +188,4 @@ const StaffApprovalsPage = () => {
       />
     </div>
   );
-};
-
-export default StaffApprovalsPage;
+}

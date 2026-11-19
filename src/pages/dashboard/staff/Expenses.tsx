@@ -1,3 +1,5 @@
+import { can } from "@/lib/permissions";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
 import { useServerState } from "@/hooks/useServerState";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +44,7 @@ const getErrorMessage = (error: unknown) => {
 };
 
 const StaffExpensesPage = () => {
+  const { user } = useAuthContext();
   const { toast } = useToast();
   const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const receiptInput = useRef<HTMLInputElement>(null);
@@ -172,7 +175,7 @@ const StaffExpensesPage = () => {
         </Card>
       </div>
       <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
-        <Card>
+        {can(user, "submit_expenses") && <Card>
           <CardHeader>
             <CardTitle>Submit expense claim</CardTitle>
           </CardHeader>
@@ -251,7 +254,7 @@ const StaffExpensesPage = () => {
               </Button>
             </form>
           </CardContent>
-        </Card>
+        </Card>}
         <Card>
           <CardHeader>
             <CardTitle>Claim history</CardTitle>

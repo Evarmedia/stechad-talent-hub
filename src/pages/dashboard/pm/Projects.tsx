@@ -1,3 +1,5 @@
+import { can } from "@/lib/permissions";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 import React, { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +21,7 @@ const Projects = () => {
   // const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const { projects, createProject, updateProject, deleteProject, loading } = useDataContext();
+  const { user } = useAuthContext();
 
   const filteredProjects = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -95,6 +98,7 @@ const Projects = () => {
         setPriorityFilter={setPriorityFilter}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        canCreate={can(user, "create_projects")}
         onCreateNew={() => setIsFormOpen(true)}
       />
 

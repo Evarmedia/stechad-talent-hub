@@ -1,3 +1,5 @@
+import { roleName } from "@/lib/permissions";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
 import { useServerState } from "@/hooks/useServerState";
 import BirthdayInput from "@/components/BirthdayInput";
@@ -21,6 +23,7 @@ const locationLabel = (profile: any) => [...new Set([profile?.browser_location_c
 // [profile?.browser_location_city, profile?.browser_location_state, profile?.browser_location_country]
 const StaffProfile = () => {
   const { toast } = useToast();
+  const { user: account, updateUser } = useAuthContext();
   const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [profile, setProfile] = useState<any>(null);
   const [form, setForm] = useState(emptyForm);
@@ -58,6 +61,8 @@ const StaffProfile = () => {
     return () => window.removeEventListener("stechad:location-updated", loadProfile);
   }, []);
 
+  useEffect(() => { if (account && profile) setProfile((current: any) => ({ ...current, ...account })); }, [account]);
+
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -94,19 +99,8 @@ const StaffProfile = () => {
       const result = enabled ? await requestBrowserLocationPermission() : { status: profile?.location_permission_status, location: undefined };
       const canEnable = enabled && result.status === "granted";
       const response = await apiService.putNoId("staff/location-sharing", { enabled: canEnable, ...(result.status ? { permission_status: result.status } : {}), ...result.location });
-      setProfile((current: any) => ({
-        ...current,
-        location_sharing_enabled: canEnable,
-        location_permission_status: result.status,
-        ...(response?.data?.browserLocation ? {
-          browser_location_updated_at: response.data.browserLocation.updatedAt,
-          browser_location_address: response.data.browserLocation.formattedAddress,
-          browser_location_city: response.data.browserLocation.city,
-          browser_location_state: response.data.browserLocation.state,
-          browser_location_country: response.data.browserLocation.country,
-          browser_location_country_code: response.data.browserLocation.countryCode,
-        } : {}),
-      }));
+      updateUser(response.data.user);
+      setProfile(response.data.user);
       if (enabled && !canEnable) toast({ title: "Location permission not granted", description: "Allow location access in your browser settings to enable this feature." });
     }
     catch (error: any) { toast({ title: "Could not update location consent", description: error.message, variant: "destructive" }); }
@@ -142,7 +136,7 @@ const StaffProfile = () => {
           <BirthdayInput value={form.date_of_birth} onChange={(value) => setForm((p) => ({ ...p, date_of_birth: value }))} disabled={saving} />
         </CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5" />Employment</CardTitle></CardHeader><CardContent className="space-y-3">
-          <div className="flex justify-between rounded-lg border p-3"><span>Role</span><Badge variant="outline">{profile?.role?.replace("_", " ") || "Staff"}</Badge></div>
+          <div className="flex justify-between rounded-lg border p-3"><span>Role</span><Badge variant="outline">{roleName(account)}</Badge></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Employee ID</p><p className="font-medium">{profile?.employee_id || "Pending assignment"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Department</p><p className="font-medium">{profile?.department?.name || "Unassigned"}</p></div>
           <div className="rounded-lg border p-3"><p className="text-sm text-muted-foreground">Reports to</p><p className="font-medium">{profile?.reporting_manager ? `${profile.reporting_manager.first_name || ""} ${profile.reporting_manager.last_name || ""}`.trim() || profile.reporting_manager.email : "Unassigned"}</p></div>

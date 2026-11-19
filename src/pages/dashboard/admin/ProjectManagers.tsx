@@ -200,9 +200,9 @@ const ProjectManagers = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={`px-2 py-1 rounded text-xs ${pm?.is_active === true ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                    <span className={`px-2 py-1 rounded text-xs ${pm?.user.is_active === true ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
                       }`}>
-                      {pm.is_active === true ? "Active" : "Inactive"}
+                      {pm?.user.is_active === true ? "Active" : "Inactive"}
                     </span>
                     <Button size="sm" variant="outline" className="text-xs" onClick={() => handleViewProjects(pm)}>
                       View Projects

@@ -4,6 +4,7 @@ export interface ChatUser {
   last_name: string;
   avatar_url?: string;
   role?: string | { role_key: string; name: string };
+  role_details?: { name?: string };
   job_title?: string;
   department?: string;
   company?: string;
@@ -65,10 +66,10 @@ export const userName = (user?: ChatUser) =>
   [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
   "Team member";
 export const roleName = (user?: ChatUser) => {
-  const role =
+  const role = user?.role_details?.name || (
     typeof user?.role === "object"
       ? user.role.name || user.role.role_key
-      : user?.role;
+      : user?.role);
   return (role || "Team member").replace(/_/g, " ");
 };
 export const conversationName = (chat: Conversation, userId: string) =>

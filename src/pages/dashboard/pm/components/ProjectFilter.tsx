@@ -13,6 +13,7 @@ interface ProjectFilterProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   onCreateNew: () => void;
+  canCreate?: boolean;
 }
 
 export const ProjectFilter: React.FC<ProjectFilterProps> = ({
@@ -22,7 +23,8 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
   setPriorityFilter,
   searchTerm,
   setSearchTerm,
-  onCreateNew
+  onCreateNew,
+  canCreate = true
 }) => {
   return (
     <div className="bg-white p-4 rounded-lg border">
@@ -61,10 +63,10 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           </SelectContent>
         </Select>
 
-        <Button onClick={onCreateNew} className="w-full md:w-auto text-white">
+        {canCreate && <Button onClick={onCreateNew} className="w-full md:w-auto text-white">
           <Plus className="w-4 h-4 mr-2 text-white" />
           Create Project
-        </Button>
+        </Button>}
       </div>
     </div>
   );

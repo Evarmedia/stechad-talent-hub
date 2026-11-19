@@ -54,19 +54,21 @@ const Login = () => {
       if (from !== "/") {
         navigate(from, { replace: true });
       } else {
-        if (response.data.user.role === "talent"|| form.role === "talent") {
+        if (response.data.user.role === "talent") {
           // Check if talent has completed onboarding
           // if (!response.data.user.talent.is_onboarded) {
           //   navigate("/onboarding");
           // } else {
           navigate("/dashboard/talent");
           // }
-        } else if (response.data.user.role === "project_manager" || form.role === "project_manager") {
+        } else if (response.data.user.role === "project_manager") {
           navigate("/dashboard/pm");
-        } else if (response.data.user.role === "staff" || form.role === "staff") {
+        } else if (response.data.user.role === "staff") {
           navigate("/dashboard/staff");
-        } else if (["admin", "super_admin"].includes(response.data.user.role) || ["admin", "super_admin"].includes(form.role)) {
+        } else if (["admin", "super_admin"].includes(response.data.user.role)) {
           navigate("/admin");
+        } else {
+          navigate("/dashboard/staff");
         }
       }
     } catch (error) {

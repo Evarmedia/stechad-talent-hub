@@ -1,14 +1,14 @@
+import { can, canAny, isAdmin, workforcePermissions, isCustomEmployee, roleName } from "@/lib/permissions";
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useChatContext } from "@/hooks/contexts/ChatContext";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import { Briefcase, Calendar, CalendarDays, ClipboardList, Clock3, DollarSign, FileText, FolderKanban, Home, MessageSquare, Pickaxe, ReceiptText, Settings, ShieldCheck, TrendingUp, User, Users, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuthContext } from "@/hooks/useAuthContext";
-import { useChatContext } from "@/hooks/contexts/ChatContext";
 type MenuItem = {
   icon: LucideIcon;
   label: string;
   to: string;
-  permission?: "approvals";
   superAdminOnly?: boolean;
 };
 
@@ -25,13 +25,12 @@ const talentMenu: MenuItem[] = [
 
 const staffMenu: MenuItem[] = [
   { icon: Home, label: "Dashboard", to: "/dashboard/staff" },
-  { icon: MessageSquare, label: "Messages", to: "/dashboard/staff/messages" },
   { icon: Clock3, label: "Attendance", to: "/dashboard/staff/attendance" },
   { icon: CalendarDays, label: "Leave", to: "/dashboard/staff/leave" },
   { icon: ReceiptText, label: "Expenses", to: "/dashboard/staff/expenses" },
-  { icon: ClipboardList, label: "Approvals", to: "/dashboard/staff/approvals", permission: "approvals" },
   { icon: TrendingUp, label: "KPIs", to: "/dashboard/staff/kpis" },
   { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/staff/holidays" },
+  { icon: MessageSquare, label: "Messages", to: "/dashboard/staff/messages" },
   { icon: User, label: "Profile", to: "/dashboard/staff/profile" },
 ];
 
@@ -41,13 +40,12 @@ const pmMenu: MenuItem[] = [
   { icon: Briefcase, label: "Manage Jobs", to: "/dashboard/pm/manage-jobs" },
   { icon: Pickaxe, label: "Talents", to: "/dashboard/pm/talents" },
   { icon: FolderKanban, label: "Projects", to: "/dashboard/pm/projects" },
-  { icon: DollarSign, label: "Project Invoices", to: "/dashboard/pm/project-invoices" },
+  // { icon: DollarSign, label: "Project Invoices", to: "/dashboard/pm/project-invoices" },
   { icon: Clock3, label: "Attendance", to: "/dashboard/pm/attendance" },
   { icon: CalendarDays, label: "Leave", to: "/dashboard/pm/leave" },
   { icon: ReceiptText, label: "Expenses", to: "/dashboard/pm/expenses" },
   { icon: TrendingUp, label: "KPIs", to: "/dashboard/pm/kpis" },
   { icon: Calendar, label: "Holidays & Birthdays", to: "/dashboard/pm/holidays" },
-  { icon: ClipboardList, label: "Approvals", to: "/dashboard/pm/approvals", permission: "approvals" },
   { icon: Users, label: "Applications", to: "/dashboard/pm/applications" },
   { icon: Calendar, label: "Interviews", to: "/dashboard/pm/interviews" },
   { icon: MessageSquare, label: "Messages", to: "/dashboard/pm/messages" },
@@ -64,6 +62,10 @@ const adminMenu: MenuItem[] = [
   { icon: ClipboardList, label: "Applications", to: "/admin/applications" },
   { icon: ClipboardList, label: "Talent Vetting", to: "/admin/talent-vetting" },
   { icon: Settings, label: "Settings", to: "/admin/settings" },
+  { icon: Users, label: "Users", to: "/admin/users" },
+  { icon: ClipboardList, label: "Audit Logs", to: "/admin/audit-logs" },
+  { icon: CalendarDays, label: "Notifications", to: "/admin/notifications" },
+  { icon: User, label: "Admin Profile", to: "/admin/profile" },
   { icon: MessageSquare, label: "Messages", to: "/admin/messages" },
 ];
 
@@ -80,12 +82,16 @@ export function AppSidebar() {
   const unreadMessages = chats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
   const { pathname } = useLocation();
   const { user } = useAuthContext();
-  const approvalPermissions = ["approve_leave", "approve_expenses", "verify_receipts", "approve_invoices"];
-  const canApprove = user?.effective_permissions?.includes("*") || approvalPermissions.some((permission) => user?.effective_permissions?.includes(permission));
-  const menu = getRoleMenu(pathname).filter((item) =>
-    (item.permission !== "approvals" || canApprove) &&
+  const basePath = ["admin", "super_admin"].includes(user?.role) ? "/admin" : user?.role === "project_manager" ? "/dashboard/pm" : user?.role === "talent" ? "/dashboard/talent" : "/dashboard/staff";
+  const roleMenu = isCustomEmployee(user) ? staffMenu : ["admin", "super_admin", "staff", "project_manager", "talent"].includes(user?.role) ? getRoleMenu(basePath) : [];
+  const menu = roleMenu.filter((item) =>
     (!item.superAdminOnly || user?.role === "super_admin"),
   );
+  if (!isAdmin(user) && canAny(user, workforcePermissions)) menu.push({ icon: ClipboardList, label: "Manage workforce", to: "/workforce/manage" });
+  if (can(user, "create_projects") && !["admin", "super_admin", "project_manager"].includes(user?.role)) menu.push({ icon: FolderKanban, label: "Create projects", to: "/projects" });
+  if (!isAdmin(user) && !menu.some((item) => item.label === "Attendance")) menu.push({ icon: Clock3, label: "Attendance", to: "/attendance" });
+  if (!isAdmin(user) && can(user, "submit_expenses") && !menu.some((item) => item.label === "Expenses")) menu.push({ icon: ReceiptText, label: "Expenses", to: "/expenses" });
+  if (!isAdmin(user)) menu.push({ icon: Settings, label: "Settings", to: "/settings" });
   const activeMenuPath = menu
     .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
     .sort((first, second) => second.to.length - first.to.length)[0]?.to;
@@ -95,7 +101,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {pathname.includes("/talent")
+            {isCustomEmployee(user) ? roleName(user) : pathname.includes("/talent")
               ? "Talent"
               : pathname.includes("/staff")
               ? "Staff"

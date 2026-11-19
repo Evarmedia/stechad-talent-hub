@@ -13,6 +13,8 @@ interface AdminStatsProps {
 
 const AdminStats: React.FC<AdminStatsProps> = ({ loading, statistics }) => {
   const stats = [
+    { label: "Total users", value: statistics?.totalUsers, icon: Users, change: "Includes inactive accounts" },
+    { label: "Soft-deleted users", value: statistics?.softDeletedUsers, icon: Users, change: "History preserved" },
     { label: "Talents", value: statistics?.totalTalents, icon: Users, change: "+12%" },
     { label: "Project Managers", value: statistics?.totalProjectManagers, icon: UserCheck, change: "+2%" },
     { label: "Active Jobs", value: statistics?.totalJobs, icon: Briefcase, change: "+5%" },
@@ -20,7 +22,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ loading, statistics }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {loading
         ? Array(4)
             .fill(0)

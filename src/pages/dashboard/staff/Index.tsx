@@ -1,3 +1,4 @@
+import { useAuthContext } from "@/hooks/useAuthContext";
 import ServerDataState from "@/components/ServerDataState";
 import { useServerState } from "@/hooks/useServerState";
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -32,6 +33,9 @@ import { Link } from "react-router-dom";
 
 const StaffDashboard = () => {
   const { toast } = useToast();
+  const { user, updateUser } = useAuthContext();
+  const consent = useRef(user?.location_sharing_enabled);
+  consent.current = user?.location_sharing_enabled;
   const loadVersion = useRef(0);
   const { loading: dataLoading, error: dataError, start, resolve, reject } = useServerState();
   const [data, setData] = useState<any>(null);
@@ -68,13 +72,15 @@ const StaffDashboard = () => {
     };
   }, []);
 
+  useEffect(() => { if (data) void loadDashboard(); }, [user?.location_sharing_enabled]);
+
   const getLocation = () =>
     new Promise<Record<string, number>>((resolve) => {
-      if (!data?.user?.locationSharingEnabled || !navigator.geolocation)
+      if (!consent.current || !navigator.geolocation)
         return resolve({});
       navigator.geolocation.getCurrentPosition(
         (position) =>
-          resolve({
+          resolve(!consent.current ? {} : {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy,
@@ -146,6 +152,7 @@ const StaffDashboard = () => {
         ...(result.status ? { permission_status: result.status } : {}),
         ...result.location,
       });
+      updateUser(response.data.user);
       setData((current: any) => ({
         ...current,
         user: {
@@ -258,7 +265,9 @@ const StaffDashboard = () => {
                   onClick={clockIn}
                 >
                   {data?.attendanceSummary?.today
-                    ? data.attendanceSummary.today.status === "Absent"
+                    ? data.attendanceSummary.today.status === "Cancelled"
+                      ? "Tracking cancelled"
+                      : data.attendanceSummary.today.status === "Absent"
                       ? "Marked absent"
                       : "Completed today"
                     : "Clock in"}
