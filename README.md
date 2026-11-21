@@ -323,6 +323,19 @@ npm test
 
 The test suite uses jsdom and Testing Library. Existing tests cover areas including protected routes, account settings, role permissions, workforce management, notifications, chat alerts, and selected dashboard workflows.
 
+Account-settings regressions keep automatic clock-out hidden, including when a staff account already has that preference enabled. Notification sounds, location privacy, and password changes remain covered through the rendered page. Run this coverage alone with `npm test -- src/pages/AccountSettings.test.tsx`.
+
+For the companion `stechad-backend` suite, install its dependencies and provision a disposable local PostgreSQL database in an isolated test cluster. The test database role must be able to create and drop schemas and tables. Never point test URLs at the application database. From the backend repository, set all three URLs before running:
+
+```bash
+AUTH_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+WORKFORCE_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+CHAT_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+npm test
+```
+
+These variables enable the authentication, workforce, chat, and associated migration integration suites. They create temporary schemas and use local HTTP/Socket.IO listeners, so the environment must permit loopback connections and listening on ephemeral ports. Without these URLs, database suites report skips even when `npm test` exits successfully; that result does not establish database regression coverage.
+
 Run a production build as an additional verification:
 
 ```bash
