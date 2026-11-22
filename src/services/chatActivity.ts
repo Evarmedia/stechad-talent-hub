@@ -1,3 +1,4 @@
+import apiService from "./apiService";
 export const isChatFocused = (chatId: string, activeId: string | null) =>
   activeId === chatId &&
   /\/messages\/?$/.test(window.location.pathname) &&
@@ -5,7 +6,7 @@ export const isChatFocused = (chatId: string, activeId: string | null) =>
   document.hasFocus();
 
 const tabId = crypto.randomUUID();
-const prefix = (userId: string) => `stechad-chat-view:${userId}:`;
+const prefix = (userId: string) => `stechad-chat-view:${apiService.getOrganization() || "legacy"}:${userId}:`;
 export function publishChatView(userId: string, chatId: string | null) {
   const key = prefix(userId) + tabId;
   try {
@@ -49,14 +50,14 @@ export async function claimMessageAlert(
     return await new Promise((resolve) => {
       const transaction = db.transaction("seen", "readwrite");
       const store = transaction.objectStore("seen");
-      store.add({ id: `${userId}:${notificationId}`, at: Date.now() });
+      store.add({ id: `${apiService.getOrganization() || "legacy"}:${userId}:${notificationId}`, at: Date.now() });
       transaction.oncomplete = () => resolve(true);
       transaction.onabort = () => resolve(false);
       transaction.onerror = () => resolve(false);
     });
   } catch {
     // If durable storage is blocked, this tab still deduplicates locally.
-    const key = `${userId}:${notificationId}`;
+    const key = `${apiService.getOrganization() || "legacy"}:${userId}:${notificationId}`;
     if (fallbackClaims.has(key)) return false;
     fallbackClaims.add(key);
     return true;

@@ -5,6 +5,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 class ApiService {
   constructor() {
     this.baseURL = BASE_URL;
+    this.organizationRevision = 0;
 
     this.api = axios.create({
       baseURL: this.baseURL,
@@ -16,6 +17,13 @@ class ApiService {
     // 🔰 Inject token before every request
     this.api.interceptors.request.use(
       async (config) => {
+        if (config._organizationRevision === undefined) Object.assign(config, this.organizationConfig());
+        if (config._organizationRevision !== this.organizationRevision) {
+          throw { code: "ORGANIZATION_CHANGED", message: "Organization changed. Previous request discarded.", config };
+        }
+        const organizationId = config._organizationId;
+        if (organizationId) config.headers["X-Organization-Id"] = organizationId;
+        else delete config.headers["X-Organization-Id"];
         let token = this.getToken();
 
         // If no token, try refreshing
@@ -23,6 +31,9 @@ class ApiService {
           token = await this.refreshAccessToken();
         }
 
+        if (config._organizationRevision !== this.organizationRevision) {
+          throw { code: "ORGANIZATION_CHANGED", message: "Organization changed. Previous request discarded.", config };
+        }
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -44,9 +55,22 @@ class ApiService {
 
     // 🔰 Response Interceptor for errors & token expiry
     this.api.interceptors.response.use(
-      (response) => response.data,
+      (response) => {
+        if (response.config._organizationRevision !== this.organizationRevision) {
+          return Promise.reject({ code: "ORGANIZATION_CHANGED", message: "Organization changed. Previous response discarded." });
+        }
+        return response.data;
+      },
       async (error) => {
+        if (error.code === "ORGANIZATION_CHANGED") return Promise.reject(error);
         const originalRequest = error.config || {};
+        if (originalRequest._organizationRevision !== undefined && originalRequest._organizationRevision !== this.organizationRevision) {
+          return Promise.reject({ code: "ORGANIZATION_CHANGED", message: "Organization changed. Previous response discarded." });
+        }
+        const code = error.response?.data?.code;
+        if ([403, 409].includes(error.response?.status) && ["MEMBERSHIP_UNAVAILABLE", "ORGANIZATION_REQUIRED", "HR_PROFILE_REQUIRED"].includes(code)) {
+          window.dispatchEvent(new CustomEvent("stechad:organization-unavailable", { detail: { code } }));
+        }
         const url = `/${(originalRequest.url || "").replace(/^\/+/, "")}`;
         const isPublicAuthEndpoint = [
           "/auth/login",
@@ -79,7 +103,7 @@ class ApiService {
 
           this.clearTokens();
           window.location.href = "/login";
-          return;
+          return Promise.reject({ status: 401, message: "Your session has expired. Sign in again." });
         }
 
         // Too many requests
@@ -99,6 +123,7 @@ class ApiService {
 
         return Promise.reject({
           status: error.response.status,
+          code: error.response.data?.code,
           errors: error.response.data?.errors,
           blockers: error.response.data?.blockers,
           message:
@@ -122,6 +147,21 @@ class ApiService {
     );
   }
 
+  organizationConfig() {
+    return { _organizationRevision: this.organizationRevision, _organizationId: this.getOrganization() };
+  }
+
+  getOrganization() {
+    return sessionStorage.getItem("stechad_organization_id");
+  }
+
+  setOrganization(organizationId) {
+    if (this.getOrganization() === (organizationId || null)) return;
+    this.organizationRevision += 1;
+    if (organizationId) sessionStorage.setItem("stechad_organization_id", organizationId);
+    else sessionStorage.removeItem("stechad_organization_id");
+  }
+
   // 🔐 TOKEN HANDLING
   getToken() {
     return localStorage.getItem("stechad_token");
@@ -140,6 +180,7 @@ class ApiService {
   }
 
   clearTokens() {
+    this.setOrganization(null);
     localStorage.removeItem("stechad_token");
     localStorage.removeItem("stechad_refresh_token");
     localStorage.removeItem("stechad_user");
@@ -192,12 +233,13 @@ class ApiService {
   // 🔧 Generic GET request with params
   async get(resource, params = {}, id = null) {
     const endpoint = id ? `/${resource}/${id}` : `/${resource}`;
-    return this.api.get(endpoint, { params });
+    return this.api.get(endpoint, { params, ...this.organizationConfig() });
   }
 
   async post(resource, data, isFormData = false) {
     const config = {
       headers: {},
+      ...this.organizationConfig(),
     };
 
     // Don't manually set Content-Type for FormData; let axios handle it
@@ -211,6 +253,7 @@ class ApiService {
   async put(resource, id, data, isFormData = false) {
     const config = {
       headers: {},
+      ...this.organizationConfig(),
     };
 
     // Don't manually set Content-Type for FormData; let axios handle it
@@ -224,6 +267,7 @@ class ApiService {
   async putNoId(resource, data, isFormData = false) {
     const config = {
       headers: {},
+      ...this.organizationConfig(),
     };
 
     // Don't manually set Content-Type for FormData; let axios handle it
@@ -236,16 +280,17 @@ class ApiService {
   }
 
   async patch(resource, id, data) {
-    return this.api.patch(`/${resource}/${id}`, data);
+    return this.api.patch(`/${resource}/${id}`, data, this.organizationConfig());
   }
 
   async delete(resource, id) {
-    return this.api.delete(`/${resource}/${id}`);
+    return this.api.delete(`/${resource}/${id}`, this.organizationConfig());
   }
 
   // File upload helper
   async uploadFile(endpoint, formData) {
     return this.api.post(endpoint, formData, {
+      ...this.organizationConfig(),
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -254,7 +299,7 @@ class ApiService {
 
   // Direct request (if needed)
   async request(endpoint, options = {}) {
-    return this.api(endpoint, options);
+    return this.api(endpoint, { ...options, ...this.organizationConfig() });
   }
 }
 

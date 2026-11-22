@@ -63,7 +63,7 @@ export const JobsProvider = ({ children }) => {
   // FETCH ALL JOB DATA ONCE
   // -----------------------------------------------------
   useEffect(() => {
-    if (!token || !user || initialized || initializingRef.current) return;
+    if (!token || !user?.role || initialized || initializingRef.current) return;
 
     const init = async () => {
       initializingRef.current = true;

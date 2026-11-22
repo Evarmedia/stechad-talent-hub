@@ -38,8 +38,8 @@ const sortChats = (chats: Conversation[]) =>
   );
 
 function useChatState() {
-  const { user } = useAuthContext();
-  const userId: string = user?.user_id;
+  const { user, organizations, activeOrganizationId } = useAuthContext();
+  const userId: string = organizations != null && (!activeOrganizationId || !user?.role) ? undefined : user?.user_id;
   const [chats, setChats] = useState<Conversation[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
