@@ -12,36 +12,55 @@ class WebSocketService {
   }
 
   connect() {
-    if (this.socket) return;
+    const organizationId = apiService.getOrganization();
+    if (this.socket && this.organizationId === organizationId) return;
+    this.disconnect();
+    if (!organizationId) return;
+    this.organizationId = organizationId;
     const configuredUrl =
       import.meta.env.VITE_SOCKET_URL ||
       import.meta.env.VITE_BACKEND_URL ||
       window.location.origin;
     const origin = new URL(configuredUrl, window.location.origin).origin;
     this.socket = io(origin, {
-      auth: (callback) => callback({ token: apiService.getToken() }),
+      auth: (callback) => callback({ token: apiService.getToken(), organization_id: organizationId }),
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 10000,
       // Polling is retained as a fallback for proxies that do not support upgrades.
       transports: ["polling", "websocket"],
     });
-    this.socket.onAny((event, payload) => this.notify(event, payload));
+    const socket = this.socket;
+    this.socket.onAny((event, payload) => {
+      if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
+      if (event !== "account_updated" && payload?.organization_id !== organizationId) return;
+      this.notify(event, event === "online_users" ? payload.users : payload);
+    });
     this.socket.on("connect", () =>
       this.notify("connection_status", "connected"),
     );
-    this.socket.on("disconnect", () =>
-      this.notify("connection_status", "reconnecting"),
-    );
+    this.socket.on("disconnect", (reason) => {
+      if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
+      this.notify("connection_status", "reconnecting");
+      if (reason === "io server disconnect") {
+        window.dispatchEvent(new CustomEvent("stechad:organization-unavailable"));
+      }
+    });
     this.socket.on("connect_error", async (error) => {
+      if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
       this.notify("connection_status", "reconnecting");
       if (error.message === "Authentication error" && !this.refreshingToken) {
         this.refreshingToken = true;
         const socket = this.socket;
         try {
-          const token = await apiService.refreshAccessToken();
-          if (token && this.socket === socket) socket.connect();
-          else if (this.socket === socket && apiService.getRefreshToken()) {
+          // Revalidate membership as well as the global token before reconnecting.
+          const response = await apiService.get("auth/me");
+          if (this.socket !== socket) return;
+          if (response?.data?.active_organization_id !== organizationId) {
+            window.dispatchEvent(new CustomEvent("stechad:organization-unavailable"));
+          } else socket.connect();
+        } catch {
+          if (this.socket === socket && apiService.getToken()) {
             this.reconnectTimer = window.setTimeout(() => {
               if (this.socket === socket) socket.connect();
             }, 3000);
@@ -56,9 +75,11 @@ class WebSocketService {
 
   disconnect() {
     window.clearTimeout(this.reconnectTimer);
+    this.socket?.offAny();
     this.socket?.removeAllListeners();
     this.socket?.disconnect();
     this.socket = null;
+    this.organizationId = null;
   }
 
   on(event, callback) {
@@ -73,7 +94,7 @@ class WebSocketService {
   }
 
   emit(event, payload) {
-    if (!this.socket?.connected) return false;
+    if (!this.socket?.connected || this.organizationId !== apiService.getOrganization()) return false;
     this.socket.emit(event, payload);
     return true;
   }

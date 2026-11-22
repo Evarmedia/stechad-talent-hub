@@ -144,10 +144,7 @@ export const ApplicationsProvider = ({ children }) => {
 const updateApplication = async (id, updateData) => {
   setLoading(true);
   try {
-    const response = await apiService.api.put(
-      `/applications/${id}/status`,
-      updateData
-    );
+    const response = await apiService.request(`/applications/${id}/status`, { method: "PUT", data: updateData });
 
     if (response.data?.success) {
       const updatedApplication = response.data.data;

@@ -34,6 +34,12 @@ it("admits a known custom employee to staff pages without opening admin routes",
   Object.assign(state.user, custom);
   const view = render(<MemoryRouter><ProtectedRoute requiredRole="staff" allowCustomEmployee><h1>Employee profile</h1></ProtectedRoute></MemoryRouter>);
   expect(screen.getByRole("heading", { name: "Employee profile" })).toBeInTheDocument(); view.unmount();
-  render(<MemoryRouter><Routes><Route path="/" element={<ProtectedRoute requiredRole="admin"><h1>Admin</h1></ProtectedRoute>} /><Route path="/login" element={<h1>Login</h1>} /></Routes></MemoryRouter>);
-  expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument();
+  render(<MemoryRouter><Routes><Route path="/" element={<ProtectedRoute requiredRole="admin"><h1>Admin</h1></ProtectedRoute>} /><Route path="/dashboard/staff" element={<h1>Employee home</h1>} /></Routes></MemoryRouter>);
+  expect(screen.getByRole("heading", { name: "Employee home" })).toBeInTheDocument();
+});
+
+it("sends users to the selected organization's role dashboard instead of the login page", () => {
+  state.user = { role: "staff", effective_permissions: [], talent: undefined };
+  render(<MemoryRouter initialEntries={["/admin"]}><Routes><Route path="/admin" element={<ProtectedRoute requiredRole="admin"><h1>Admin</h1></ProtectedRoute>} /><Route path="/dashboard/staff" element={<h1>Staff home</h1>} /><Route path="/login" element={<h1>Login</h1>} /></Routes></MemoryRouter>);
+  expect(screen.getByRole("heading", { name: "Staff home" })).toBeInTheDocument();
 });

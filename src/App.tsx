@@ -1,3 +1,4 @@
+import OrganizationBoundary from "@/components/OrganizationBoundary";
 import ApprovalsRedirect from "@/components/ApprovalsRedirect";
 import { workforcePermissions } from "@/lib/permissions";
 import AccountSettings from "./pages/AccountSettings";
@@ -73,14 +74,15 @@ import MessagesPage from "./pages/dashboard/Messages";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <BrowserRouter>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <OrganizationBoundary>
       <DataProvider>
         <ChatProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
                 <ChatAlerts>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -339,12 +341,13 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ChatAlerts>
-              </BrowserRouter>
             </TooltipProvider>
         </ChatProvider>
       </DataProvider>
+      </OrganizationBoundary>
     </AuthProvider>
   </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;

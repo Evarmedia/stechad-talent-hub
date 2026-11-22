@@ -10,6 +10,53 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);
 
+  const [organizations, setOrganizations] = useState(null);
+  const [activeOrganizationId, setActiveOrganizationId] = useState(null);
+  const [organizationLoading, setOrganizationLoading] = useState(false);
+  const [organizationError, setOrganizationError] = useState("");
+  const [tenantVersion, setTenantVersion] = useState(0);
+  const sessionRequest = useRef(0);
+
+  const applySession = useCallback((data) => {
+    const next = data.user || data;
+    if (Array.isArray(data.organizations)) {
+      setOrganizations(data.organizations);
+      setActiveOrganizationId(data.active_organization_id || null);
+      apiService.setOrganization(data.active_organization_id || null);
+    }
+    setUser(next);
+    // Cross-tab storage signals identity changes only; HR authority stays in memory.
+    localStorage.setItem("stechad_user", JSON.stringify({ user_id: next.user_id }));
+  }, []);
+
+  const selectOrganization = useCallback(async (organizationId) => {
+    const request = ++sessionRequest.current;
+    setOrganizationLoading(true);
+    setOrganizationError("");
+    websocketService.disconnect();
+    apiService.setOrganization(organizationId);
+    setActiveOrganizationId(null);
+    setTenantVersion((version) => version + 1);
+    try {
+      const response = await apiService.get("auth/me");
+      if (request === sessionRequest.current) { applySession(response.data); return response; }
+    } catch (error) {
+      if (request === sessionRequest.current) {
+        apiService.setOrganization(null);
+        setUser((current) => current && ({ ...current, role: null, role_details: null, effective_permissions: [] }));
+        setOrganizationError(error.message || "Could not load this organization. Try again.");
+      }
+    } finally {
+      if (request === sessionRequest.current) setOrganizationLoading(false);
+    }
+  }, [applySession]);
+
+  useEffect(() => {
+    const unavailable = () => { void selectOrganization(null); };
+    window.addEventListener("stechad:organization-unavailable", unavailable);
+    return () => window.removeEventListener("stechad:organization-unavailable", unavailable);
+  }, [selectOrganization]);
+
   // Check for stored user session on app load
   useEffect(() => {
     const initAuth = async () => {
@@ -35,22 +82,20 @@ export const AuthProvider = ({ children }) => {
             // Support both response shapes:
             // - { success: true, data: { user fields... } }
             // - { success: true, data: { user: {...}, token, ... } }
-            const userObj = response.data.user || response.data;
-            setUser(userObj);
-            localStorage.setItem("stechad_user", JSON.stringify(userObj));
+            applySession(response.data);
           }
         } catch (error) {
           console.error("Token validation failed:", error);
-          apiService.clearTokens();
+          if (error.status === 401) apiService.clearTokens();
           setUser(null);
-          localStorage.removeItem("stechad_user");
+          setOrganizationError(error.message || "Could not reconnect. Try again.");
         }
       }
       setLoading(false);
     };
 
     initAuth();
-  }, []);
+  }, [applySession]);
 
   // --------------------------
   // GOOGLE LOGIN (REDIRECT FLOW)
@@ -64,7 +109,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = useCallback((updatedUser) => {
     setUser((current) => {
       const next = current?.user_id === updatedUser.user_id ? { ...current, ...updatedUser } : updatedUser;
-      localStorage.setItem("stechad_user", JSON.stringify(next));
+      localStorage.setItem("stechad_user", JSON.stringify({ user_id: next.user_id }));
       return next;
     });
   }, []);
@@ -76,11 +121,16 @@ export const AuthProvider = ({ children }) => {
     let alive = true;
     const refresh = async () => {
       if (!apiService.getToken()) return;
+      const request = sessionRequest.current;
       try {
         const response = await apiService.get("auth/me");
-        if (alive && sessionUser.current === id) {
-          const next = response.data.user;
-          setUser(next); localStorage.setItem("stechad_user", JSON.stringify(next));
+        if (alive && sessionUser.current === id && request === sessionRequest.current) {
+          const active = response.data.active_organization_id;
+          if (organizations !== null && active !== apiService.getOrganization()) {
+            websocketService.disconnect();
+            setTenantVersion((version) => version + 1);
+          }
+          applySession(response.data);
         }
       } catch { /* The API interceptor handles revoked sessions; network errors preserve state. */ }
     };
@@ -88,12 +138,13 @@ export const AuthProvider = ({ children }) => {
     const sync = (event) => { if (event.key === "stechad_user") void refresh(); };
     window.addEventListener("focus", refresh); window.addEventListener("storage", sync);
     return () => { alive = false; off.forEach((unsubscribe) => unsubscribe()); window.removeEventListener("focus", refresh); window.removeEventListener("storage", sync); };
-  }, [user?.user_id]);
+  }, [user?.user_id, applySession, organizations !== null]);
 
   // Direct API call for login
   const login = async (email, password) => {
     setAuthLoading(true);
     try {
+      if (apiService.setOrganization) apiService.setOrganization(null);
       const response = await apiService.post("auth/login", { email: email.trim().toLowerCase(), password });
 
       if (!response.success || !response.data) {
@@ -108,9 +159,8 @@ export const AuthProvider = ({ children }) => {
         apiService.setRefreshToken(refreshToken);
       }
 
-      // Store user data
-      setUser(response.data.user);
-      localStorage.setItem("stechad_user", JSON.stringify(response.data.user));
+      // Store the selected membership projection independently of global identity.
+      applySession(response.data);
 
       return response;
     } catch (error) {
@@ -145,9 +195,8 @@ export const AuthProvider = ({ children }) => {
         apiService.setRefreshToken(refreshToken);
       }
 
-      // Store user data
-      setUser(response.data.user);
-      localStorage.setItem("stechad_user", JSON.stringify(response.data.user));
+      // Store the selected membership projection independently of global identity.
+      applySession(response.data);
 
       return response;
     } catch (error) {
@@ -160,6 +209,12 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = async () => {
+    sessionRequest.current += 1;
+    websocketService.disconnect();
+    setOrganizations(null);
+    setOrganizationLoading(false);
+    setActiveOrganizationId(null);
+    setTenantVersion((version) => version + 1);
     try {
       await apiService.post("auth/logout", {});
       console.clear();
@@ -275,13 +330,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const acceptInvites = async (token, payload) => {
-    const response = await apiService.post(`/auth/accept-invite/${token}`, payload);
+    const response = await apiService.post(`auth/accept-invite/${token}`, payload);
     if (!response.success) throw new Error(response.message || "Failed to accept invitation");
     return response;
   };
 
   const value = {
     user,
+    organizations,
+    activeOrganizationId,
+    organizationLoading,
+    organizationError,
+    tenantVersion,
+    selectOrganization,
     updateUser,
     loading,
     authLoading,
