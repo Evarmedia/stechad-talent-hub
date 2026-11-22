@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { can, canAny, adminRedirectForPath, isCustomEmployee } from '@/lib/permissions';
+import { can, canAny, adminRedirectForPath, isCustomEmployee, personalBasePath } from '@/lib/permissions';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../hooks/useAuthContext';
 
@@ -13,7 +13,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole, requiredPermission, anyPermissions, allowCustomEmployee }) => {
-  const { user, loading } = useAuthContext();
+  const { user, loading, organizations } = useAuthContext();
   const location = useLocation();
 
   if (loading) {
@@ -31,12 +31,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (organizations != null && !user.role && location.pathname !== "/settings") {
+    return <div role="alert" className="p-8"><h1 className="text-xl font-semibold">HR access unavailable</h1><p className="mt-2 text-muted-foreground">Your membership does not have an HR profile in this organization. Choose another organization or contact your organization administrator.</p></div>;
+  }
+
   const adminRedirect = adminRedirectForPath(user, location.pathname, location.search);
   if (adminRedirect) return <Navigate to={adminRedirect} replace />;
 
   const permittedRoles = requiredRole ? (Array.isArray(requiredRole) ? requiredRole : [requiredRole]) : [];
   if (requiredRole && !permittedRoles.includes(user.role) && !(allowCustomEmployee && isCustomEmployee(user))) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={personalBasePath(user)} replace />;
   }
 
   if ((requiredPermission && !can(user, requiredPermission)) || (anyPermissions && !canAny(user, anyPermissions))) {
@@ -57,6 +61,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
   // If talent is onboarded but trying to access onboarding page, redirect to dashboard
   if (user.role === 'talent' && user.talent?.is_onboarded && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard/talent" replace />;
+  }
+
+  if (location.pathname === '/dashboard') {
+    return <Navigate to={personalBasePath(user)} replace />;
   }
 
   return <>{children}</>;

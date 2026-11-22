@@ -1,3 +1,4 @@
+import OrganizationSwitcher from "@/components/OrganizationSwitcher";
 import { personalBasePath, roleName } from "@/lib/permissions";
 
 import STECHADLogo from "@/components/STECHADLogo";
@@ -120,7 +121,8 @@ export function AppNavbar() {
         </Link>
         <span className="ml-4 text-muted-foreground font-medium text-base hidden md:inline">| {currentRole}</span>
       </div>
-      <nav className="flex gap-4 items-center text-sm">
+      <nav className="flex gap-2 md:gap-4 items-center text-sm">
+        <OrganizationSwitcher />
         <span className="text-muted-foreground hidden md:inline">
           Welcome, {user?.first_name}
         </span>

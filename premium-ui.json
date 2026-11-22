@@ -1,0 +1,29 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": [
+    "src/platform"
+  ],
+  "locale": "en",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": [
+    "Select/Listbox",
+    "Form",
+    "Scrollbar",
+    "CRUD"
+  ],
+  "ownership": {
+    "Select/Listbox": "native"
+  },
+  "commands": {
+    "unit": "npm test",
+    "browser": "npm run build && node scripts/phase2-browser-check.mjs"
+  },
+  "requiredCommands": [
+    "unit",
+    "browser"
+  ],
+  "evidence": {
+    "crudFullFlow": "src/platform/PlatformApp.test.tsx",
+    "failurePaths": "src/services/apiService.sessions.test.ts"
+  }
+}

@@ -174,7 +174,7 @@ export const InterviewProvider = ({ children }) => {
   // FETCH ALL DATA ONCE
   // ---------------------------
   useEffect(() => {
-    if (!token || !user || initialized) return;
+    if (!token || !user?.role || initialized) return;
 
     const init = async () => {
       setLoading(true);

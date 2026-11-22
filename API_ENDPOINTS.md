@@ -1,5 +1,63 @@
 # STECHAD API Integration Status
 
+## Organization context and sessions
+
+`VITE_BACKEND_URL` includes the `/api` prefix. Authenticated calls send `Authorization: Bearer <access token>`. HR calls also send `X-Organization-ID: <organization UUID>` from the current tab's selection. The server validates active membership and HR access on each protected request. Conflicting organization IDs in a body or query are rejected; a header never grants access on its own. A single active membership may be inferred when no header is supplied. Multiple active memberships require explicit selection for HR calls.
+
+Global identity endpoints (login, refresh, `/auth/me`, password operations) do not require an HR selection. Organization-management routes use the organization ID in the URL and the caller's active owner/admin membership; HR roles and grants do not confer organization-management authority. Owners alone may alter owner memberships, including through legacy HR lifecycle routes, and the final active owner cannot leave, be suspended, removed or demoted.
+
+Successful `POST /auth/login`, signup and `GET /auth/me` return the session envelope below. Login/signup also include `data.token` and `data.refreshToken`.
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": { "user_id": "...", "role": "staff", "role_details": {}, "effective_permissions": [] },
+    "organizations": [{ "organization_id": "...", "name": "Example", "slug": "example", "status": "active", "membership_id": "...", "membership_role": "member", "membership_status": "active" }],
+    "active_organization_id": "..."
+  }
+}
+```
+
+`data.user` combines global identity with the selected organization's HR role, grants and employment fields. With multiple memberships and no selection, `active_organization_id` and `user.role` are null, `role_details` is null and `effective_permissions` is empty. A member without HR access may still manage an organization if their membership permits it; membership authority must not be inferred from HR role fields.
+
+The API service stores only the selected ID in `sessionStorage.stechad_organization_id`; access/refresh tokens remain in localStorage. `stechad_user` stores only `{user_id}` for cross-tab identity signals. The authenticated server session is the source of HR authority. Switching disconnects sockets, clears tenant providers/query state, selects the ID, then fetches `/auth/me` before rendering HR content. Request revisions reject responses from a prior selection with the client-only `ORGANIZATION_CHANGED` code. Tabs can select different organizations independently. Socket.IO connects with `auth: {token, organization_id}` and accepts tenant events only for that selected organization.
+
+| Status / code | Meaning and client handling |
+| --- | --- |
+| `400` | Malformed organization UUID or conflicting organization input; correct the request. |
+| `409 ORGANIZATION_REQUIRED` | Several active memberships and no selected organization; return to selection. |
+| `403 MEMBERSHIP_UNAVAILABLE` | No active membership in an active organization, including suspension/removal; reload the organization session and selection. |
+| `403 HR_PROFILE_REQUIRED` | Membership exists but its HR profile/role is unavailable; reload selection without treating this as global logout. |
+| `409 LAST_OWNER_REQUIRED` | Membership change would remove/demote the last active owner. |
+| `403 ORGANIZATION_CREATION_DISABLED` | Creation is gated by server configuration. |
+| `401` | Missing/invalid global authentication; refresh once where applicable, then sign in again. |
+
+The API interceptor dispatches `stechad:organization-unavailable` for the three membership/selection codes above, preserving the global login while reloading selection. Other `403` responses remain ordinary permission denials. Normalized API errors retain `status`, `code`, `message`, and optional `errors`/`blockers`.
+
+### Organization APIs (`/api/organizations`)
+
+| Method | Path | Contract |
+| --- | --- | --- |
+| GET | `/` | Returns `data.organizations`, the caller's active organizations. |
+| POST | `/` | `{name, slug}`; returns `data.organization` and owner `data.membership`. Disabled by default; the creator receives a basic staff HR profile, without wildcard HR grants. |
+| GET / PATCH | `/:organizationId` | Returns `data.organization`; PATCH accepts `{name?, settings?}` and requires owner/admin membership. |
+| GET | `/:organizationId/members` | Owner/admin membership required; returns `data.members`. |
+| PATCH | `/:organizationId/members/:membershipId` | `{status?, membership_role?}`; statuses are `active`, `suspended`, `removed`, roles are `owner`, `admin`, `member`; returns `data.membership`. |
+| DELETE | `/:organizationId/members/:membershipId` | Marks membership removed while preserving global identity and history. |
+| POST | `/:organizationId/leave` | Leaves own membership, subject to final-owner protection. |
+| POST | `/:organizationId/invitations` | `{email, role_id, membership_role?, first_name?, last_name?, department_id?, job_title?}`; returns `201` with safe `data.invitation`, never its bearer token or digest. HR role/department must belong to the addressed organization. |
+
+### Invitation acceptance
+
+The emailed link is `/accept-invite?token=<single-use bearer>`. This query token is an invitation credential, so the page never installs it as the global access token. Submit `POST /api/auth/accept-invite/:token`.
+
+- An existing account must sign in with the matching normalized, verified email, then submit `{}` with its Bearer access token. Acceptance preserves its password and existing organizations. An unauthenticated existing account receives `401`; a wrong or unverified identity receives `403`.
+- A new account submits `{new_password, confirm_password, first_name?, last_name?}`. The emailed token verifies the new email and the server validates the password. Existing accounts' passwords cannot be replaced through this path.
+- Success returns `201` with `data.organization_id` and `data.membership_id`. The frontend reloads that organization's session; a new user signs in after acceptance. Expired, invalid or consumed tokens return `400`. Tokens expire after one hour and concurrent/repeated acceptance succeeds only once.
+
+Registered uploaded avatars are shared with colleagues only within their owning organization. Other organizations cannot sign those files even if a shared global User references the same avatar path; unregistered legacy references retain validated membership compatibility. CVs/receipts retain owner and HR-permission checks.
+
 ## ✅ Completed Integrations
 
 ### Authentication (`/api/auth`)
@@ -259,3 +317,37 @@ The integrated contract and migration/rollout notes are documented in the backen
 - Effective permissions combine built-in switches or custom-role permissions with individual grants. `account_updated` refreshes affected sessions after role changes. Display names come from `role_details.name`, while canonical keys/IDs remain authoritative for access.
 - Custom employees use staff personal routes, navigation and login destinations, plus permitted shared management modules. Custom roles retain staff-level direct chat rules and existing group restrictions. Their KPI/birthday/holiday eligibility and notification destinations match employee workflows.
 - Deploy `20261119110000-custom-role-permissions.js` and the backend before the frontend. Existing switches/grants remain intact; rollback removes custom-role configuration and requires the matching application version.
+
+## Managed sessions and internal administration (Phase 2)
+
+`src/services/apiService.js` retains `stechad_token`, `stechad_refresh_token` and `stechad_user`. Access tokens are short lived; the shared transport rotates opaque refresh credentials using `POST /auth/refresh-token` with `{refresh_token}`. Responses retain `{data:{token,refreshToken,session}}`. Same-instance singleflight and same-origin Web Locks coordinate refreshes. A bounded `409 REFRESH_ALREADY_ROTATED` wait adopts credentials saved by the winning tab; at most one bounded retry follows. Network failures preserve refresh credentials. Identity revisions reject stale HTTP and refresh completions after logout or a new sign-in, independently of tab-local organization revisions.
+
+| Method | Endpoint | Frontend behavior |
+|---|---|---|
+| GET | `/auth/sessions` | Account settings lists safe own-session metadata and identifies the current session; older sign-ins receive upgrade guidance. |
+| DELETE | `/auth/sessions/:sessionId` | Confirm before revocation; `{data:{revoked,current_session}}` determines whether to clear this browser's identity. |
+| POST | `/auth/logout` | Immediately clear local identity and submit current-session revocation using the captured Bearer token, without tenant headers. An expired access token uses one private captured-refresh rotation and revoke retry; those credentials never return to storage. |
+| POST | `/auth/logout-all` | Confirm and revoke every device, then clear the shared identity. |
+| GET | `/auth/google?code_challenge=…&return_to=…` | Create a random per-tab PKCE verifier and SHA-256 base64url challenge. Only `/google-auth` and `/platform-admin.html` are callback paths. |
+| POST | `/auth/oauth/exchange` | Submit `{code,code_verifier}` once, remove the per-tab verifier and clean the callback URL before continuing. New redirect URLs contain no access or refresh tokens. |
+
+The built `/platform-admin.html` entry mounts its own shell and only the shared identity transport/design primitives. It mounts no customer AuthProvider, OrganizationBoundary, DataProvider, ChatProvider or HR sockets. All `/platform/*` requests omit `X-Organization-Id` and ignore organization revisions while retaining identity revision checks. No customer HR role causes a platform navigation link to appear.
+
+| Method | Endpoint | Contract |
+|---|---|---|
+| GET | `/platform/me` | Safe identity, explicit platform roles/permissions and session MFA status; does not require HR membership. |
+| POST | `/platform/mfa/enroll` | `{}` for first setup, `{replace:true,reason}` for replacement; returns ephemeral `secret`, `otpauth_url`, `expires_at`. The UI offers masked manual setup, expires pending setup and retains no secrets in storage. |
+| POST | `/platform/mfa/confirm` | `{code}`; recovery codes are returned once and shown behind a reveal control until the user acknowledges saving them. |
+| POST | `/platform/mfa/verify` | Exactly one of `{code}` or `{recovery_code}`; session assurance expires after 15 minutes and refresh does not extend it. |
+| GET / PATCH | `/platform/organizations[/:organizationId]` | Paginated metadata; PATCH `{status:'active'|'suspended',reason}`. |
+| GET / PATCH | `/platform/users[/:userId]` | Paginated safe global identity metadata; PATCH `{is_active,reason}`. No HR profile, password write or deletion. |
+| GET | `/platform/roles` | Explicit roles and permission catalog; requested only with `platform.grants.read`. |
+| GET / POST | `/platform/grants` | Paginated grants; POST `{user_id,role_id,reason}` is offered only with `platform.grants.manage`. |
+| DELETE | `/platform/grants/:grantId` | `{reason}`; preserves revoked grant history. |
+| GET | `/platform/audit-log` | Paginated sanitized platform audit entries, optionally filtered by action. |
+
+Pagination is `{page,limit,total,total_pages}`. List query parameters are `page`, `limit`, organization/user `search` and `status`, grant `user_id`, and audit `action`. Platform lists retain view/page in URL state; identity searches and audit filters remain memory-only to avoid placing personal metadata in browser history.
+
+MFA failures (`MFA_SETUP_REQUIRED`, `MFA_REQUIRED`, `MFA_EXPIRED`) return the internal shell to setup or verification while retaining the HR identity. Grant loss/upgrade/email errors refresh platform eligibility. Ordinary 403, 409, MFA throttling and validation errors remain visible with safe retry controls. Only a genuine global 401 after unsuccessful authentication recovery clears the shared identity. The server enforces all permissions, privileged-target, self-lockout and last-super-admin protections; frontend visibility is a convenience.
+
+Managed `POST /auth/logout` and `/auth/logout-all` also accept `{refresh_token}` as a **revocation-only proof** when access has expired or refresh rotation is in flight. Only opaque managed refresh credentials are supported: the owning identity/version, session and credential must be live and unexpired, and consumed credentials are accepted only within the existing maximum five-second rotation race window. No credentials or authority data are returned. Bearer logout remains supported; legacy refresh uses the finite one-use exchange before private bearer revocation. Local sign-out clears storage immediately and discards old rotation responses.

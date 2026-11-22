@@ -18,19 +18,21 @@ describe("account settings", () => {
     expect(screen.getByRole("switch", { name: "Location sharing" })).toBeInTheDocument();
     expect(screen.getByLabelText("Current password")).toBeInTheDocument();
   });
-  it("persists a personal clock-out preference and renders the returned state", async () => {
-    mocks.putNoId.mockResolvedValue({ success: true, data: { user: { ...user, auto_clock_out_enabled: true, auto_clock_out_time: "17:00:00" } } });
-    show(); await waitFor(() => expect(screen.getByRole("switch", { name: "Automatic clock-out" })).not.toBeChecked());
-    fireEvent.click(screen.getByRole("switch", { name: "Automatic clock-out" }));
-    await waitFor(() => expect(mocks.putNoId).toHaveBeenCalledWith("auth/preferences", { auto_clock_out_enabled: true }));
-    expect(await screen.findByText(/automatically at 5:00 PM/)).toBeInTheDocument();
+  it.each([false, true])("hides automatic clock-out for staff with saved preference %s", async (enabled) => {
+    mocks.get.mockResolvedValue({ success: true, data: { user: { ...user, auto_clock_out_enabled: enabled, auto_clock_out_time: enabled ? "17:00:00" : null } } });
+    show();
+    await screen.findByLabelText("Current password");
+    expect(screen.queryByRole("switch", { name: "Automatic clock-out" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/automatically at 5:00 PM/)).not.toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Notification sounds" })).toBeChecked();
+    expect(screen.getByRole("switch", { name: "Location sharing" })).toBeInTheDocument();
   });
-  it("reports preference failures and leaves the saved state unchanged", async () => {
-    mocks.putNoId.mockRejectedValue(new Error("Finish your current session manually")); show();
-    await waitFor(() => expect(mocks.get).toHaveBeenCalled());
-    fireEvent.click(screen.getByRole("switch", { name: "Automatic clock-out" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Finish your current session manually");
-    expect(screen.getByRole("switch", { name: "Automatic clock-out" })).not.toBeChecked();
+  it("reports notification sound preference failures and leaves the saved state unchanged", async () => {
+    mocks.putNoId.mockRejectedValue(new Error("Could not save your preferences")); show();
+    const soundPreference = await screen.findByRole("switch", { name: "Notification sounds" });
+    fireEvent.click(soundPreference);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not save your preferences");
+    expect(soundPreference).toBeChecked();
   });
   it("changes the common sound preference", async () => {
     mocks.putNoId.mockResolvedValue({ success: true, data: { user: { ...user, notification_sound_enabled: false } } }); show();

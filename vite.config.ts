@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   server: {
     host: "::", // Allows connection from all network interfaces
     port: 8080,
@@ -14,18 +14,10 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   plugins: [react()],
+  build: { rollupOptions: { input: { customer: path.resolve(__dirname, "index.html"), platform: path.resolve(__dirname, "platform-admin.html") } } },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
 }));
-
-// import react from "@vitejs/plugin-react";
-// import { defineConfig } from "vite";
-
-// // https://vitejs.dev/config/
-// export default defineConfig({
-//   plugins: [react()],
-// });
-

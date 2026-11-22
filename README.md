@@ -323,6 +323,19 @@ npm test
 
 The test suite uses jsdom and Testing Library. Existing tests cover areas including protected routes, account settings, role permissions, workforce management, notifications, chat alerts, and selected dashboard workflows.
 
+Account-settings regressions keep automatic clock-out hidden, including when a staff account already has that preference enabled. Notification sounds, location privacy, and password changes remain covered through the rendered page. Run this coverage alone with `npm test -- src/pages/AccountSettings.test.tsx`.
+
+For the companion `stechad-backend` suite, install its dependencies and provision a disposable local PostgreSQL database in an isolated test cluster. The test database role must be able to create and drop schemas and tables. Never point test URLs at the application database. From the backend repository, set all three URLs before running:
+
+```bash
+AUTH_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+WORKFORCE_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+CHAT_TEST_DATABASE_URL=postgresql://localhost/stechad_test \
+npm test
+```
+
+These variables enable the authentication, workforce, chat, and associated migration integration suites. They create temporary schemas and use local HTTP/Socket.IO listeners, so the environment must permit loopback connections and listening on ephemeral ports. Without these URLs, database suites report skips even when `npm test` exits successfully; that result does not establish database regression coverage.
+
 Run a production build as an additional verification:
 
 ```bash
@@ -452,3 +465,11 @@ stechad-talent-hub/
 - Confirm `stechad_token` is present.
 - Confirm `/auth/me` is reachable through `VITE_BACKEND_URL`.
 - Confirm the backend account is active and the token session version is valid.
+
+## Internal administration and managed sessions
+
+`npm run build` emits both the customer `index.html` application and the independent `platform-admin.html` entry. Visit `/platform-admin.html` directly for explicit platform roles and MFA. It shares same-origin identity credentials with the customer app but mounts no HR providers, sockets or organization boundary. Customer Account settings includes signed-in devices, session revocation and sign-out-all. See [API_ENDPOINTS.md](API_ENDPOINTS.md#managed-sessions-and-internal-administration-phase-2) for refresh/OAuth/security contracts.
+
+Serve the actual `/platform-admin.html` file before the customer SPA fallback; `vercel.json` includes this exception. Backend OAuth return paths must allow `/google-auth` and `/platform-admin.html`. Both entries use the configurable `VITE_BACKEND_URL` (default `/api`); production origins/CORS/HTTPS remain deployment configuration. Shared identity storage and cross-tab coordination require the same origin. Separate deployment domains need a separately designed identity handoff; this phase provisions no hosting or cookie/domain migration.
+
+The internal application requires the backend session/platform migrations, explicit platform grant bootstrap and `PLATFORM_MFA_ENCRYPTION_KEY` configuration described by the backend runbook. No HR administrator is automatically promoted. Run `npm test`, `npm run build`, and `node scripts/phase2-browser-check.mjs` for the changed behavior. The browser check uses installed Google Chrome, an ephemeral local HTTP fixture and disposable browser profile; it never grants a real account or touches the application database.
