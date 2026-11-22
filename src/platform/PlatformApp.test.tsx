@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, expect, it } from 'vitest';
 import api from '@/services/apiService';
 import PlatformApp from './PlatformApp';
-beforeEach(() => window.history.replaceState({}, '', '/platform-admin.html')); 
+beforeEach(() => window.history.replaceState({}, '', '/platform-admin.html'));
 it('denies an HR administrator without requesting tenant data or creating HR sockets', async () => {
   api.setToken('hr-admin'); api.setOrganization('org-a');
   const paths: string[] = [];
