@@ -10,7 +10,7 @@ import path from 'node:path';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const profile = await mkdtemp(path.join(tmpdir(), 'stechad-phase2-browser-'));
 const requests=[]; const errors=[];
-let enrolled=false, assured=false, role='operator', suspended=false, granted=false, revoked=false, expireNext=false, refreshes=0, oauthChallenge=null;
+let enrolled=false, assured=false, role='operator', suspended=false, granted=false, revoked=false, expireNext=false, refreshes=0, oauthChallenge=null, oauthReturn=null;
 const permissions = () => role==='super' ? ['platform.organizations.read','platform.organizations.manage','platform.users.read','platform.users.manage','platform.grants.read','platform.grants.manage','platform.audit.read'] : ['platform.organizations.read','platform.users.read','platform.audit.read',...(role==='operator'?['platform.organizations.manage','platform.users.manage']:[])];
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
@@ -19,8 +19,9 @@ const server=createServer(async(req,res)=>{
     requests.push({method:req.method,path:url.pathname,organization:req.headers['x-organization-id']});
     let body='';for await(const chunk of req)body+=chunk;
     const payload=body?JSON.parse(body):{};
-    if(url.pathname==='/api/auth/google'){oauthChallenge=url.searchParams.get('code_challenge');assert.equal(url.searchParams.get('return_to'),'/platform-admin.html');return respond({started:true});}
+    if(url.pathname==='/api/auth/google'){oauthChallenge=url.searchParams.get('code_challenge');oauthReturn=url.searchParams.get('return_to');assert.ok(['/platform-admin.html','/google-auth'].includes(oauthReturn));return respond({started:true});}
     if(url.pathname==='/api/auth/oauth/exchange'){assert.equal(payload.code,'fixture-code');assert.equal(createHash('sha256').update(payload.code_verifier).digest('base64url'),oauthChallenge);return respond({user:{user_id:'fixture',email:'operator@example.test'},token:'oauth-access',refreshToken:'oauth-refresh'});}
+    if(url.pathname==='/api/auth/me')return respond({user:{user_id:'fixture',email:'operator@example.test',first_name:'Fixture',last_name:'Talent',role:'talent',talent:{is_onboarded:false}},organizations:[{organization_id:'org-a',name:'Alpha workspace'}],active_organization_id:'org-a'});
     if(url.pathname==='/api/auth/login')return payload.password==='valid-password'?respond({user:{user_id:'fixture',email:'operator@example.test'},token:'access',refreshToken:'refresh'}):respond({message:'Invalid credentials'},401);
     if(url.pathname==='/api/auth/refresh-token') { refreshes++; await delay(100); assert.equal(payload.refresh_token,'refresh-old');return respond({token:'winner-access',refreshToken:'winner-refresh'}); }
     if(url.pathname==='/api/auth/logout')return respond({revoked:true});
@@ -44,8 +45,9 @@ const server=createServer(async(req,res)=>{
     }
     return respond({message:'Unexpected fixture request'},404);
   }
+  if(url.pathname==='/browser-fixture.html'){res.writeHead(200,{'Content-Type':'text/html'});return res.end('<!doctype html><title>Browser fixture</title>');}
   try{
-    const file=path.join(process.cwd(),'dist',url.pathname==='/'?'index.html':url.pathname);
+    const file=path.join(process.cwd(),'dist',url.pathname==='/'||(!path.extname(url.pathname)&&!url.pathname.startsWith('/assets/'))?'index.html':url.pathname);
     const buffer=await readFile(file);const ext=path.extname(file);
     res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'})[ext]||'application/octet-stream'});res.end(buffer);
   }catch{res.writeHead(404);res.end('Not found');}
@@ -84,13 +86,13 @@ try{
   expireNext=true;await page.click('Users');await page.text('Verify platform access');assert.equal(await page.evaluate(`localStorage.getItem('stechad_token')`),'access');
   await page.click('Use a recovery code instead');await page.fill('mfa-code','fixture-code-one');await page.click('Use recovery code');await page.text('Platform security');
   await page.click('Replace authenticator');await page.fill('action-reason','New phone');await page.click('Start replacement');await page.click('Set up authenticator');await page.fill('mfa-code','123456');await page.click('Confirm authenticator');await page.click('I have saved my recovery codes');await page.text('Platform security');
-  role='super';await page.navigate(`${origin}/platform-admin.html?view=grants`);await page.text('Role grants');await page.click('Grant platform role');await page.wait(`document.querySelector('#grant-role option[value="viewer"]')!==null`);await page.fill('grant-user','target');await page.fill('grant-role','viewer');await page.fill('action-reason','Read-only audit');await page.click('Grant platform role');await page.text('target@example.test');await page.click('Revoke role');await page.fill('action-reason','Audit complete');await page.click('Revoke platform role');await page.text('revoked');
+  role='super';await page.navigate(`${origin}/platform-admin.html?view=grants`);await page.text('Role grants');await page.click('Grant platform role');await page.wait(`document.querySelector('#grant-role option[value="viewer"]')!==null`);await page.click('Grant platform role');assert.equal(await page.evaluate('document.activeElement.id'),'grant-user');await page.fill('grant-user','target');await page.click('Grant platform role');assert.equal(await page.evaluate('document.activeElement.id'),'grant-role');await page.fill('grant-role','viewer');await page.click('Grant platform role');assert.equal(await page.evaluate('document.activeElement.id'),'action-reason');await page.fill('action-reason','Read-only audit');await page.click('Grant platform role');await page.text('target@example.test');await page.click('Revoke role');await page.fill('action-reason','Audit complete');await page.click('Revoke platform role');await page.text('revoked');
   await page.click('Role catalog');await page.text('platform.users.read');await page.click('Audit log');await page.text('Controlled review');
   await page.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await page.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});await page.screenshot('stechad-phase2-admin-mobile.png');
   assert.equal(await page.evaluate('document.documentElement.scrollWidth <= innerWidth'),true,'narrow document does not overflow');
   await page.evaluate(`document.querySelector('nav a').focus()`);assert.equal(await page.evaluate(`document.activeElement.tagName`),'A');
   role='viewer';await page.navigate(`${origin}/platform-admin.html`);await page.text('Alpha workspace');assert.equal(await page.evaluate(`[...document.querySelectorAll('button')].some(el=>/Suspend|Reactivate/.test(el.textContent))`),false);
-  role='operator';await page.evaluate(`localStorage.setItem('stechad_token','expired');localStorage.setItem('stechad_refresh_token','refresh-old');localStorage.setItem('stechad_identity_revision','browser-refresh-test');sessionStorage.setItem('stechad_organization_id','org-a');`);
+  role='operator';await page.navigate(`${origin}/browser-fixture.html`);await page.evaluate(`localStorage.setItem('stechad_token','expired');localStorage.setItem('stechad_refresh_token','refresh-old');localStorage.setItem('stechad_identity_revision','browser-refresh-test');sessionStorage.setItem('stechad_organization_id','org-a');`);
   const second=await open('about:blank');
   await Promise.all([page.navigate(`${origin}/platform-admin.html`),second.navigate(`${origin}/platform-admin.html`)]);await Promise.all([page.text('Alpha workspace'),second.text('Alpha workspace')]);assert.equal(refreshes,1,'two tabs share one refresh rotation');
   assert.equal(await second.evaluate(`localStorage.getItem('stechad_refresh_token')`),'winner-refresh');
@@ -100,6 +102,13 @@ try{
   await page.text('Platform sign-in');await page.click('Continue with Google');await page.wait(`location.pathname==='/api/auth/google'`);
   const verifier=await page.evaluate(`sessionStorage.getItem('stechad_google_pkce_verifier')`);assert.equal(verifier.length,43);assert.equal(createHash('sha256').update(verifier).digest('base64url'),oauthChallenge);
   await page.navigate(`${origin}/platform-admin.html?code=fixture-code`);await page.text('Alpha workspace');assert.equal(await page.evaluate(`sessionStorage.getItem('stechad_google_pkce_verifier')`),null);assert.equal(await page.evaluate(`location.search.includes('code=')`),false);
+  // Customer Google uses the real app route tree after its full-page callback.
+  await page.evaluate(`localStorage.clear();sessionStorage.removeItem('stechad_organization_id');`);
+  await page.navigate(`${origin}/login`);await page.click('Google');await page.wait(`location.pathname==='/api/auth/google'`);
+  assert.equal(oauthReturn,'/google-auth');
+  await page.navigate(`${origin}/google-auth?code=fixture-code`);await page.wait(`location.pathname==='/onboarding'`);
+  assert.equal(await page.evaluate(`localStorage.getItem('stechad_token')`),'oauth-access');
+  assert.equal(await page.evaluate(`sessionStorage.getItem('stechad_google_pkce_verifier')`),null);
   assert.equal(errors.length,0,`browser exceptions: ${errors.join(', ')}`);
-  console.log(JSON.stringify({passed:true,checks:['password failure/success','MFA enrollment/confirmation/recovery/replacement/expiry','operator/viewer/grant permissions','reason-required status/grant actions','catalog and sanitized audits','search empty/clear','narrow layout/reduced motion/keyboard focus','cross-tab refresh/logout','Google PKCE and one-use code exchange','no tenant headers/HR endpoints'],refreshRequests:refreshes,screenshots:['/tmp/stechad-phase2-admin-desktop.png','/tmp/stechad-phase2-admin-mobile.png']},null,2));
+  console.log(JSON.stringify({passed:true,checks:['password failure/success','MFA enrollment/confirmation/recovery/replacement/expiry','operator/viewer/grant permissions','reason-required status/grant actions','catalog and sanitized audits','search empty/clear','narrow layout/reduced motion/keyboard focus','cross-tab refresh/logout','platform and customer Google PKCE/code exchange with onboarding route','grant first-invalid focus order','no tenant headers/HR endpoints in internal entry'],refreshRequests:refreshes,screenshots:['/tmp/stechad-phase2-admin-desktop.png','/tmp/stechad-phase2-admin-mobile.png']},null,2));
 }catch(error){console.error('Browser check failed', error.message, 'runtime exceptions', errors);for(const page of clients){try{console.error('Rendered state:',await page.evaluate('document.body.innerText'));}catch{}}throw error;}finally{for(const page of clients)page.ws.close();chrome.kill('SIGTERM');await new Promise(resolve=>server.close(resolve));await delay(150);await rm(profile,{recursive:true,force:true});}

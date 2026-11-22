@@ -63,6 +63,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole,
     return <Navigate to="/dashboard/talent" replace />;
   }
 
+  if (location.pathname === '/dashboard') {
+    return <Navigate to={personalBasePath(user)} replace />;
+  }
+
   return <>{children}</>;
 };
 

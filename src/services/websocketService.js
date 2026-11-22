@@ -4,7 +4,6 @@ import apiService from "./apiService";
 class WebSocketService {
   socket = null;
   listeners = new Map();
-  refreshingToken = false;
   reconnectTimer = null;
 
   notify(event, payload) {
@@ -39,36 +38,33 @@ class WebSocketService {
     this.socket.on("connect", () =>
       this.notify("connection_status", "connected"),
     );
+    let recovering = false;
+    const recover = async () => {
+      if (recovering || this.socket !== socket || apiService.getOrganization() !== organizationId) return;
+      recovering = true;
+      try {
+        // Keep the explicit tab selection while HTTP validates membership and
+        // refreshes global credentials. The next handshake reads the latest JWT.
+        const response = await apiService.get("auth/me");
+        if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
+        if (response?.data?.active_organization_id !== organizationId) {
+          window.dispatchEvent(new CustomEvent("stechad:organization-unavailable"));
+        } else socket.connect();
+      } catch {
+        if (this.socket === socket && apiService.getToken() && apiService.getOrganization() === organizationId) {
+          this.reconnectTimer = window.setTimeout(() => { void recover(); }, 3000);
+        }
+      } finally { recovering = false; }
+    };
     this.socket.on("disconnect", (reason) => {
       if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
       this.notify("connection_status", "reconnecting");
-      if (reason === "io server disconnect") {
-        window.dispatchEvent(new CustomEvent("stechad:organization-unavailable"));
-      }
+      if (reason === "io server disconnect") void recover();
     });
-    this.socket.on("connect_error", async (error) => {
+    this.socket.on("connect_error", (error) => {
       if (this.socket !== socket || apiService.getOrganization() !== organizationId) return;
       this.notify("connection_status", "reconnecting");
-      if (error.message === "Authentication error" && !this.refreshingToken) {
-        this.refreshingToken = true;
-        const socket = this.socket;
-        try {
-          // Revalidate membership as well as the global token before reconnecting.
-          const response = await apiService.get("auth/me");
-          if (this.socket !== socket) return;
-          if (response?.data?.active_organization_id !== organizationId) {
-            window.dispatchEvent(new CustomEvent("stechad:organization-unavailable"));
-          } else socket.connect();
-        } catch {
-          if (this.socket === socket && apiService.getToken()) {
-            this.reconnectTimer = window.setTimeout(() => {
-              if (this.socket === socket) socket.connect();
-            }, 3000);
-          }
-        } finally {
-          this.refreshingToken = false;
-        }
-      }
+      if (error.message === "Authentication error") void recover();
     });
     this.notify("connection_status", "connecting");
   }

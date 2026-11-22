@@ -14,7 +14,7 @@ The backend alone supplies membership-specific HR roles/grants. The session resp
 
 Switching first disconnects sockets, unmounts tenant providers and clears query caches, then loads the selected session projection. The request client rejects responses from an earlier organization revision. Existing route guards use the new role/grants; an incompatible old route redirects to the selected role's home. A membership without HR access receives an explanatory state rather than role escalation.
 
-Membership-specific 403/409 errors request fresh membership selection and preserve global credentials. Permission-only 403 errors remain feature errors. Invalid global authentication uses the existing 401 refresh/sign-in flow. A server socket disconnect refreshes membership access; normal reconnect retains this tab's explicit organization. Payload organization identifiers must match the active transport's organization; global `account_updated` is a signal to refetch the current session, never tenant data.
+Membership-specific 403/409 errors request fresh membership selection and preserve global credentials. Permission-only 403 errors remain feature errors. Invalid global authentication uses the existing 401 refresh/sign-in flow. A server socket disconnect revalidates the selected membership through HTTP and reconnects with the current access credential; access-token expiry preserves this tab's explicit organization. Only confirmed membership loss requests a new selection. Payload organization identifiers must match the active transport's organization; global `account_updated` is a signal to refetch the current session, never tenant data.
 
 | Operation | Pending | Success | Recovery | Business source |
 |---|---|---|---|---|
@@ -32,14 +32,14 @@ Business sources: [API_ENDPOINTS.md](API_ENDPOINTS.md#managed-sessions-and-inter
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
-| Form | Platform login, MfaPanel, GrantDialog with ReasonDialog | Phase 2 API contract | app-owned noValidate forms, explicit submit, inline error, first-invalid focus; secrets masked | PlatformApp.test.tsx |
+| Form | Platform login, MfaPanel, GrantDialog with ReasonDialog | Phase 2 API contract | app-owned noValidate forms, explicit submit, inline error, first-invalid focus in displayed order (Identity ID, Platform role, Reason for grants); secrets masked | PlatformApp.test.tsx |
 | Select/Listbox | PlatformWorkspace and GrantDialog native select | DESIGN.md and platform catalog | operating-system status/role popup accepted | rendered and browser checks |
 | CRUD | PlatformWorkspace and ReasonDialog | platform permission/status API | server pagination; reason-required pessimistic security actions | PlatformApp.test.tsx and browser check |
 | Scrollbar | src/index.css | runtime scrollbar tokens | horizontal native table overflow and bounded modal overflow | browser check |
 | Secret reveal | src/platform/SecretField.tsx | security API response contract | masked setup key, authenticator/recovery code, one-time recovery-code list | PlatformApp.test.tsx |
 | Session controls | src/components/SessionControls.tsx | own-session API | confirmed device revoke, confirmed logout-all; legacy upgrade guidance | SessionControls.test.tsx |
 
-Customer preferences, role dashboards and per-tab organization switching keep their existing behavior. Account settings adds a device session card. Revoking another device reloads the list and leaves the current identity active; revoking the current device or logout-all clears shared identity. Current logout clears local identity before awaiting server revocation so old in-flight responses cannot restore it. Cross-tab storage events remove stale identity projections; rotation alone does not clear HR authority.
+Customer preferences, role dashboards and per-tab organization switching keep their existing behavior. Account settings adds a device session card. Revoking another device reloads the list and leaves the current identity active; revoking the current device or logout-all clears shared identity. Current logout clears local identity before awaiting server revocation so old in-flight responses cannot restore it. Managed logout submits a revocation-only refresh proof, including during the bounded concurrent-rotation window, without waiting for winning credentials to enter shared storage. Cross-tab storage events remove stale identity projections; rotation alone does not clear HR authority.
 
 Internal administration is a second HTML entry, outside every tenant/HR provider and organization boundary. It can sign in with the existing password/Google identity without HR membership. Its navigation and action controls follow current explicit platform permissions; no automatic customer-admin link is added. Platform data never travels with a tenant header. Both global and tenant HTTP responses retain identity revision guards; tenant responses additionally retain organization revision guards.
 

@@ -1,3 +1,5 @@
+import axios from "axios";
+import { waitFor } from "@testing-library/react";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import api from "./apiService";
 import websocket from "./websocketService";
@@ -28,4 +30,46 @@ it("binds sockets to an organization and ignores cross-organization and disconne
   expect(receive).toHaveBeenCalledTimes(1);
   fake.sockets[1].incoming("notification", { organization_id: "b", title: "B payroll" });
   expect(receive).toHaveBeenCalledTimes(2); off();
+});
+
+it("reconnects a server-disconnected socket with refreshed identity and its explicit organization", async () => {
+  api.setToken("expired-handshake"); api.setOrganization("b"); websocket.connect();
+  const socket = fake.sockets[0];
+  const unavailable = vi.fn(); window.addEventListener("stechad:organization-unavailable", unavailable);
+  api.api.defaults.adapter = async config => {
+    expect(config.headers["X-Organization-Id"]).toBe("b");
+    return { config, status: 200, statusText: "OK", headers: {}, data: { data: { active_organization_id: "b", organizations: [{organization_id:"a"},{organization_id:"b"}] } } };
+  };
+  localStorage.setItem("stechad_token", "current-http-access");
+  socket.events.disconnect("io server disconnect");
+  await waitFor(() => expect(socket.connect).toHaveBeenCalled());
+  let auth: SocketAuth; socket.options.auth(value => { auth = value; });
+  expect(auth).toEqual({token:"current-http-access",organization_id:"b"});
+  expect(api.getOrganization()).toBe("b"); expect(unavailable).not.toHaveBeenCalled();
+  window.removeEventListener("stechad:organization-unavailable", unavailable);
+});
+it("requests organization selection when socket revalidation confirms membership loss", async () => {
+  api.setToken("identity"); api.setOrganization("b"); websocket.connect();
+  const socket = fake.sockets[0];
+  const unavailable = vi.fn(); window.addEventListener("stechad:organization-unavailable", unavailable);
+  api.api.defaults.adapter = async config => ({config,status:200,statusText:"OK",headers:{},data:{data:{active_organization_id:null,organizations:[{organization_id:"a"}]}}});
+  socket.events.disconnect("io server disconnect");
+  await waitFor(() => expect(unavailable).toHaveBeenCalled());
+  expect(socket.connect).not.toHaveBeenCalled(); expect(api.getToken()).toBe("identity");
+  window.removeEventListener("stechad:organization-unavailable", unavailable);
+});
+
+it("does not reconnect or request organization selection after the global session is revoked", async () => {
+  window.history.replaceState({}, '', '/platform-admin.html');
+  api.setToken("revoked-access"); api.setRefreshToken("revoked-refresh"); api.setOrganization("b"); websocket.connect();
+  const socket = fake.sockets[0];
+  const unavailable = vi.fn(); window.addEventListener("stechad:organization-unavailable", unavailable);
+  const adapter = axios.defaults.adapter;
+  api.api.defaults.adapter = async config => { throw {config,response:{status:401,data:{code:'SESSION_INVALID'}}}; };
+  axios.defaults.adapter = async config => { throw {config,response:{status:401,data:{code:'SESSION_INVALID'}}}; };
+  try {
+    socket.events.disconnect("io server disconnect");
+    await waitFor(() => expect(api.getToken()).toBeNull());
+    expect(socket.connect).not.toHaveBeenCalled(); expect(unavailable).not.toHaveBeenCalled();
+  } finally { axios.defaults.adapter = adapter; window.removeEventListener("stechad:organization-unavailable", unavailable); }
 });

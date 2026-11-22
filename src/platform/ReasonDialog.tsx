@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import { getErrorMessage } from '@/lib/errors';
-export default function ReasonDialog({ title, description, action, onConfirm, onClose, children }: { title: string; description: string; action: string; onConfirm: (reason: string) => Promise<void>; onClose: () => void; children?: React.ReactNode }) {
+export default function ReasonDialog({ title, description, action, onConfirm, onClose, children, validate }: { title: string; description: string; action: string; onConfirm: (reason: string) => Promise<void>; onClose: () => void; children?: React.ReactNode; validate?: () => boolean }) {
   const trigger = useRef(document.activeElement as HTMLElement | null);
   const [reason, setReason] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); if (busy) return;
+    setError('');
+    if (validate && !validate()) return;
     if (!reason.trim()) { setError('Enter a reason for the audit log.'); document.getElementById('action-reason')?.focus(); return; }
     setBusy(true); setError('');
     try { await onConfirm(reason.trim()); onClose(); }

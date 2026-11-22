@@ -102,6 +102,8 @@ const App = () => (
                     <Route path="/google-auth" element={<GoogleAuthHandler />} />
                   </Route>
 
+                  <Route path="/dashboard" element={<ProtectedRoute><></></ProtectedRoute>} />
+
                   {/* Dashboard Layout for all roles */}
                   <Route element={<DashboardLayout />}>
                     <Route path="/attendance" element={<ProtectedRoute><StaffAttendance /></ProtectedRoute>} />

@@ -65,14 +65,55 @@ it('keeps identity credentials on MFA expiry and refresh network failures', asyn
   try { await api.refreshAccessToken(); expect(api.getRefreshToken()).toBe('refresh'); }
   finally { axios.defaults.adapter = adapter; }
 });
-it('revokes all devices with an expired access token without restoring logged-out credentials', async () => {
+it('revokes a just-rotated session during logout while the winning response stays private', async () => {
   api.setToken('expired'); api.setRefreshToken('captured-refresh');
-  const adapter=axios.defaults.adapter; let revoked=false;
-  axios.defaults.adapter=async config=>{
-    if(config.url?.endsWith('/auth/refresh-token')) { expect(JSON.parse(config.data)).toEqual({refresh_token:'captured-refresh'});expect(api.getToken()).toBeNull();return ok(config,{data:{token:'private-access',refreshToken:'private-refresh'}}); }
-    if(config.headers.Authorization==='Bearer expired')throw {config,response:{status:401,data:{message:'Expired'}}};
-    expect(config.url).toMatch(/\/auth\/logout-all$/);expect(config.headers.Authorization).toBe('Bearer private-access');revoked=true;return ok(config,{data:{revoked:true}});
+  const adapter = axios.defaults.adapter;
+  let finish!: (value: AxiosResponse) => void; let sent!: InternalAxiosRequestConfig;
+  let revoked = false;
+  axios.defaults.adapter = async config => {
+    if (config.url?.endsWith('/auth/refresh-token')) { sent = config; return new Promise(resolve => { finish = resolve; }); }
+    expect(config.url).toMatch(/\/auth\/logout$/);
+    expect(api.getToken()).toBeNull(); expect(api.getRefreshToken()).toBeNull();
+    expect(JSON.parse(config.data)).toEqual({ refresh_token: 'captured-refresh' });
+    revoked = true; return ok(config, {data:{revoked:true}});
   };
-  try { await api.endSession(true);expect(revoked).toBe(true);expect(api.getToken()).toBeNull();expect(api.getRefreshToken()).toBeNull(); }
-  finally {axios.defaults.adapter=adapter;}
+  try {
+    const rotating = api.refreshAccessToken();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await api.endSession();
+    expect(revoked).toBe(true);
+    api.setToken('new-account'); api.setRefreshToken('new-account-refresh');
+    finish(ok(sent, {data:{token:'stale-winner',refreshToken:'stale-refresh'}}));
+    await expect(rotating).resolves.toBeNull();
+    expect(api.getToken()).toBe('new-account'); expect(api.getRefreshToken()).toBe('new-account-refresh');
+  } finally { axios.defaults.adapter = adapter; }
+});
+it('revokes all devices with a managed refresh proof without restoring signed-out credentials', async () => {
+  api.setToken('expired'); api.setRefreshToken('captured-refresh');
+  const adapter = axios.defaults.adapter;
+  axios.defaults.adapter = async config => {
+    expect(config.url).toMatch(/\/auth\/logout-all$/);
+    expect(JSON.parse(config.data)).toEqual({refresh_token:'captured-refresh'});
+    expect(api.getToken()).toBeNull(); expect(api.getRefreshToken()).toBeNull();
+    return ok(config, {data:{revoked:true}});
+  };
+  try { await api.endSession(true); expect(api.getToken()).toBeNull(); }
+  finally { axios.defaults.adapter = adapter; }
+});
+
+it('privately exchanges an expired legacy refresh only for revocation without installing credentials', async () => {
+  api.setToken('expired-legacy'); api.setRefreshToken('legacy.refresh.jwt');
+  const adapter = axios.defaults.adapter;
+  axios.defaults.adapter = async config => {
+    expect(api.getToken()).toBeNull();
+    if (config.url?.endsWith('/auth/refresh-token')) {
+      expect(JSON.parse(config.data)).toEqual({refresh_token:'legacy.refresh.jwt'});
+      return ok(config,{data:{token:'private-managed',refreshToken:'private-refresh'}});
+    }
+    if(config.headers.Authorization === 'Bearer expired-legacy') throw {config,response:{status:401}};
+    expect(config.url).toMatch(/\/auth\/logout$/); expect(config.headers.Authorization).toBe('Bearer private-managed');
+    return ok(config,{data:{revoked:true}});
+  };
+  try { await api.endSession(); expect(api.getToken()).toBeNull(); expect(api.getRefreshToken()).toBeNull(); }
+  finally { axios.defaults.adapter = adapter; }
 });

@@ -217,11 +217,15 @@ class ApiService {
     const refresh = this.getRefreshToken();
     this.clearTokens();
     if (!token && !refresh) return;
+    const endpoint = `${this.baseURL}/auth/${all ? "logout-all" : "logout"}`;
+    // Managed refresh proofs revoke even when another tab consumed the token
+    // and its winning response is still in flight. They never restore storage.
+    if (refresh && !refresh.includes(".")) return axios.post(endpoint, { refresh_token: refresh });
     const revoke = (access) => axios.post(`${this.baseURL}/auth/${all ? "logout-all" : "logout"}`, {}, { headers: { Authorization: `Bearer ${access}` } });
     try { if (token) return await revoke(token); }
     catch (cause) { if (cause.response?.status !== 401 || !refresh) throw cause; }
     if (!refresh) return;
-    // Revoke an idle device even when its access token expired. These private
+    // The finite legacy exchange still supports an idle pre-migration device. Private
     // credentials never enter storage, so this request cannot undo local logout.
     const response = await axios.post(`${this.baseURL}/auth/refresh-token`, { refresh_token: refresh });
     const payload = response.data?.data || response.data;
