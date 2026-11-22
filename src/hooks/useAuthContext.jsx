@@ -1,3 +1,4 @@
+import { googleSignInUrl } from "@/services/identityAuth";
 import websocketService from "../services/websocketService";
 import { toast } from "@/hooks/use-toast";
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
@@ -62,23 +63,13 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       const token = apiService.getToken();
       // const storedUser = localStorage.getItem("stechad_user");
-      const params = new URLSearchParams(window.location.search);
-      const queryToken = params.get("token");
-      const isInvitePath = window.location.pathname.startsWith("/accept-invite");
-
-      // Treat ?token as an auth token for OAuth redirects (e.g., Google), but not on invite acceptance
-      if (queryToken && !isInvitePath) {
-        apiService.setToken(queryToken);
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-
-      const finalToken = isInvitePath ? token : (queryToken || token);
+      const finalToken = token || apiService.getRefreshToken?.();
 
       if (finalToken) {
         try {
           // Verify token is still valid by fetching current user
           const response = await apiService.get("auth/me");
-          if (response.success && response.data) {
+          if (response.success && response.data && apiService.getToken()) {
             // Support both response shapes:
             // - { success: true, data: { user fields... } }
             // - { success: true, data: { user: {...}, token, ... } }
@@ -100,10 +91,8 @@ export const AuthProvider = ({ children }) => {
   // --------------------------
   // GOOGLE LOGIN (REDIRECT FLOW)
   // --------------------------
-  const googleLogin = () => {
-    // Redirect browser to backend
-    // window.location.href = "http://localhost:5000/api/auth/google";
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google`;
+  const googleLogin = async () => {
+    window.location.assign(await googleSignInUrl());
   };
 
   const updateUser = useCallback((updatedUser) => {
@@ -207,27 +196,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  useEffect(() => {
+    const signedOut = () => {
+      sessionRequest.current += 1;
+      websocketService.disconnect();
+      setUser(null); setOrganizations(null); setActiveOrganizationId(null);
+      setOrganizationLoading(false); setTenantVersion((version) => version + 1);
+    };
+    const storage = (event) => {
+      if (event.key === "stechad_token" && !event.newValue) signedOut();
+      if (event.key === "stechad_identity_revision") {
+        sessionRequest.current += 1;
+        websocketService.disconnect();
+        setUser(null); setOrganizations(null); setActiveOrganizationId(null);
+        setTenantVersion((version) => version + 1);
+        if (apiService.getToken()) void selectOrganization(null);
+      }
+    };
+    window.addEventListener("stechad:signed-out", signedOut);
+    window.addEventListener("storage", storage);
+    return () => { window.removeEventListener("stechad:signed-out", signedOut); window.removeEventListener("storage", storage); };
+  }, [selectOrganization]);
+
   const logout = async () => {
-    sessionRequest.current += 1;
-    websocketService.disconnect();
-    setOrganizations(null);
-    setOrganizationLoading(false);
-    setActiveOrganizationId(null);
-    setTenantVersion((version) => version + 1);
-    try {
-      await apiService.post("auth/logout", {});
-      console.clear();
-      setUser(null);
-      apiService.clearTokens();
-      localStorage.removeItem("stechad_user");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setUser(null);
-      apiService.clearTokens();
-      localStorage.removeItem("stechad_user");
-    }
+    try { await apiService.endSession(); }
+    catch { /* Local logout is immediate; a network failure cannot restore credentials. */ }
   };
 
   const sendOtp = async (email, purpose = "password_reset") => {

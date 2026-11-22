@@ -1,3 +1,4 @@
+import SessionControls from "@/components/SessionControls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -187,6 +188,7 @@ export default function AccountSettings({
           </div>
         </CardContent>
       </Card>
+      <SessionControls />
       <Card>
         <CardHeader>
           <CardTitle>Change password</CardTitle>

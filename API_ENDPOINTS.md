@@ -317,3 +317,35 @@ The integrated contract and migration/rollout notes are documented in the backen
 - Effective permissions combine built-in switches or custom-role permissions with individual grants. `account_updated` refreshes affected sessions after role changes. Display names come from `role_details.name`, while canonical keys/IDs remain authoritative for access.
 - Custom employees use staff personal routes, navigation and login destinations, plus permitted shared management modules. Custom roles retain staff-level direct chat rules and existing group restrictions. Their KPI/birthday/holiday eligibility and notification destinations match employee workflows.
 - Deploy `20261119110000-custom-role-permissions.js` and the backend before the frontend. Existing switches/grants remain intact; rollback removes custom-role configuration and requires the matching application version.
+
+## Managed sessions and internal administration (Phase 2)
+
+`src/services/apiService.js` retains `stechad_token`, `stechad_refresh_token` and `stechad_user`. Access tokens are short lived; the shared transport rotates opaque refresh credentials using `POST /auth/refresh-token` with `{refresh_token}`. Responses retain `{data:{token,refreshToken,session}}`. Same-instance singleflight and same-origin Web Locks coordinate refreshes. A bounded `409 REFRESH_ALREADY_ROTATED` wait adopts credentials saved by the winning tab; at most one bounded retry follows. Network failures preserve refresh credentials. Identity revisions reject stale HTTP and refresh completions after logout or a new sign-in, independently of tab-local organization revisions.
+
+| Method | Endpoint | Frontend behavior |
+|---|---|---|
+| GET | `/auth/sessions` | Account settings lists safe own-session metadata and identifies the current session; older sign-ins receive upgrade guidance. |
+| DELETE | `/auth/sessions/:sessionId` | Confirm before revocation; `{data:{revoked,current_session}}` determines whether to clear this browser's identity. |
+| POST | `/auth/logout` | Immediately clear local identity and submit current-session revocation using the captured Bearer token, without tenant headers. An expired access token uses one private captured-refresh rotation and revoke retry; those credentials never return to storage. |
+| POST | `/auth/logout-all` | Confirm and revoke every device, then clear the shared identity. |
+| GET | `/auth/google?code_challenge=…&return_to=…` | Create a random per-tab PKCE verifier and SHA-256 base64url challenge. Only `/google-auth` and `/platform-admin.html` are callback paths. |
+| POST | `/auth/oauth/exchange` | Submit `{code,code_verifier}` once, remove the per-tab verifier and clean the callback URL before continuing. New redirect URLs contain no access or refresh tokens. |
+
+The built `/platform-admin.html` entry mounts its own shell and only the shared identity transport/design primitives. It mounts no customer AuthProvider, OrganizationBoundary, DataProvider, ChatProvider or HR sockets. All `/platform/*` requests omit `X-Organization-Id` and ignore organization revisions while retaining identity revision checks. No customer HR role causes a platform navigation link to appear.
+
+| Method | Endpoint | Contract |
+|---|---|---|
+| GET | `/platform/me` | Safe identity, explicit platform roles/permissions and session MFA status; does not require HR membership. |
+| POST | `/platform/mfa/enroll` | `{}` for first setup, `{replace:true,reason}` for replacement; returns ephemeral `secret`, `otpauth_url`, `expires_at`. The UI offers masked manual setup, expires pending setup and retains no secrets in storage. |
+| POST | `/platform/mfa/confirm` | `{code}`; recovery codes are returned once and shown behind a reveal control until the user acknowledges saving them. |
+| POST | `/platform/mfa/verify` | Exactly one of `{code}` or `{recovery_code}`; session assurance expires after 15 minutes and refresh does not extend it. |
+| GET / PATCH | `/platform/organizations[/:organizationId]` | Paginated metadata; PATCH `{status:'active'|'suspended',reason}`. |
+| GET / PATCH | `/platform/users[/:userId]` | Paginated safe global identity metadata; PATCH `{is_active,reason}`. No HR profile, password write or deletion. |
+| GET | `/platform/roles` | Explicit roles and permission catalog; requested only with `platform.grants.read`. |
+| GET / POST | `/platform/grants` | Paginated grants; POST `{user_id,role_id,reason}` is offered only with `platform.grants.manage`. |
+| DELETE | `/platform/grants/:grantId` | `{reason}`; preserves revoked grant history. |
+| GET | `/platform/audit-log` | Paginated sanitized platform audit entries, optionally filtered by action. |
+
+Pagination is `{page,limit,total,total_pages}`. List query parameters are `page`, `limit`, organization/user `search` and `status`, grant `user_id`, and audit `action`. Platform lists retain view/page in URL state; identity searches and audit filters remain memory-only to avoid placing personal metadata in browser history.
+
+MFA failures (`MFA_SETUP_REQUIRED`, `MFA_REQUIRED`, `MFA_EXPIRED`) return the internal shell to setup or verification while retaining the HR identity. Grant loss/upgrade/email errors refresh platform eligibility. Ordinary 403, 409, MFA throttling and validation errors remain visible with safe retry controls. Only a genuine global 401 after unsuccessful authentication recovery clears the shared identity. The server enforces all permissions, privileged-target, self-lockout and last-super-admin protections; frontend visibility is a convenience.

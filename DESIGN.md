@@ -76,3 +76,5 @@ Keep existing Lucide iconography and shared toast owners. The switch flow uses p
 - Do show actual organization names and retain global sign out and invitation access.
 - Don't retain a previous organization's data while loading another.
 - Don't use a marketing hero, decorative tenant initials or new palette for this operational choice.
+
+The separate internal administration entry reuses this office-directory vocabulary: burgundy identity/navigation, white bordered cards, native tables, wrapping labels, and a muted page surround. Its signature is an explicit “Internal administration” label and a permission-limited navigation strip; it adds no marketing illustration, alternate palette, customer sidebar or HR providers. Native status/role selects deliberately retain operating-system popup geometry and keyboard behavior. Lists own horizontal overflow; forms keep natural document scrolling. `ReasonDialog` composes the existing Radix alert-dialog and Button owners for audited security changes. `SecretField` owns masked platform setup keys/codes and reveal controls; provisioning material is held only in mounted component state.

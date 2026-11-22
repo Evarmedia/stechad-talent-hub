@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/platform-admin.html",
+      "destination": "/platform-admin.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
