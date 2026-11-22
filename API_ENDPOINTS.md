@@ -1,5 +1,63 @@
 # STECHAD API Integration Status
 
+## Organization context and sessions
+
+`VITE_BACKEND_URL` includes the `/api` prefix. Authenticated calls send `Authorization: Bearer <access token>`. HR calls also send `X-Organization-ID: <organization UUID>` from the current tab's selection. The server validates active membership and HR access on each protected request. Conflicting organization IDs in a body or query are rejected; a header never grants access on its own. A single active membership may be inferred when no header is supplied. Multiple active memberships require explicit selection for HR calls.
+
+Global identity endpoints (login, refresh, `/auth/me`, password operations) do not require an HR selection. Organization-management routes use the organization ID in the URL and the caller's active owner/admin membership; HR roles and grants do not confer organization-management authority. Owners alone may alter owner memberships, including through legacy HR lifecycle routes, and the final active owner cannot leave, be suspended, removed or demoted.
+
+Successful `POST /auth/login`, signup and `GET /auth/me` return the session envelope below. Login/signup also include `data.token` and `data.refreshToken`.
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": { "user_id": "...", "role": "staff", "role_details": {}, "effective_permissions": [] },
+    "organizations": [{ "organization_id": "...", "name": "Example", "slug": "example", "status": "active", "membership_id": "...", "membership_role": "member", "membership_status": "active" }],
+    "active_organization_id": "..."
+  }
+}
+```
+
+`data.user` combines global identity with the selected organization's HR role, grants and employment fields. With multiple memberships and no selection, `active_organization_id` and `user.role` are null, `role_details` is null and `effective_permissions` is empty. A member without HR access may still manage an organization if their membership permits it; membership authority must not be inferred from HR role fields.
+
+The API service stores only the selected ID in `sessionStorage.stechad_organization_id`; access/refresh tokens remain in localStorage. `stechad_user` stores only `{user_id}` for cross-tab identity signals. The authenticated server session is the source of HR authority. Switching disconnects sockets, clears tenant providers/query state, selects the ID, then fetches `/auth/me` before rendering HR content. Request revisions reject responses from a prior selection with the client-only `ORGANIZATION_CHANGED` code. Tabs can select different organizations independently. Socket.IO connects with `auth: {token, organization_id}` and accepts tenant events only for that selected organization.
+
+| Status / code | Meaning and client handling |
+| --- | --- |
+| `400` | Malformed organization UUID or conflicting organization input; correct the request. |
+| `409 ORGANIZATION_REQUIRED` | Several active memberships and no selected organization; return to selection. |
+| `403 MEMBERSHIP_UNAVAILABLE` | No active membership in an active organization, including suspension/removal; reload the organization session and selection. |
+| `403 HR_PROFILE_REQUIRED` | Membership exists but its HR profile/role is unavailable; reload selection without treating this as global logout. |
+| `409 LAST_OWNER_REQUIRED` | Membership change would remove/demote the last active owner. |
+| `403 ORGANIZATION_CREATION_DISABLED` | Creation is gated by server configuration. |
+| `401` | Missing/invalid global authentication; refresh once where applicable, then sign in again. |
+
+The API interceptor dispatches `stechad:organization-unavailable` for the three membership/selection codes above, preserving the global login while reloading selection. Other `403` responses remain ordinary permission denials. Normalized API errors retain `status`, `code`, `message`, and optional `errors`/`blockers`.
+
+### Organization APIs (`/api/organizations`)
+
+| Method | Path | Contract |
+| --- | --- | --- |
+| GET | `/` | Returns `data.organizations`, the caller's active organizations. |
+| POST | `/` | `{name, slug}`; returns `data.organization` and owner `data.membership`. Disabled by default; the creator receives a basic staff HR profile, without wildcard HR grants. |
+| GET / PATCH | `/:organizationId` | Returns `data.organization`; PATCH accepts `{name?, settings?}` and requires owner/admin membership. |
+| GET | `/:organizationId/members` | Owner/admin membership required; returns `data.members`. |
+| PATCH | `/:organizationId/members/:membershipId` | `{status?, membership_role?}`; statuses are `active`, `suspended`, `removed`, roles are `owner`, `admin`, `member`; returns `data.membership`. |
+| DELETE | `/:organizationId/members/:membershipId` | Marks membership removed while preserving global identity and history. |
+| POST | `/:organizationId/leave` | Leaves own membership, subject to final-owner protection. |
+| POST | `/:organizationId/invitations` | `{email, role_id, membership_role?, first_name?, last_name?, department_id?, job_title?}`; returns `201` with safe `data.invitation`, never its bearer token or digest. HR role/department must belong to the addressed organization. |
+
+### Invitation acceptance
+
+The emailed link is `/accept-invite?token=<single-use bearer>`. This query token is an invitation credential, so the page never installs it as the global access token. Submit `POST /api/auth/accept-invite/:token`.
+
+- An existing account must sign in with the matching normalized, verified email, then submit `{}` with its Bearer access token. Acceptance preserves its password and existing organizations. An unauthenticated existing account receives `401`; a wrong or unverified identity receives `403`.
+- A new account submits `{new_password, confirm_password, first_name?, last_name?}`. The emailed token verifies the new email and the server validates the password. Existing accounts' passwords cannot be replaced through this path.
+- Success returns `201` with `data.organization_id` and `data.membership_id`. The frontend reloads that organization's session; a new user signs in after acceptance. Expired, invalid or consumed tokens return `400`. Tokens expire after one hour and concurrent/repeated acceptance succeeds only once.
+
+Registered uploaded avatars are shared with colleagues only within their owning organization. Other organizations cannot sign those files even if a shared global User references the same avatar path; unregistered legacy references retain validated membership compatibility. CVs/receipts retain owner and HR-permission checks.
+
 ## ✅ Completed Integrations
 
 ### Authentication (`/api/auth`)
